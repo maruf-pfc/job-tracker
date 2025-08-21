@@ -2,6 +2,7 @@
   "name": "job-tracker",
   "version": "1.0.0",
   "private": true,
+  "description": "Job Application Tracker",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
