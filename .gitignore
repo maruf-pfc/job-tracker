@@ -1,5 +1,9 @@
-node_modules
-npm-debug.log
-dist
+bin/
+obj/
+.vs/
+.vscode/
+.idea/
+node_modules/
+appsettings.Development.json
+Database Design.md
 .env
-tmp
