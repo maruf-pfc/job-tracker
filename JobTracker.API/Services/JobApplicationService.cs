@@ -3,6 +3,7 @@ using JobTracker.API.DTOs.JobApplication;
 using JobTracker.API.Interfaces;
 using JobTracker.API.Models;
 using Microsoft.EntityFrameworkCore;
+using JobTracker.API.DTOs.Common;
 
 namespace JobTracker.API.Services;
 
