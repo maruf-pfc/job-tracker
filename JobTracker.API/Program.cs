@@ -1,6 +1,8 @@
 using JobTracker.API.Configs;
 using JobTracker.API.Middlewares;
 using Microsoft.EntityFrameworkCore;
+using JobTracker.API.Interfaces;
+using JobTracker.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +12,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection")
     );
 });
+
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

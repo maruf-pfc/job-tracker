@@ -1,10 +1,17 @@
-namespace StoreDesk.API.Data;
+using JobTracker.API.Models;
+using Microsoft.EntityFrameworkCore;
 
-public class AppDbContext : IdentityDbContext<ApplicationUser>
+namespace JobTracker.API.Configs;
+
+public class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) {}
 
-    public DbSet<Category> Categories => Set<Category>();
-    public DbSet<Item> Items => Set<Item>();
-    public DbSet<Transaction> Transactions => Set<Transaction>();
+    public DbSet<User> Users => Set<User>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<User>().HasIndex(u => u.Email).IsUnique();
+    }
 }

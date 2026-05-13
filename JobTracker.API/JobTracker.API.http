@@ -1,6 +1,23 @@
-@JobTracker.API_HostAddress = http://localhost:5104
-
-GET {{JobTracker.API_HostAddress}}/weatherforecast/
-Accept: application/json
+@StoreDesk.API_HostAddress = http://localhost:5104
 
 ###
+POST {{StoreDesk.API_HostAddress}}/api/auth/register
+Content-Type: application/json
+Accept: application/json
+
+{
+  "Name": "Md. Maruf Sarker",
+  "email": "marufsarker.work@gmail.com",
+  "password": "Mmsmaruf123!",
+  "confirmPassword": "Mmsmaruf123!"
+}
+
+###
+POST {{StoreDesk.API_HostAddress}}/api/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "marufsarker.work@gmail.com",
+  "password": "Mmsmaruf123!"
+}
