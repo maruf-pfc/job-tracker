@@ -1,6 +1,6 @@
 {
-  "short_name": "TanStack App",
-  "name": "Create TanStack App Sample",
+  "short_name": "Job Tracker",
+  "name": "A production-grade personal CRM for job hunting",
   "icons": [
     {
       "src": "favicon.ico",
