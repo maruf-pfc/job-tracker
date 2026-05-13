@@ -18,6 +18,7 @@ builder.Services.AddScoped<IPriorityService, PriorityService>();
 builder.Services.AddHttpContextAccessor(); // bridges request context into services cleanly.
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IJobApplicationService, JobApplicationService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
