@@ -30,4 +30,27 @@ public class AuthController : ControllerBase
 
         return Ok(result);
     }
+
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword(ForgotPasswordDto dto)
+    {
+        var token = await _authService.ForgotPasswordAsync(dto);
+
+        return Ok(new
+        {
+            message = "Reset token generated",
+            resetToken = token
+        });
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword(ResetPasswordDto dto)
+    {
+        await _authService.ResetPasswordAsync(dto);
+
+        return Ok(new
+        {
+            message = "Password reset successful"
+        });
+    }
 }
