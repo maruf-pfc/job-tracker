@@ -14,6 +14,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 });
 
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IPriorityService, PriorityService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
