@@ -10,7 +10,6 @@ namespace JobTracker.API.Services;
 public class JobApplicationService : IJobApplicationService
 {
     private readonly AppDbContext _context;
-
     private readonly ICurrentUserService _currentUser;
 
     public JobApplicationService(AppDbContext context, ICurrentUserService currentUser)
@@ -22,7 +21,6 @@ public class JobApplicationService : IJobApplicationService
     public async Task<PaginatedResponseDto<JobApplicationDto>> GetAllAsync(JobApplicationQueryDto query)
     {
         var userId = _currentUser.UserId;
-
         var applicationsQuery = _context.JobApplications
                 .Where(j => j.UserId == userId)
                 .AsQueryable();
