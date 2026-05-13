@@ -1,10 +1,6 @@
 import { apiClient } from "@/lib/api-client";
 
-import type {
-  AuthResponse,
-  LoginRequest,
-  RegisterRequest,
-} from "@/types/auth.types";
+import type { AuthResponse, LoginRequest, RegisterRequest } from "@/types/auth";
 
 export async function login(payload: LoginRequest) {
   const response = await apiClient.post<AuthResponse>("/auth/login", payload);
