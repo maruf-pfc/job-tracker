@@ -18,9 +18,9 @@ public class JobApplicationsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] JobApplicationQueryDto query)
     {
-        var result = await _jobApplicationService.GetAllAsync();
+        var result = await _jobApplicationService.GetAllAsync(query);
         return Ok(result);
     }
 
