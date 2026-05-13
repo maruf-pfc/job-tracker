@@ -18,13 +18,75 @@ public class JobApplicationService : IJobApplicationService
         _currentUser = currentUser;
     }
 
-    public async Task<List<JobApplicationDto>> GetAllAsync()
+    public async Task<PaginatedResponseDto<JobApplicationDto>> GetAllAsync(JobApplicationQueryDto query)
     {
         var userId = _currentUser.UserId;
 
-        return await _context.JobApplications
-            .Where(j => j.UserId == userId)
-            .OrderByDescending(j => j.AppliedAt)
+        var applicationsQuery = _context.JobApplications
+                .Where(j => j.UserId == userId)
+                .AsQueryable();
+
+        // Search
+        if (!string.IsNullOrWhiteSpace(query.Search))
+        {
+            var search = query.Search.Trim().ToLower();
+            applicationsQuery = applicationsQuery.Where(j =>
+                    j.CompanyName.ToLower().Contains(search) || j.Role.ToLower().Contains(search)
+                );
+        }
+
+        // Filters
+        if (query.PriorityId.HasValue)
+        {
+            applicationsQuery = applicationsQuery.Where(j =>
+                    j.PriorityId == query.PriorityId
+                );
+        }
+
+        if (query.JobTypeId.HasValue)
+        {
+            applicationsQuery = applicationsQuery.Where(j =>
+                    j.JobTypeId == query.JobTypeId
+                );
+        }
+
+        if (query.SourcePlatformId.HasValue)
+        {
+            applicationsQuery = applicationsQuery.Where(j =>
+                    j.SourcePlatformId ==
+                    query.SourcePlatformId
+                );
+        }
+
+        if (query.ApplicationStatusId.HasValue)
+        {
+            applicationsQuery = applicationsQuery.Where(j =>
+                    j.ApplicationStatusId ==
+                    query.ApplicationStatusId
+                );
+        }
+
+        if (query.WorkTypeId.HasValue)
+        {
+            applicationsQuery = applicationsQuery.Where(j =>
+                    j.WorkTypeId == query.WorkTypeId
+                );
+        }
+
+        // Sorting
+        applicationsQuery =
+            query.SortDirection.ToLower() == "asc"
+                ? applicationsQuery.OrderBy(j => j.AppliedAt)
+                : applicationsQuery.OrderByDescending(
+                    j => j.AppliedAt
+                );
+
+        // Pagination
+        var totalCount = await applicationsQuery.CountAsync();
+
+        var items = await applicationsQuery
+            .Skip((query.Page - 1) * query.PageSize)
+            .Take(query.PageSize)
             .Select(j => new JobApplicationDto
             {
                 Id = j.Id,
@@ -42,6 +104,15 @@ public class JobApplicationService : IJobApplicationService
                 WorkType = j.WorkType.Name
             })
             .ToListAsync();
+
+        return new PaginatedResponseDto<JobApplicationDto>
+        {
+            Items = items,
+            Page = query.Page,
+            PageSize = query.PageSize,
+            TotalCount = totalCount,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)query.PageSize)
+        };
     }
 
     public async Task<JobApplicationDto?> GetByIdAsync(Guid id)
