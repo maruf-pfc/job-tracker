@@ -9,6 +9,10 @@ public class AppDbContext : DbContext
 
     public DbSet<User> Users => Set<User>();
     public DbSet<Priority> Priorities => Set<Priority>();
+    public DbSet<JobType> JobTypes => Set<JobType>();
+    public DbSet<SourcePlatform> SourcePlatforms => Set<SourcePlatform>();
+    public DbSet<WorkType> WorkTypes => Set<WorkType>();
+    public DbSet<ApplicationStatus> ApplicationStatuses => Set<ApplicationStatus>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
