@@ -14,6 +14,4 @@ public class User : BaseEntity
 
     [Required]
     public string PasswordHash { get; set; } = string.Empty;
-    public string? PasswordResetToken { get; set; }
-    public DateTime? PasswordResetTokenExpiresAt { get; set; }
 }
