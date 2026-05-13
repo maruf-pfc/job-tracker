@@ -30,7 +30,7 @@ public class JobApplicationService : IJobApplicationService
         {
             var search = query.Search.Trim().ToLower();
             applicationsQuery = applicationsQuery.Where(j =>
-                    j.CompanyName.ToLower().Contains(search) || j.Role.ToLower().Contains(search)
+                    j.Company.Name.ToLower().Contains(search) || j.Role.ToLower().Contains(search)
                 );
         }
 
@@ -89,7 +89,7 @@ public class JobApplicationService : IJobApplicationService
             .Select(j => new JobApplicationDto
             {
                 Id = j.Id,
-                CompanyName = j.CompanyName,
+                Company = j.Company.Name,
                 Role = j.Role,
                 JobUrl = j.JobUrl,
                 Location = j.Location,
@@ -100,7 +100,11 @@ public class JobApplicationService : IJobApplicationService
                 JobType = j.JobType.Name,
                 SourcePlatform = j.SourcePlatform.Name,
                 ApplicationStatus = j.ApplicationStatus.Name,
-                WorkType = j.WorkType.Name
+                WorkType = j.WorkType.Name,
+                CoverLetter = j.CoverLetter,
+                ResumeDriveLink = j.ResumeDriveLink,
+                FollowUpDate = j.FollowUpDate,
+                IsArchived = j.IsArchived,
             })
             .ToListAsync();
 
@@ -126,7 +130,7 @@ public class JobApplicationService : IJobApplicationService
             .Select(j => new JobApplicationDto
             {
                 Id = j.Id,
-                CompanyName = j.CompanyName,
+                Company = j.Company.Name,
                 Role = j.Role,
                 JobUrl = j.JobUrl,
                 Location = j.Location,
@@ -148,7 +152,7 @@ public class JobApplicationService : IJobApplicationService
 
         var application = new JobApplication
         {
-            CompanyName = dto.CompanyName.Trim(),
+            CompanyId = dto.CompanyId,
             Role = dto.Role.Trim(),
             JobUrl = dto.JobUrl?.Trim(),
             Location = dto.Location?.Trim(),
@@ -160,7 +164,11 @@ public class JobApplicationService : IJobApplicationService
             JobTypeId = dto.JobTypeId,
             SourcePlatformId = dto.SourcePlatformId,
             ApplicationStatusId = dto.ApplicationStatusId,
-            WorkTypeId = dto.WorkTypeId
+            WorkTypeId = dto.WorkTypeId,
+            CoverLetter = dto.CoverLetter?.Trim(),
+            ResumeDriveLink = dto.ResumeDriveLink?.Trim(),
+            FollowUpDate = dto.FollowUpDate,
+            IsArchived = dto.IsArchived,
         };
 
         _context.JobApplications.Add(application);
@@ -185,7 +193,7 @@ public class JobApplicationService : IJobApplicationService
             throw new Exception("Application not found");
         }
 
-        application.CompanyName = dto.CompanyName.Trim();
+        application.CompanyId = dto.CompanyId;
         application.Role = dto.Role.Trim();
         application.JobUrl = dto.JobUrl?.Trim();
         application.Location = dto.Location?.Trim();
@@ -198,6 +206,10 @@ public class JobApplicationService : IJobApplicationService
         application.ApplicationStatusId = dto.ApplicationStatusId;
         application.WorkTypeId = dto.WorkTypeId;
         application.UpdatedAt = DateTime.UtcNow;
+        application.CoverLetter = dto.CoverLetter?.Trim();
+        application.ResumeDriveLink = dto.ResumeDriveLink?.Trim();
+        application.FollowUpDate = dto.FollowUpDate;
+        application.IsArchived = dto.IsArchived;
 
         await _context.SaveChangesAsync();
 

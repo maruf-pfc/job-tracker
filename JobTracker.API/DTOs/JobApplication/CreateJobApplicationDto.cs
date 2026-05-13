@@ -4,9 +4,7 @@ namespace JobTracker.API.DTOs.JobApplication;
 
 public class CreateJobApplicationDto
 {
-    [Required]
-    [MaxLength(200)]
-    public string CompanyName { get; set; } = string.Empty;
+    public Guid CompanyId { get; set; }
 
     [Required]
     [MaxLength(200)]
@@ -21,24 +19,20 @@ public class CreateJobApplicationDto
     [MaxLength(100)]
     public string? SalaryRange { get; set; }
 
-    [MaxLength(5000)]
+    [MaxLength(20000)]
     public string? Notes { get; set; }
 
-    public DateTime AppliedAt { get; set; }
-        = DateTime.UtcNow;
+    [MaxLength(30000)]
+    public string? CoverLetter { get; set; }
 
-    [Required]
+    [MaxLength(500)]
+    public string? ResumeDriveLink { get; set; }
+    public DateTime? FollowUpDate { get; set; }
+    public bool IsArchived { get; set; }
+    public DateTime AppliedAt { get; set; } = DateTime.UtcNow;
     public Guid PriorityId { get; set; }
-
-    [Required]
     public Guid JobTypeId { get; set; }
-
-    [Required]
     public Guid SourcePlatformId { get; set; }
-
-    [Required]
     public Guid ApplicationStatusId { get; set; }
-
-    [Required]
     public Guid WorkTypeId { get; set; }
 }
