@@ -3,6 +3,7 @@ using System;
 using JobTracker.API.Configs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace JobTracker.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260513193023_AddLookupEntities")]
+    partial class AddLookupEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -50,82 +53,6 @@ namespace JobTracker.API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ApplicationStatuses");
-                });
-
-            modelBuilder.Entity("JobTracker.API.Models.JobApplication", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ApplicationStatusId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("AppliedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CompanyName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("JobTypeId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("JobUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<string>("Location")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(5000)
-                        .HasColumnType("character varying(5000)");
-
-                    b.Property<Guid>("PriorityId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("SalaryRange")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<Guid>("SourcePlatformId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("WorkTypeId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ApplicationStatusId");
-
-                    b.HasIndex("JobTypeId");
-
-                    b.HasIndex("PriorityId");
-
-                    b.HasIndex("SourcePlatformId");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("WorkTypeId");
-
-                    b.ToTable("JobApplications");
                 });
 
             modelBuilder.Entity("JobTracker.API.Models.JobType", b =>
@@ -280,87 +207,6 @@ namespace JobTracker.API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("WorkTypes");
-                });
-
-            modelBuilder.Entity("JobTracker.API.Models.JobApplication", b =>
-                {
-                    b.HasOne("JobTracker.API.Models.ApplicationStatus", "ApplicationStatus")
-                        .WithMany("JobApplications")
-                        .HasForeignKey("ApplicationStatusId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("JobTracker.API.Models.JobType", "JobType")
-                        .WithMany("JobApplications")
-                        .HasForeignKey("JobTypeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("JobTracker.API.Models.Priority", "Priority")
-                        .WithMany("JobApplications")
-                        .HasForeignKey("PriorityId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("JobTracker.API.Models.SourcePlatform", "SourcePlatform")
-                        .WithMany("JobApplications")
-                        .HasForeignKey("SourcePlatformId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("JobTracker.API.Models.User", "User")
-                        .WithMany("JobApplications")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("JobTracker.API.Models.WorkType", "WorkType")
-                        .WithMany("JobApplications")
-                        .HasForeignKey("WorkTypeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("ApplicationStatus");
-
-                    b.Navigation("JobType");
-
-                    b.Navigation("Priority");
-
-                    b.Navigation("SourcePlatform");
-
-                    b.Navigation("User");
-
-                    b.Navigation("WorkType");
-                });
-
-            modelBuilder.Entity("JobTracker.API.Models.ApplicationStatus", b =>
-                {
-                    b.Navigation("JobApplications");
-                });
-
-            modelBuilder.Entity("JobTracker.API.Models.JobType", b =>
-                {
-                    b.Navigation("JobApplications");
-                });
-
-            modelBuilder.Entity("JobTracker.API.Models.Priority", b =>
-                {
-                    b.Navigation("JobApplications");
-                });
-
-            modelBuilder.Entity("JobTracker.API.Models.SourcePlatform", b =>
-                {
-                    b.Navigation("JobApplications");
-                });
-
-            modelBuilder.Entity("JobTracker.API.Models.User", b =>
-                {
-                    b.Navigation("JobApplications");
-                });
-
-            modelBuilder.Entity("JobTracker.API.Models.WorkType", b =>
-                {
-                    b.Navigation("JobApplications");
                 });
 #pragma warning restore 612, 618
         }
