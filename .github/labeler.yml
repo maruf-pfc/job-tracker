@@ -1,0 +1,56 @@
+server:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "JobTracker.API/**"
+
+client:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "client/**"
+
+docs:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "docs/**"
+          - "**/*.md"
+
+github-actions:
+  - changed-files:
+      - any-glob-to-any-file:
+          - ".github/**"
+
+database:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "JobTracker.API/**/Migrations/**"
+          - "JobTracker.API/**/Data/**"
+
+api:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "JobTracker.API/**/Controllers/**"
+
+models:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "JobTracker.API/**/Models/**"
+
+services:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "JobTracker.API/**/Services/**"
+
+ui:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "client/**/components/**"
+
+pages:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "client/**/pages/**"
+
+uiux:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "uiux/**"
