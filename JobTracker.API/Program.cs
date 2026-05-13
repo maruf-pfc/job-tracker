@@ -3,6 +3,7 @@ using JobTracker.API.Middlewares;
 using Microsoft.EntityFrameworkCore;
 using JobTracker.API.Interfaces;
 using JobTracker.API.Services;
+using JobTracker.API.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,5 +59,11 @@ app.UseCors("ClientPolicy");
 app.UseAuthorization();
 
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await DbSeeder.SeedAsync(context);
+}
 
 app.Run();
