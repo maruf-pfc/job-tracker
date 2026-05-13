@@ -14,4 +14,7 @@ public class User : BaseEntity
 
     [Required]
     public string PasswordHash { get; set; } = string.Empty;
+
+    public ICollection<JobApplication> JobApplications
+    = new List<JobApplication>();
 }
