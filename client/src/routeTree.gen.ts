@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as publicRegisterRouteImport } from './routes/(public)/register'
 import { Route as publicLoginRouteImport } from './routes/(public)/login'
+import { Route as publicLayoutRouteImport } from './routes/(public)/_layout'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,6 +29,10 @@ const publicLoginRoute = publicLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const publicLayoutRoute = publicLayoutRouteImport.update({
+  id: '/(public)/_layout',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -42,6 +47,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/(public)/_layout': typeof publicLayoutRoute
   '/(public)/login': typeof publicLoginRoute
   '/(public)/register': typeof publicRegisterRoute
 }
@@ -50,11 +56,17 @@ export interface FileRouteTypes {
   fullPaths: '/' | '/login' | '/register'
   fileRoutesByTo: FileRoutesByTo
   to: '/' | '/login' | '/register'
-  id: '__root__' | '/' | '/(public)/login' | '/(public)/register'
+  id:
+    | '__root__'
+    | '/'
+    | '/(public)/_layout'
+    | '/(public)/login'
+    | '/(public)/register'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  publicLayoutRoute: typeof publicLayoutRoute
   publicLoginRoute: typeof publicLoginRoute
   publicRegisterRoute: typeof publicRegisterRoute
 }
@@ -82,11 +94,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof publicLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/(public)/_layout': {
+      id: '/(public)/_layout'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof publicLayoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  publicLayoutRoute: publicLayoutRoute,
   publicLoginRoute: publicLoginRoute,
   publicRegisterRoute: publicRegisterRoute,
 }
