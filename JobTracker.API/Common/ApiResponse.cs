@@ -1,4 +1,4 @@
-namespace StoreDesk.API.Common;
+namespace JobTracker.API.Common;
 
 public class ApiResponse<T>
 {
