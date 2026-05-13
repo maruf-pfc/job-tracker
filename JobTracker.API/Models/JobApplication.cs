@@ -5,9 +5,7 @@ namespace JobTracker.API.Models;
 
 public class JobApplication : BaseEntity
 {
-    [Required]
-    [MaxLength(200)]
-    public string CompanyName { get; set; } = string.Empty;
+    public Guid CompanyId { get; set; }
 
     [Required]
     [MaxLength(200)]
@@ -22,11 +20,17 @@ public class JobApplication : BaseEntity
     [MaxLength(100)]
     public string? SalaryRange { get; set; }
 
-    [MaxLength(5000)]
+    [MaxLength(20000)]
     public string? Notes { get; set; }
 
-    public DateTime AppliedAt { get; set; } = DateTime.UtcNow;
+    [MaxLength(30000)]
+    public string? CoverLetter { get; set; }
 
+    [MaxLength(500)]
+    public string? ResumeDriveLink { get; set; }
+    public DateTime? FollowUpDate { get; set; }
+    public bool IsArchived { get; set; }
+    public DateTime AppliedAt { get; set; } = DateTime.UtcNow;
     public Guid UserId { get; set; }
     public Guid PriorityId { get; set; }
     public Guid JobTypeId { get; set; }
@@ -36,14 +40,22 @@ public class JobApplication : BaseEntity
 
     [ForeignKey(nameof(UserId))]
     public User User { get; set; } = null!;
+
+    [ForeignKey(nameof(CompanyId))]
+    public Company Company { get; set; } = null!;
+
     [ForeignKey(nameof(PriorityId))]
     public Priority Priority { get; set; } = null!;
+
     [ForeignKey(nameof(JobTypeId))]
     public JobType JobType { get; set; } = null!;
+
     [ForeignKey(nameof(SourcePlatformId))]
     public SourcePlatform SourcePlatform { get; set; } = null!;
+
     [ForeignKey(nameof(ApplicationStatusId))]
     public ApplicationStatus ApplicationStatus { get; set; } = null!;
+
     [ForeignKey(nameof(WorkTypeId))]
     public WorkType WorkType { get; set; } = null!;
 }
