@@ -5,6 +5,7 @@ import type {
   JobApplication,
   PaginatedResponse,
   CreateJobApplicationRequest,
+  UpdateJobApplicationRequest,
 } from "@/types/job-application";
 
 export async function getApplications() {
@@ -27,4 +28,16 @@ export async function createApplication(data: CreateJobApplicationRequest) {
 
 export async function deleteApplication(id: string) {
   await api.delete(`/jobapplications/${id}`);
+}
+
+export async function updateApplication(
+  id: string,
+  data: UpdateJobApplicationRequest,
+) {
+  const response = await api.put<ApiResponse<JobApplication>>(
+    `/jobapplications/${id}`,
+    data,
+  );
+
+  return response.data.data;
 }
