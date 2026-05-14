@@ -1,9 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { useEffect } from "react";
 import { Toaster } from "sonner";
 import AppLayout from "@/components/layout/AppLayout";
 import ProtectedRoute from "@/routes/ProtectedRoute";
-import { useAuthStore } from "@/stores/authStore";
 import LoginPage from "@/pages/LoginPage";
 import DashboardPage from "@/pages/DashboardPage";
 import JobApplicationsPage from "@/pages/JobApplicationsPage";
@@ -11,12 +9,6 @@ import CompaniesPage from "@/pages/CompaniesPage";
 import RegisterPage from "@/pages/RegisterPage";
 
 export default function App() {
-  const initializeAuth = useAuthStore((state) => state.initializeAuth);
-
-  useEffect(() => {
-    initializeAuth();
-  }, [initializeAuth]);
-
   return (
     <BrowserRouter>
       <Routes>
