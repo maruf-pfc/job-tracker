@@ -1,4 +1,4 @@
-export type DashboardStats = {
+export type DashboardSummary = {
   totalApplications: number;
   interviews: number;
   offers: number;

@@ -1,19 +1,12 @@
 import { api } from "./api";
 
+import type { ApiResponse } from "@/types/api";
+
+import type { DashboardSummary } from "@/types/dashboard";
+
 export async function getDashboardSummary() {
-  const response = await api.get("/dashboard/summary");
+  const response =
+    await api.get<ApiResponse<DashboardSummary>>("/dashboard/summary");
 
-  return response.data;
-}
-
-export async function getStatusChart() {
-  const response = await api.get("/dashboard/status-chart");
-
-  return response.data;
-}
-
-export async function getPlatformChart() {
-  const response = await api.get("/dashboard/platform-chart");
-
-  return response.data;
+  return response.data.data;
 }

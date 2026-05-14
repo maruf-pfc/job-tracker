@@ -1,12 +1,21 @@
 import { api } from "./api";
+import type { ApiResponse } from "@/types/api";
+import type { AuthResponse, LoginRequest, RegisterRequest } from "@/types/auth";
 
-type LoginPayload = {
-  email: string;
-  password: string;
-};
+export async function login(payload: LoginRequest) {
+  const response = await api.post<ApiResponse<AuthResponse>>(
+    "/auth/login",
+    payload,
+  );
 
-export async function login(payload: LoginPayload) {
-  const response = await api.post("/auth/login", payload);
+  return response.data.data;
+}
 
-  return response.data;
+export async function register(payload: RegisterRequest) {
+  const response = await api.post<ApiResponse<AuthResponse>>(
+    "/auth/register",
+    payload,
+  );
+
+  return response.data.data;
 }
