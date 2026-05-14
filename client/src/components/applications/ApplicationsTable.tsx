@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { getApplications } from "@/services/jobApplicationService";
+import ApplicationActions from "./ApplicationActions";
 
 export default function ApplicationsTable() {
   const { data, isLoading } = useQuery({
@@ -57,6 +58,10 @@ export default function ApplicationsTable() {
             <th className="px-4 py-3 text-left text-sm font-medium text-slate-700">
               Applied Date
             </th>
+
+            <th className="px-4 py-3 text-right text-sm font-medium text-slate-700">
+              Actions
+            </th>
           </tr>
         </thead>
 
@@ -87,6 +92,10 @@ export default function ApplicationsTable() {
 
               <td className="px-4 py-3 text-sm text-slate-600">
                 {new Date(application.appliedAt).toLocaleDateString()}
+              </td>
+
+              <td className="px-4 py-3">
+                <ApplicationActions onEdit={() => {}} onDelete={() => {}} />
               </td>
             </tr>
           ))}

@@ -24,3 +24,7 @@ export async function createApplication(data: CreateJobApplicationRequest) {
 
   return response.data.data;
 }
+
+export async function deleteApplication(id: string) {
+  await api.delete(`/jobapplications/${id}`);
+}
