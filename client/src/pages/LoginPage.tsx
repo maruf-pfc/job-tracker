@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import AuthCard from "@/components/auth/AuthCard";
 import LoginForm from "@/components/auth/LoginForm";
 
@@ -23,6 +24,16 @@ export default function LoginPage() {
             <span className="ml-2 font-medium">Demo@123</span>
           </p>
         </div>
+
+        <p className="mt-6 text-center text-sm text-slate-600">
+          Don&apos;t have an account?{" "}
+          <Link
+            to="/register"
+            className="font-medium text-blue-600 hover:text-blue-700"
+          >
+            Create account
+          </Link>
+        </p>
       </AuthCard>
     </div>
   );
