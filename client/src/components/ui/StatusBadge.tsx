@@ -1,4 +1,4 @@
-import { Badge } from "./Badge";
+import Badge from "./Badge";
 
 const variants = {
   Applied: "bg-blue-100 text-blue-700",
@@ -12,6 +12,6 @@ type Props = {
   status: keyof typeof variants;
 };
 
-export function StatusBadge({ status }: Props) {
+export default function StatusBadge({ status }: Props) {
   return <Badge className={variants[status]}>{status}</Badge>;
 }
