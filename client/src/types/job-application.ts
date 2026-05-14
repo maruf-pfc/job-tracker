@@ -1,32 +1,41 @@
 export type JobApplication = {
   id: string;
+  company: string;
+  role: string;
+  jobUrl?: string;
+  location?: string;
+  salaryRange?: string;
+  notes?: string;
+  coverLetter?: string;
+  resumeDriveLink?: string;
+  appliedAt: string;
+  followUpDate?: string;
+  isArchived: boolean;
+  priority: string;
+  jobType: string;
+  sourcePlatform: string;
+  applicationStatus: string;
+  workType: string;
+};
+
+export type PaginatedResponse<T> = {
+  items: T[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+};
+
+export type CreateJobApplicationRequest = {
+  companyId: string;
   role: string;
   location?: string;
   salaryRange?: string;
-  appliedAt: string;
-  isArchived: boolean;
-  company: {
-    id: string;
-    name: string;
-  };
-  priority: {
-    id: string;
-    name: string;
-  };
-  applicationStatus: {
-    id: string;
-    name: string;
-  };
-  sourcePlatform: {
-    id: string;
-    name: string;
-  };
-  workType: {
-    id: string;
-    name: string;
-  };
-  jobType: {
-    id: string;
-    name: string;
-  };
+  notes?: string;
+  resumeDriveLink?: string;
+  priorityId: string;
+  sourcePlatformId: string;
+  applicationStatusId: string;
+  workTypeId: string;
+  jobTypeId: string;
 };
