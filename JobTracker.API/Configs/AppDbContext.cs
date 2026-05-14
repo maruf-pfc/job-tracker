@@ -15,7 +15,6 @@ public class AppDbContext : DbContext
     public DbSet<ApplicationStatus> ApplicationStatuses => Set<ApplicationStatus>();
     public DbSet<JobApplication> JobApplications => Set<JobApplication>();
     public DbSet<Company> Companies => Set<Company>();
-    public DbSet<Company> Companies => Set<Company>();
 
     protected override void OnModelCreating(
         ModelBuilder modelBuilder
