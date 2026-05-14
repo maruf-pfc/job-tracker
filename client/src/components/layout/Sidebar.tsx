@@ -3,9 +3,9 @@ import { navigation } from "@/config/navigation";
 
 export default function Sidebar() {
   return (
-    <aside className="flex h-screen w-64 flex-col border-r border-slate-800 bg-slate-900">
+    <aside className="hidden w-64 shrink-0 flex-col border-r border-slate-800 bg-slate-900 lg:flex">
       <div className="border-b border-slate-800 px-6 py-5">
-        <h1 className="text-lg font-semibold tracking-tight text-white">
+        <h1 className="text-xl font-semibold tracking-tight text-white">
           Job Tracker
         </h1>
 
@@ -21,20 +21,31 @@ export default function Sidebar() {
               key={item.href}
               to={item.href}
               className={({ isActive }) =>
-                `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
+                `group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
                   isActive
                     ? "bg-slate-800 text-white"
                     : "text-slate-300 hover:bg-slate-800 hover:text-white"
                 }`
               }
             >
-              <Icon size={18} />
+              <Icon size={18} className="shrink-0" />
 
-              {item.title}
+              <span>{item.title}</span>
             </NavLink>
           );
         })}
       </nav>
+
+      <div className="border-t border-slate-800 p-4">
+        <div className="rounded-xl bg-slate-800 p-4">
+          <p className="text-sm font-medium text-white">Career Pipeline</p>
+
+          <p className="mt-1 text-xs leading-5 text-slate-400">
+            Organize applications, interviews, and opportunities from one
+            workspace.
+          </p>
+        </div>
+      </div>
     </aside>
   );
 }

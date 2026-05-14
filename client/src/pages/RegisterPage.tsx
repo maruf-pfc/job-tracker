@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import AuthCard from "@/components/auth/AuthCard";
 import RegisterForm from "@/components/auth/RegisterForm";
 
@@ -9,6 +10,16 @@ export default function RegisterPage() {
         subtitle="Start organizing your applications, interviews, and opportunities."
       >
         <RegisterForm />
+
+        <p className="mt-6 text-center text-sm text-slate-600">
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            className="font-medium text-blue-600 hover:text-blue-700"
+          >
+            Sign in
+          </Link>
+        </p>
       </AuthCard>
     </div>
   );
