@@ -22,6 +22,7 @@ builder.Services.AddScoped<IJobApplicationService, JobApplicationService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IJobTypeService, JobTypeService>();
+builder.Services.AddScoped<IWorkTypeService, WorkTypeService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
