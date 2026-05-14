@@ -8,10 +8,7 @@ namespace JobTracker.API.Helpers;
 
 public static class JwtHelper
 {
-    public static string GenerateToken(
-        User user,
-        IConfiguration configuration
-    )
+    public static string GenerateToken(User user, IConfiguration configuration)
     {
         var jwtKey = configuration["Jwt:Key"]
             ?? throw new Exception("JWT Key not configured");
@@ -19,29 +16,31 @@ public static class JwtHelper
         var jwtIssuer = configuration["Jwt:Issuer"]
             ?? throw new Exception("JWT Issuer not configured");
 
-        var claims = new List<Claim>
-        {
-            new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new(JwtRegisteredClaimNames.Email, user.Email),
-            new(ClaimTypes.Name, user.Name),
-        };
+        var jwtAudience = configuration["Jwt:Audience"]
+            ?? throw new Exception("JWT Audience not configured");
 
-        var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(jwtKey)
-        );
+        var durationInMinutes = int.Parse(
+                configuration["Jwt:DurationInMinutes"]
+                ?? "10080" );
 
-        var credentials = new SigningCredentials(
-            key,
-            SecurityAlgorithms.HmacSha256
-        );
+        var claims =
+            new List<Claim>
+            {
+                new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new(JwtRegisteredClaimNames.Email, user.Email),
+                new(ClaimTypes.Name, user.Name),
+            };
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
-            issuer: jwtIssuer,
-            audience: jwtIssuer,
-            claims: claims,
-            expires: DateTime.UtcNow.AddDays(7),
-            signingCredentials: credentials
-        );
+                issuer: jwtIssuer,
+                audience: jwtAudience,
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(durationInMinutes),
+                signingCredentials: credentials
+            );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }

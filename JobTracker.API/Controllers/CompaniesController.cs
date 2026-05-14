@@ -2,6 +2,7 @@ using JobTracker.API.DTOs.Company;
 using JobTracker.API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using JobTracker.API.Common;
 
 namespace JobTracker.API.Controllers;
 
@@ -17,63 +18,94 @@ public class CompaniesController: ControllerBase
         _companyService = companyService;
     }
 
-
-
     [HttpGet]
-    public async Task<IActionResult>
-    GetAll()
+    public async Task<IActionResult> GetAll()
     {
         var result = await _companyService.GetAllAsync();
-        return Ok(result);
+        return Ok(
+            ApiResponse<object>.SuccessResponse(
+                result,
+                "Data fetched successfully"
+            )
+        );
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult>
-    GetById(Guid id)
+    public async Task<IActionResult> GetById(Guid id)
     {
         var result = await _companyService.GetByIdAsync(id);
 
         if (result is null)
         {
-            return NotFound();
+            return NotFound(
+                ApiResponse<string>.FailureResponse(
+                    "Resource not found"
+                )
+            );
         }
 
-        return Ok(result);
+        return Ok(
+            ApiResponse<object>.SuccessResponse(
+                result,
+                "Data fetched successfully"
+            )
+        );
     }
 
     [HttpPost]
-    public async Task<IActionResult>
-    Create(CreateCompanyDto dto)
+    public async Task<IActionResult> Create(CreateCompanyDto dto)
     {
         var result = await _companyService.CreateAsync(dto);
-        return Ok(result);
+
+        return Ok(
+            ApiResponse<object>.SuccessResponse(
+                result,
+                "Created successfully"
+            )
+        );
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult>
-    Update(Guid id, CreateCompanyDto dto)
+    public async Task<IActionResult> Update(Guid id, CreateCompanyDto dto)
     {
         var result = await _companyService.UpdateAsync(id, dto);
 
         if (result is null)
         {
-            return NotFound();
+            return NotFound(
+                ApiResponse<string>.FailureResponse(
+                    "Resource not found"
+                )
+            );
         }
 
-        return Ok(result);
+        return Ok(
+            ApiResponse<object>.SuccessResponse(
+                result,
+                "Updated successfully"
+            )
+        );
     }
 
     [HttpDelete("{id:guid}")]
-    public async Task<IActionResult>
-    Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid id)
     {
         var deleted = await _companyService.DeleteAsync(id);
 
         if (!deleted)
         {
-            return NotFound();
+            return NotFound(
+                ApiResponse<string>.FailureResponse(
+                    "Resource not found"
+                )
+            );
         }
 
-        return NoContent();
+        return Ok(
+            ApiResponse<string>.SuccessResponse(
+                null,
+                "Deleted successfully"
+            )
+        );
     }
 }

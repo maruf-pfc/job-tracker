@@ -1,7 +1,9 @@
-@StoreDesk.API_HostAddress = http://localhost:5104
+@JobTrackerClient_HostAddress = http://localhost:5104
+@Swagger = http://localhost:5104/swagger/index.html
+@Token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmEzZGI1ZC1hZjM0LTRhYjUtYmY4MS04MWNkM2I4MGRlNjAiLCJlbWFpbCI6Im1hcnVmc2Fya2VyLndvcmtAZ21haWwuY29tIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6Ik1kLiBNYXJ1ZiBTYXJrZXIiLCJleHAiOjE3Nzg3Njk1MTMsImlzcyI6IkpvYlRyYWNrZXJBUEkiLCJhdWQiOiJKb2JUcmFja2VyQ2xpZW50In0.YIRSXLO1V4fDq_A-ijB9JF3YINyEJt9u0MDEIlJrBuo
 
 ###
-POST {{StoreDesk.API_HostAddress}}/api/auth/register
+POST {{JobTrackerClient_HostAddress}}/api/auth/register
 Content-Type: application/json
 Accept: application/json
 
@@ -13,7 +15,7 @@ Accept: application/json
 }
 
 ###
-POST {{StoreDesk.API_HostAddress}}/api/auth/login
+POST {{JobTrackerClient_HostAddress}}/api/auth/login
 Content-Type: application/json
 Accept: application/json
 
@@ -21,3 +23,43 @@ Accept: application/json
   "email": "demo@jobtracker.dev",
   "password": "Password123!"
 }
+
+###
+POST {{JobTrackerClient_HostAddress}}/api/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "demo@jobtracker.dev",
+  "password": "Demo@123"
+}
+
+###
+GET {{JobTrackerClient_HostAddress}}/api/dashboard/summary
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{Token}}
+
+###
+GET {{JobTrackerClient_HostAddress}}/api/dashboard/status-chart
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{Token}}
+
+###
+GET {{JobTrackerClient_HostAddress}}/api/dashboard/platform-chart
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{Token}}
+
+###
+GET {{JobTrackerClient_HostAddress}}/api/companies
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{Token}}
+
+###
+GET {{JobTrackerClient_HostAddress}}/api/jobapplications
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{Token}}
