@@ -1,14 +1,20 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { useEffect } from "react";
 import { Toaster } from "sonner";
-import ProtectedRoute from "./routes/ProtectedRoute";
-import AppLayout from "./components/layout/AppLayout";
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import ApplicationsPage from "./pages/ApplicationsPage";
-import CompaniesPage from "./pages/CompaniesPage";
-import LookupsPage from "./pages/LookupsPage";
+import ProtectedRoute from "./routes/ProtectedRoute";
+import AppLayout from "./components/layout/AppLayout";
+import { useAuthStore } from "./stores/authStore";
 
 export default function App() {
+  const initializeAuth = useAuthStore((state) => state.initializeAuth);
+
+  useEffect(() => {
+    initializeAuth();
+  }, [initializeAuth]);
+
   return (
     <BrowserRouter>
       <Routes>
@@ -19,10 +25,6 @@ export default function App() {
             <Route path="/" element={<DashboardPage />} />
 
             <Route path="/applications" element={<ApplicationsPage />} />
-
-            <Route path="/companies" element={<CompaniesPage />} />
-
-            <Route path="/lookups" element={<LookupsPage />} />
           </Route>
         </Route>
       </Routes>

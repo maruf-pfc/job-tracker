@@ -1,3 +1,4 @@
+using JobTracker.API.Common;
 using JobTracker.API.DTOs.Auth;
 using JobTracker.API.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +21,12 @@ public class AuthController : ControllerBase
     {
         var result = await _authService.RegisterAsync(dto);
 
-        return Ok(result);
+        return Ok(
+            ApiResponse<object>.SuccessResponse(
+                result,
+                "Registration successful"
+            )
+        );
     }
 
     [HttpPost("login")]
@@ -28,6 +34,11 @@ public class AuthController : ControllerBase
     {
         var result = await _authService.LoginAsync(dto);
 
-        return Ok(result);
+        return Ok(
+            ApiResponse<object>.SuccessResponse(
+                result,
+                "Login successful"
+            )
+        );
     }
 }

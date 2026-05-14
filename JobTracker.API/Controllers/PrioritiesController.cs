@@ -2,6 +2,7 @@ using JobTracker.API.DTOs.Priority;
 using JobTracker.API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using JobTracker.API.Common;
 
 namespace JobTracker.API.Controllers;
 
@@ -21,28 +22,48 @@ public class PrioritiesController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var result = await _priorityService.GetAllAsync();
-        return Ok(result);
+        return Ok(
+            ApiResponse<object>.SuccessResponse(
+                result,
+                "Data fetched successfully"
+            )
+        );
     }
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
         var result = await _priorityService.GetByIdAsync(id);
-        return Ok(result);
+        return Ok(
+            ApiResponse<object>.SuccessResponse(
+                result,
+                "Data fetched successfully"
+            )
+        );
     }
 
     [HttpPost]
     public async Task<IActionResult> Create(CreatePriorityDto dto)
     {
         var result = await _priorityService.CreateAsync(dto);
-        return Ok(result);
+        return Ok(
+            ApiResponse<object>.SuccessResponse(
+                result,
+                "Created successfully"
+            )
+        );
     }
 
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, UpdatePriorityDto dto)
     {
         var result = await _priorityService.UpdateAsync(id, dto);
-        return Ok(result);
+        return Ok(
+            ApiResponse<object>.SuccessResponse(
+                result,
+                "Updated successfully"
+            )
+        );
     }
 
     [HttpDelete("{id:guid}")]
@@ -50,6 +71,11 @@ public class PrioritiesController : ControllerBase
     {
         await _priorityService.DeleteAsync(id);
 
-        return NoContent();
+        return Ok(
+            ApiResponse<string>.SuccessResponse(
+                null,
+                "Deleted successfully"
+            )
+        );
     }
 }
