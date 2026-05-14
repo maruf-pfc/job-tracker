@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -13,16 +14,22 @@ import { getApplicationStatuses } from "@/services/applicationStatusService";
 import { getSourcePlatforms } from "@/services/sourcePlatformService";
 import { getJobTypes } from "@/services/jobTypeService";
 import { getWorkTypes } from "@/services/workTypeService";
-import { createApplication } from "@/services/jobApplicationService";
+import {
+  createApplication,
+  updateApplication,
+} from "@/services/jobApplicationService";
 import { createJobApplicationSchema } from "@/schemas/jobApplicationSchema";
 import type { CreateJobApplicationRequest } from "@/types/job-application";
 import ApplicationFormSection from "./ApplicationFormSection";
+import type { JobApplication } from "@/types/job-application";
 
 type Props = {
   onSuccess: () => void;
+
+  initialData?: JobApplication | null;
 };
 
-export default function ApplicationForm({ onSuccess }: Props) {
+export default function ApplicationForm({ onSuccess, initialData }: Props) {
   const queryClient = useQueryClient();
 
   const {
@@ -34,6 +41,26 @@ export default function ApplicationForm({ onSuccess }: Props) {
   } = useForm<CreateJobApplicationRequest>({
     resolver: zodResolver(createJobApplicationSchema),
   });
+
+  useEffect(() => {
+    if (!initialData) {
+      return;
+    }
+
+    reset({
+      companyId: "",
+      role: initialData.role,
+      location: initialData.location,
+      salaryRange: initialData.salaryRange,
+      notes: initialData.notes,
+      resumeDriveLink: initialData.resumeDriveLink,
+      priorityId: "",
+      sourcePlatformId: "",
+      applicationStatusId: "",
+      workTypeId: "",
+      jobTypeId: "",
+    });
+  }, [initialData, reset]);
 
   const { data: companies } = useQuery({
     queryKey: ["companies"],
@@ -66,10 +93,20 @@ export default function ApplicationForm({ onSuccess }: Props) {
   });
 
   const mutation = useMutation({
-    mutationFn: createApplication,
+    mutationFn: (data: CreateJobApplicationRequest) => {
+      if (initialData) {
+        return updateApplication(initialData.id, data);
+      }
+
+      return createApplication(data);
+    },
 
     onSuccess: async () => {
-      toast.success("Application created successfully");
+      toast.success(
+        initialData
+          ? "Application updated successfully"
+          : "Application created successfully",
+      );
 
       await queryClient.invalidateQueries({
         queryKey: ["applications"],
@@ -80,7 +117,11 @@ export default function ApplicationForm({ onSuccess }: Props) {
     },
 
     onError: () => {
-      toast.error("Failed to create application");
+      toast.error(
+        initialData
+          ? "Failed to update application"
+          : "Failed to create application",
+      );
     },
   });
 
@@ -242,7 +283,13 @@ export default function ApplicationForm({ onSuccess }: Props) {
 
       <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-4">
         <Button type="submit" disabled={mutation.isPending}>
-          {mutation.isPending ? "Saving..." : "Save Application"}
+          {mutation.isPending
+            ? initialData
+              ? "Updating..."
+              : "Saving..."
+            : initialData
+              ? "Update Application"
+              : "Save Application"}
         </Button>
       </div>
     </form>

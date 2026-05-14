@@ -39,3 +39,5 @@ export type CreateJobApplicationRequest = {
   workTypeId: string;
   jobTypeId: string;
 };
+
+export type UpdateJobApplicationRequest = CreateJobApplicationRequest;

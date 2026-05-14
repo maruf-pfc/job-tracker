@@ -7,11 +7,13 @@ import {
 } from "@/services/jobApplicationService";
 import ApplicationActions from "./ApplicationActions";
 import DeleteApplicationDialog from "./DeleteApplicationDialog";
+import EditApplicationModal from "./EditApplicationModal";
 
 export default function ApplicationsTable() {
   const queryClient = useQueryClient();
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [editingApplication, setEditingApplication] = useState<any>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["applications"],
@@ -133,7 +135,7 @@ export default function ApplicationsTable() {
 
                 <td className="px-4 py-3">
                   <ApplicationActions
-                    onEdit={() => {}}
+                    onEdit={() => setEditingApplication(application)}
                     onDelete={() => setSelectedId(application.id)}
                   />
                 </td>
@@ -148,6 +150,12 @@ export default function ApplicationsTable() {
         onClose={() => setSelectedId(null)}
         onConfirm={handleDelete}
         loading={deleteMutation.isPending}
+      />
+
+      <EditApplicationModal
+        open={!!editingApplication}
+        onClose={() => setEditingApplication(null)}
+        application={editingApplication}
       />
     </>
   );
