@@ -20,6 +20,11 @@ builder.Services.AddHttpContextAccessor(); // bridges request context into servi
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IJobApplicationService, JobApplicationService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<ICompanyService, CompanyService>();
+builder.Services.AddScoped<IJobTypeService, JobTypeService>();
+builder.Services.AddScoped<IWorkTypeService, WorkTypeService>();
+builder.Services.AddScoped<ISourcePlatformService, SourcePlatformService>();
+builder.Services.AddScoped<IApplicationStatusService, ApplicationStatusService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
