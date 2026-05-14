@@ -1,20 +1,19 @@
 import { api } from "./api";
-import type { DashboardStats } from "@/types/dashboard";
 
-export async function getDashboardStats() {
-  const response = await api.get<DashboardStats>("/dashboard/stats");
+export async function getDashboardSummary() {
+  const response = await api.get("/dashboard/summary");
 
   return response.data;
 }
 
-// import type { DashboardStats } from "@/types/dashboard";
+export async function getStatusChart() {
+  const response = await api.get("/dashboard/status-chart");
 
-// export async function getDashboardStats(): Promise<DashboardStats> {
-//   return {
-//     totalApplications: 24,
-//     interviews: 6,
-//     offers: 1,
-//     rejected: 8,
-//     responseRate: 25,
-//   };
-// }
+  return response.data;
+}
+
+export async function getPlatformChart() {
+  const response = await api.get("/dashboard/platform-chart");
+
+  return response.data;
+}
