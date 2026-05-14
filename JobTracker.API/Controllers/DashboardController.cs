@@ -1,3 +1,4 @@
+using JobTracker.API.Common;
 using JobTracker.API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,20 +21,40 @@ public class DashboardController : ControllerBase
     public async Task<IActionResult> GetSummary()
     {
         var result = await _dashboardService.GetSummaryAsync();
-        return Ok(result);
+
+        return Ok(
+            ApiResponse<object>.SuccessResponse(
+                result,
+                "Dashboard summary fetched successfully"
+            )
+        );
     }
 
     [HttpGet("status-chart")]
-    public async Task<IActionResult> GetApplicationsByStatus()
+    public async Task<IActionResult>
+    GetApplicationsByStatus()
     {
         var result = await _dashboardService.GetApplicationsByStatusAsync();
-        return Ok(result);
+
+        return Ok(
+            ApiResponse<object>.SuccessResponse(
+                result,
+                "Status chart fetched successfully"
+            )
+        );
     }
 
     [HttpGet("platform-chart")]
-    public async Task<IActionResult>GetApplicationsByPlatform()
+    public async Task<IActionResult>
+    GetApplicationsByPlatform()
     {
         var result = await _dashboardService.GetApplicationsByPlatformAsync();
-        return Ok(result);
+
+        return Ok(
+            ApiResponse<object>.SuccessResponse(
+                result,
+                "Platform chart fetched successfully"
+            )
+        );
     }
 }

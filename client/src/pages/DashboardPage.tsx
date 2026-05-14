@@ -10,13 +10,13 @@ import MetricCard from "@/components/dashboard/MetricCard";
 import DashboardSection from "@/components/dashboard/DashboardSection";
 import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 import AnalyticsPlaceholder from "@/components/dashboard/AnalyticsPlaceholder";
-import { getDashboardStats } from "@/services/dashboardService";
+import { getDashboardSummary } from "@/services/dashboardService";
 
 export default function DashboardPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["dashboard-stats"],
 
-    queryFn: getDashboardStats,
+    queryFn: getDashboardSummary,
   });
 
   if (isLoading) {

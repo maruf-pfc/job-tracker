@@ -2,16 +2,18 @@ import axios from "axios";
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken");
+  const storage = localStorage.getItem("job-tracker-auth");
 
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  if (storage) {
+    const parsed = JSON.parse(storage);
+    const token = parsed.state?.token;
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
   }
 
   return config;

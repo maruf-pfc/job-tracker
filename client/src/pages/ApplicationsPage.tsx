@@ -1,11 +1,36 @@
-export default function ApplicationsPage() {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h1 className="text-xl font-semibold text-slate-900">Applications</h1>
+import { useQuery } from "@tanstack/react-query";
+import ApplicationsTable from "@/components/applications/ApplicationsTable";
+import ApplicationsTableSkeleton from "@/components/applications/ApplicationsTableSkeleton";
+import ApplicationsEmptyState from "@/components/applications/ApplicationsEmptyState";
+import { getApplications } from "@/services/jobApplicationService";
 
-      <p className="mt-2 text-sm text-slate-500">
-        Manage and track your job applications.
-      </p>
+export default function ApplicationsPage() {
+  const { data, isLoading } = useQuery({
+    queryKey: ["applications"],
+    queryFn: getApplications,
+  });
+
+  if (isLoading) {
+    return <ApplicationsTableSkeleton />;
+  }
+
+  if (!data || data.length === 0) {
+    return <ApplicationsEmptyState />;
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
+          Applications
+        </h1>
+
+        <p className="mt-2 text-sm text-slate-500">
+          Track and manage your application pipeline.
+        </p>
+      </div>
+
+      <ApplicationsTable applications={data} />
     </div>
   );
 }
