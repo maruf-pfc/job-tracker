@@ -1,5 +1,5 @@
 import { Table, TBody, TD, TH, THead, TR } from "./Table";
-import { StatusBadge } from "./StatusBadge";
+import StatusBadge from "./StatusBadge";
 
 const jobs = [
   {
@@ -19,7 +19,7 @@ const jobs = [
   },
 ] as const;
 
-export function DataTable() {
+export default function DataTable() {
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
       <Table>

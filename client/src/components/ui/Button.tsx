@@ -15,7 +15,7 @@ const variants: Record<Variant, string> = {
   ghost: "text-slate-600 hover:bg-slate-100 border border-transparent",
 };
 
-export function Button({ variant = "primary", className, ...props }: Props) {
+export default function Button({ variant = "primary", className, ...props }: Props) {
   return (
     <button
       className={cn(
