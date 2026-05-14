@@ -5,10 +5,10 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const authStorage = localStorage.getItem("job-tracker-auth");
+  const storage = localStorage.getItem("job-tracker-auth");
 
-  if (authStorage) {
-    const parsed = JSON.parse(authStorage);
+  if (storage) {
+    const parsed = JSON.parse(storage);
     const token = parsed.state?.token;
 
     if (token) {
