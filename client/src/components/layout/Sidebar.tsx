@@ -1,56 +1,36 @@
-import { LayoutDashboard, BriefcaseBusiness, Building2 } from "lucide-react";
 import { NavLink } from "react-router-dom";
-
-const navItems = [
-  {
-    to: "/",
-    label: "Dashboard",
-    icon: LayoutDashboard,
-  },
-
-  {
-    to: "/applications",
-    label: "Applications",
-    icon: BriefcaseBusiness,
-  },
-
-  {
-    to: "/companies",
-    label: "Companies",
-    icon: Building2,
-  },
-];
+import { navigation } from "@/config/navigation";
 
 export default function Sidebar() {
   return (
-    <aside className="w-64 border-r border-stone-200 bg-white">
-      <div className="border-b border-stone-200 p-6">
-        <h1 className="text-xl font-semibold text-stone-900">Job Tracker</h1>
+    <aside className="flex h-screen w-64 flex-col border-r border-slate-800 bg-slate-900">
+      <div className="border-b border-slate-800 px-6 py-5">
+        <h1 className="text-lg font-semibold tracking-tight text-white">
+          Job Tracker
+        </h1>
+
+        <p className="mt-1 text-sm text-slate-400">Career Operations</p>
       </div>
 
-      <nav className="space-y-1 p-4">
-        {navItems.map((item) => {
+      <nav className="flex-1 space-y-1 p-4">
+        {navigation.map((item) => {
           const Icon = item.icon;
 
           return (
             <NavLink
-              key={item.to}
-              to={item.to}
+              key={item.href}
+              to={item.href}
               className={({ isActive }) =>
-                `
-                flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors
-
-                ${
+                `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
                   isActive
-                    ? "bg-stone-900 text-white"
-                    : "text-stone-600 hover:bg-stone-100"
-                }
-              `
+                    ? "bg-slate-800 text-white"
+                    : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                }`
               }
             >
               <Icon size={18} />
 
-              {item.label}
+              {item.title}
             </NavLink>
           );
         })}
