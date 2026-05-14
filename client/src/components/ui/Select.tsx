@@ -1,7 +1,7 @@
 import type { SelectHTMLAttributes } from "react";
 import { cn } from "../../lib/utils";
 
-export function Select({
+export default function Select({
   className,
   children,
   ...props
