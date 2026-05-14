@@ -1,65 +1,70 @@
 using JobTracker.API.Configs;
-using JobTracker.API.DTOs.WorkType;
+using JobTracker.API.DTOs.SourcePlatform;
 using JobTracker.API.Interfaces;
 using JobTracker.API.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace JobTracker.API.Services;
 
-public class WorkTypeService: IWorkTypeService
+public class SourcePlatformService
+    : ISourcePlatformService
 {
     private readonly AppDbContext _context;
 
-    public WorkTypeService(AppDbContext context)
+    public SourcePlatformService(AppDbContext context)
     {
         _context = context;
     }
 
-
-
-    public async Task<List<WorkTypeDto>> GetAllAsync()
+    public async Task<List<SourcePlatformDto>>
+    GetAllAsync()
     {
         return await _context
-            .WorkTypes
-            .OrderBy(w => w.Name)
-            .Select(w => new WorkTypeDto
+            .SourcePlatforms
+            .OrderBy(s => s.Name)
+            .Select(s => new SourcePlatformDto
             {
-                Id = w.Id,
-                Name = w.Name,
+                Id = s.Id,
+                Name = s.Name,
             })
             .ToListAsync();
     }
 
-    public async Task<WorkTypeDto> CreateAsync(CreateWorkTypeDto dto)
+
+
+    public async Task<SourcePlatformDto>
+    CreateAsync(CreateSourcePlatformDto dto)
     {
-        var entity = new WorkType
+        var entity = new SourcePlatform
             {
                 Name = dto.Name,
             };
 
-        _context.WorkTypes.Add(entity);
+        _context.SourcePlatforms.Add(entity);
 
         await _context.SaveChangesAsync();
 
-        return new WorkTypeDto
+        return new SourcePlatformDto
         {
             Id = entity.Id,
             Name = entity.Name,
         };
     }
 
+
+
     public async Task<bool> DeleteAsync(Guid id)
     {
         var entity = await _context
-                .WorkTypes
-                .FirstOrDefaultAsync(w => w.Id == id);
+                .SourcePlatforms
+                .FirstOrDefaultAsync(s => s.Id == id);
 
         if (entity is null)
         {
             return false;
         }
 
-        _context.WorkTypes.Remove(entity);
+        _context.SourcePlatforms.Remove(entity);
 
         await _context.SaveChangesAsync();
 

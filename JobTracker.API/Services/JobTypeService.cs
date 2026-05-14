@@ -14,8 +14,7 @@ public class JobTypeService: IJobTypeService
         _context = context;
     }
 
-    public async Task<List<JobTypeDto>>
-    GetAllAsync()
+    public async Task<List<JobTypeDto>> GetAllAsync()
     {
         return await _context
             .JobTypes
@@ -28,8 +27,7 @@ public class JobTypeService: IJobTypeService
             .ToListAsync();
     }
 
-    public async Task<JobTypeDto>
-    CreateAsync(CreateJobTypeDto dto)
+    public async Task<JobTypeDto> CreateAsync(CreateJobTypeDto dto)
     {
         var entity = new JobType
             {
