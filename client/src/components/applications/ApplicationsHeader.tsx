@@ -1,6 +1,10 @@
 import Button from "@/components/ui/Button";
 
-export default function ApplicationsHeader() {
+type Props = {
+  onCreate: () => void;
+};
+
+export default function ApplicationsHeader({ onCreate }: Props) {
   return (
     <div className="flex items-center justify-between">
       <div>
@@ -13,7 +17,7 @@ export default function ApplicationsHeader() {
         </p>
       </div>
 
-      <Button>Add Application</Button>
+      <Button onClick={onCreate}>Add Application</Button>
     </div>
   );
 }
