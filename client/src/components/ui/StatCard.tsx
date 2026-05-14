@@ -1,4 +1,4 @@
-import { Card } from "./Card";
+import Card from "./Card";
 
 type Props = {
   title: string;
@@ -6,7 +6,7 @@ type Props = {
   description?: string;
 };
 
-export function StatCard({ title, value, description }: Props) {
+export default function StatCard({ title, value, description }: Props) {
   return (
     <Card className="p-5">
       <p className="text-sm font-medium text-slate-500">{title}</p>

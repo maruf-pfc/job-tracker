@@ -8,6 +8,8 @@ import LoginPage from "@/pages/LoginPage";
 import DashboardPage from "@/pages/DashboardPage";
 import JobApplicationsPage from "@/pages/JobApplicationsPage";
 import CompaniesPage from "@/pages/CompaniesPage";
+import RegisterPage from "@/pages/RegisterPage";
+
 export default function App() {
   const initializeAuth = useAuthStore((state) => state.initializeAuth);
 
@@ -19,6 +21,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
 
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
