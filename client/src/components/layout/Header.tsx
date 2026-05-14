@@ -1,23 +1,21 @@
 import { useAuthStore } from "@/stores/authStore";
+import Button from "@/components/ui/Button";
 
 export default function Header() {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-stone-200 bg-white px-6">
+    <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-6">
       <div>
-        <h2 className="text-lg font-semibold text-stone-900">Welcome back</h2>
+        <h2 className="text-sm font-medium text-slate-500">Welcome back</h2>
 
-        <p className="text-sm text-stone-500">{user?.name}</p>
+        <h1 className="text-lg font-semibold text-slate-900">{user?.name}</h1>
       </div>
 
-      <button
-        onClick={logout}
-        className="rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100"
-      >
+      <Button variant="secondary" onClick={logout}>
         Logout
-      </button>
+      </Button>
     </header>
   );
 }
