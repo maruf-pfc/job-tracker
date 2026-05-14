@@ -4,7 +4,6 @@ import { getApplications } from "@/services/jobApplicationService";
 export default function ApplicationsTable() {
   const { data, isLoading } = useQuery({
     queryKey: ["applications"],
-
     queryFn: getApplications,
   });
 
@@ -16,7 +15,7 @@ export default function ApplicationsTable() {
     );
   }
 
-  if (!data?.length) {
+  if (!data?.items?.length) {
     return (
       <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center">
         <h3 className="text-lg font-semibold text-slate-900">
@@ -62,10 +61,10 @@ export default function ApplicationsTable() {
         </thead>
 
         <tbody className="divide-y divide-slate-100 bg-white">
-          {data.map((application) => (
+          {data.items.map((application) => (
             <tr key={application.id} className="hover:bg-slate-50">
               <td className="px-4 py-3 text-sm font-medium text-slate-900">
-                {application.company.name}
+                {application.company}
               </td>
 
               <td className="px-4 py-3 text-sm text-slate-600">
@@ -74,16 +73,16 @@ export default function ApplicationsTable() {
 
               <td className="px-4 py-3">
                 <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-700">
-                  {application.applicationStatus.name}
+                  {application.applicationStatus}
                 </span>
               </td>
 
               <td className="px-4 py-3 text-sm text-slate-600">
-                {application.priority.name}
+                {application.priority}
               </td>
 
               <td className="px-4 py-3 text-sm text-slate-600">
-                {application.sourcePlatform.name}
+                {application.sourcePlatform}
               </td>
 
               <td className="px-4 py-3 text-sm text-slate-600">
