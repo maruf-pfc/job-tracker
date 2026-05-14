@@ -1,6 +1,6 @@
 @JobTrackerClient_HostAddress = http://localhost:5104
 @Swagger = http://localhost:5104/swagger/index.html
-@Token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmEzZGI1ZC1hZjM0LTRhYjUtYmY4MS04MWNkM2I4MGRlNjAiLCJlbWFpbCI6Im1hcnVmc2Fya2VyLndvcmtAZ21haWwuY29tIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6Ik1kLiBNYXJ1ZiBTYXJrZXIiLCJleHAiOjE3Nzg3Njk1MTMsImlzcyI6IkpvYlRyYWNrZXJBUEkiLCJhdWQiOiJKb2JUcmFja2VyQ2xpZW50In0.YIRSXLO1V4fDq_A-ijB9JF3YINyEJt9u0MDEIlJrBuo
+@Token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZmEzZGI1ZC1hZjM0LTRhYjUtYmY4MS04MWNkM2I4MGRlNjAiLCJlbWFpbCI6Im1hcnVmc2Fya2VyLndvcmtAZ21haWwuY29tIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6Ik1kLiBNYXJ1ZiBTYXJrZXIiLCJleHAiOjE3Nzg3OTE1MzUsImlzcyI6IkpvYlRyYWNrZXJBUEkiLCJhdWQiOiJKb2JUcmFja2VyQ2xpZW50In0.oHtBAVWVD7h44GlF6nEVe6-EUbPQVe32MQIE3cGdiIk
 
 ###
 POST {{JobTrackerClient_HostAddress}}/api/auth/register
@@ -63,3 +63,28 @@ GET {{JobTrackerClient_HostAddress}}/api/jobapplications
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{Token}}
+
+###
+POST {{JobTrackerClient_HostAddress}}/api/jobapplications
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{Token}}
+
+{
+  "companyId": "c1b8d5a4-9c7f-4d92-8f2e-5f2c9f91a101",
+  "role": "Frontend Software Engineer",
+  "jobUrl": "https://careers.spotify.com/jobs/frontend-software-engineer",
+  "location": "Stockholm, Sweden",
+  "salaryRange": "$90,000 - $120,000",
+  "notes": "Applied through company careers page. Focused heavily on React, TypeScript, and performance optimization experience.",
+  "coverLetter": "I am excited to apply for the Frontend Software Engineer position. My experience building scalable React applications and modern UI systems aligns well with your engineering culture.",
+  "resumeDriveLink": "https://drive.google.com/file/d/1AbCdEfGhIjKlMnOpQrStUvWxYz/view",
+  "followUpDate": "2026-05-20T10:00:00.000Z",
+  "isArchived": false,
+  "appliedAt": "2026-05-14T19:42:52.577Z",
+  "priorityId": "7a3d0c2b-12f7-4d81-9c53-bc02d3f5e201",
+  "jobTypeId": "a8e7d7b1-34aa-49a5-9f4b-ecbb7a2d6201",
+  "sourcePlatformId": "5f91c2e0-73b6-41f5-93f9-6dd2cb38c401",
+  "applicationStatusId": "9e2b4a60-4a92-4e34-a5cb-ef5bc0f3d901",
+  "workTypeId": "2b9a3f10-8f4b-47c7-9b3d-cf4e5f7d8101"
+}
