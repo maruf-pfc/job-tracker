@@ -1,12 +1,48 @@
-import { useQuery } from "@tanstack/react-query";
-import { getApplications } from "@/services/jobApplicationService";
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import {
+  getApplications,
+  deleteApplication,
+} from "@/services/jobApplicationService";
 import ApplicationActions from "./ApplicationActions";
+import DeleteApplicationDialog from "./DeleteApplicationDialog";
 
 export default function ApplicationsTable() {
+  const queryClient = useQueryClient();
+
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
   const { data, isLoading } = useQuery({
     queryKey: ["applications"],
     queryFn: getApplications,
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteApplication,
+
+    onSuccess: async () => {
+      toast.success("Application deleted");
+
+      await queryClient.invalidateQueries({
+        queryKey: ["applications"],
+      });
+
+      setSelectedId(null);
+    },
+
+    onError: () => {
+      toast.error("Failed to delete application");
+    },
+  });
+
+  const handleDelete = () => {
+    if (!selectedId) {
+      return;
+    }
+
+    deleteMutation.mutate(selectedId);
+  };
 
   if (isLoading) {
     return (
@@ -31,76 +67,88 @@ export default function ApplicationsTable() {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-      <table className="min-w-full divide-y divide-slate-200">
-        <thead className="bg-slate-100">
-          <tr>
-            <th className="px-4 py-3 text-left text-sm font-medium text-slate-700">
-              Company
-            </th>
+    <>
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        <table className="min-w-full divide-y divide-slate-200">
+          <thead className="bg-slate-100">
+            <tr>
+              <th className="px-4 py-3 text-left text-sm font-medium text-slate-700">
+                Company
+              </th>
 
-            <th className="px-4 py-3 text-left text-sm font-medium text-slate-700">
-              Role
-            </th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-slate-700">
+                Role
+              </th>
 
-            <th className="px-4 py-3 text-left text-sm font-medium text-slate-700">
-              Status
-            </th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-slate-700">
+                Status
+              </th>
 
-            <th className="px-4 py-3 text-left text-sm font-medium text-slate-700">
-              Priority
-            </th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-slate-700">
+                Priority
+              </th>
 
-            <th className="px-4 py-3 text-left text-sm font-medium text-slate-700">
-              Platform
-            </th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-slate-700">
+                Platform
+              </th>
 
-            <th className="px-4 py-3 text-left text-sm font-medium text-slate-700">
-              Applied Date
-            </th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-slate-700">
+                Applied Date
+              </th>
 
-            <th className="px-4 py-3 text-right text-sm font-medium text-slate-700">
-              Actions
-            </th>
-          </tr>
-        </thead>
-
-        <tbody className="divide-y divide-slate-100 bg-white">
-          {data.items.map((application) => (
-            <tr key={application.id} className="hover:bg-slate-50">
-              <td className="px-4 py-3 text-sm font-medium text-slate-900">
-                {application.company}
-              </td>
-
-              <td className="px-4 py-3 text-sm text-slate-600">
-                {application.role}
-              </td>
-
-              <td className="px-4 py-3">
-                <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-700">
-                  {application.applicationStatus}
-                </span>
-              </td>
-
-              <td className="px-4 py-3 text-sm text-slate-600">
-                {application.priority}
-              </td>
-
-              <td className="px-4 py-3 text-sm text-slate-600">
-                {application.sourcePlatform}
-              </td>
-
-              <td className="px-4 py-3 text-sm text-slate-600">
-                {new Date(application.appliedAt).toLocaleDateString()}
-              </td>
-
-              <td className="px-4 py-3">
-                <ApplicationActions onEdit={() => {}} onDelete={() => {}} />
-              </td>
+              <th className="px-4 py-3 text-right text-sm font-medium text-slate-700">
+                Actions
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+
+          <tbody className="divide-y divide-slate-100 bg-white">
+            {data.items.map((application) => (
+              <tr key={application.id} className="hover:bg-slate-50">
+                <td className="px-4 py-3 text-sm font-medium text-slate-900">
+                  {application.company}
+                </td>
+
+                <td className="px-4 py-3 text-sm text-slate-600">
+                  {application.role}
+                </td>
+
+                <td className="px-4 py-3">
+                  <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-700">
+                    {application.applicationStatus}
+                  </span>
+                </td>
+
+                <td className="px-4 py-3 text-sm text-slate-600">
+                  {application.priority}
+                </td>
+
+                <td className="px-4 py-3 text-sm text-slate-600">
+                  {application.sourcePlatform}
+                </td>
+
+                <td className="px-4 py-3 text-sm text-slate-600">
+                  {new Date(application.appliedAt).toLocaleDateString()}
+                </td>
+
+                <td className="px-4 py-3">
+                  <ApplicationActions
+                    onEdit={() => {}}
+                    onDelete={() => setSelectedId(application.id)}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <DeleteApplicationDialog
+        open={!!selectedId}
+        onClose={() => setSelectedId(null)}
+        onConfirm={handleDelete}
+        loading={deleteMutation.isPending}
+      />
+    </>
   );
 }

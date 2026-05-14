@@ -7,20 +7,12 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const Button = forwardRef<HTMLButtonElement, Props>(
-  (
-    {
-      className,
-      variant = "primary",
-      size = "md",
-      ...props
-    },
-    ref,
-  ) => {
+  ({ className, variant = "primary", size = "md", ...props }, ref) => {
     return (
       <button
         ref={ref}
         className={cn(
-          "inline-flex items-center justify-center rounded-lg font-medium transition-colors disabled:pointer-events-none disabled:opacity-50",
+          "inline-flex items-center justify-center rounded-lg font-medium transition-colors disabled:pointer-events-none disabled:opacity-50 cursor-pointer",
           size === "sm" && "h-9 px-3 text-sm",
           size === "md" && "h-10 px-4 text-sm",
           variant === "primary" && "bg-blue-600 text-white hover:bg-blue-700",
