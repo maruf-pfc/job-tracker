@@ -20,7 +20,9 @@ public class DashboardService : IDashboardService
     public async Task<DashboardSummaryDto>GetSummaryAsync()
     {
         var userId = _currentUser.UserId;
-        var applications = _context.JobApplications.Where(j => j.UserId == userId);
+        var applications = _context.JobApplications
+            .Include(j => j.ApplicationStatus)
+            .Where(j => j.UserId == userId);
 
         return new DashboardSummaryDto
         {
