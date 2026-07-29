@@ -1,20 +1,19 @@
-using JobTracker.API.Configs;
 using JobTracker.API.DTOs.Auth;
+using JobTracker.API.Models;
 using JobTracker.API.Services;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
+using Moq;
 using Xunit;
 
 namespace JobTracker.API.Tests;
 
 public class AuthServiceTests
 {
-    private AppDbContext GetInMemoryDbContext()
+    private Mock<UserManager<User>> GetMockUserManager()
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .Options;
-        return new AppDbContext(options);
+        var store = new Mock<IUserStore<User>>();
+        return new Mock<UserManager<User>>(store.Object, null!, null!, null!, null!, null!, null!, null!, null!);
     }
 
     private IConfiguration GetMockConfiguration()
@@ -32,11 +31,20 @@ public class AuthServiceTests
     }
 
     [Fact]
-    public async Task RegisterAsync_ShouldCreateUserAndReturnToken()
+    public async Task RegisterAsync_ShouldCreateUserAndReturnToken_WhenValid()
     {
-        var db = GetInMemoryDbContext();
+        var mockUserManager = GetMockUserManager();
         var config = GetMockConfiguration();
-        var service = new AuthService(db, config);
+
+        mockUserManager
+            .Setup(m => m.FindByEmailAsync(It.IsAny<string>()))
+            .ReturnsAsync((User?)null);
+
+        mockUserManager
+            .Setup(m => m.CreateAsync(It.IsAny<User>(), It.IsAny<string>()))
+            .ReturnsAsync(IdentityResult.Success);
+
+        var service = new AuthService(mockUserManager.Object, config);
 
         var dto = new RegisterDto
         {
@@ -52,18 +60,19 @@ public class AuthServiceTests
         Assert.Equal("test@example.com", response.Email);
         Assert.Equal("Test User", response.Name);
         Assert.False(string.IsNullOrWhiteSpace(response.Token));
-
-        var userInDb = await db.Users.FirstOrDefaultAsync(u => u.Email == "test@example.com");
-        Assert.NotNull(userInDb);
-        Assert.Equal("Test User", userInDb.Name);
     }
 
     [Fact]
     public async Task RegisterAsync_ShouldThrowException_WhenDuplicateEmail()
     {
-        var db = GetInMemoryDbContext();
+        var mockUserManager = GetMockUserManager();
         var config = GetMockConfiguration();
-        var service = new AuthService(db, config);
+
+        mockUserManager
+            .Setup(m => m.FindByEmailAsync("dup@example.com"))
+            .ReturnsAsync(new User { Email = "dup@example.com", Name = "Dup" });
+
+        var service = new AuthService(mockUserManager.Object, config);
 
         var dto = new RegisterDto
         {
@@ -73,8 +82,6 @@ public class AuthServiceTests
             ConfirmPassword = "Password123!"
         };
 
-        await service.RegisterAsync(dto);
-
         var exception = await Assert.ThrowsAsync<Exception>(() => service.RegisterAsync(dto));
         Assert.Equal("Email already exists", exception.Message);
     }
@@ -82,9 +89,10 @@ public class AuthServiceTests
     [Fact]
     public async Task RegisterAsync_ShouldThrowException_WhenPasswordMismatch()
     {
-        var db = GetInMemoryDbContext();
+        var mockUserManager = GetMockUserManager();
         var config = GetMockConfiguration();
-        var service = new AuthService(db, config);
+
+        var service = new AuthService(mockUserManager.Object, config);
 
         var dto = new RegisterDto
         {
@@ -101,17 +109,20 @@ public class AuthServiceTests
     [Fact]
     public async Task LoginAsync_ShouldReturnToken_WhenCredentialsAreValid()
     {
-        var db = GetInMemoryDbContext();
+        var mockUserManager = GetMockUserManager();
         var config = GetMockConfiguration();
-        var service = new AuthService(db, config);
 
-        await service.RegisterAsync(new RegisterDto
-        {
-            Name = "User Login",
-            Email = "login@example.com",
-            Password = "SecurePassword123!",
-            ConfirmPassword = "SecurePassword123!"
-        });
+        var user = new User { Id = Guid.NewGuid(), Email = "login@example.com", Name = "User Login" };
+
+        mockUserManager
+            .Setup(m => m.FindByEmailAsync("login@example.com"))
+            .ReturnsAsync(user);
+
+        mockUserManager
+            .Setup(m => m.CheckPasswordAsync(user, "SecurePassword123!"))
+            .ReturnsAsync(true);
+
+        var service = new AuthService(mockUserManager.Object, config);
 
         var loginDto = new LoginDto
         {
@@ -129,9 +140,14 @@ public class AuthServiceTests
     [Fact]
     public async Task LoginAsync_ShouldThrowException_WhenInvalidCredentials()
     {
-        var db = GetInMemoryDbContext();
+        var mockUserManager = GetMockUserManager();
         var config = GetMockConfiguration();
-        var service = new AuthService(db, config);
+
+        mockUserManager
+            .Setup(m => m.FindByEmailAsync(It.IsAny<string>()))
+            .ReturnsAsync((User?)null);
+
+        var service = new AuthService(mockUserManager.Object, config);
 
         var loginDto = new LoginDto
         {
