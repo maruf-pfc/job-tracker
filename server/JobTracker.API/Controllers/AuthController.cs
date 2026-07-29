@@ -43,4 +43,16 @@ public class AuthController : ControllerBase
             )
         );
     }
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> RefreshToken([FromBody] string refreshToken)
+    {
+        var result = await _authService.RefreshTokenAsync(refreshToken);
+        return Ok(
+            ApiResponse<object>.SuccessResponse(
+                result,
+                "Token refreshed successfully"
+            )
+        );
+    }
 }
