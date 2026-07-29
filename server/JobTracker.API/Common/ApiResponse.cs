@@ -8,7 +8,7 @@ public class ApiResponse<T>
     public IEnumerable<string>? Errors { get; set; }
     
     public static ApiResponse<T> SuccessResponse(
-        T data,
+        T? data,
         string message = "Request successful")
     {
         return new ApiResponse<T>
