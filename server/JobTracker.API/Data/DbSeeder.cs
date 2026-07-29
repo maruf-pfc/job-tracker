@@ -176,19 +176,31 @@ public static class DbSeeder
 
     private static async Task SeedUsers(AppDbContext context)
     {
-        if (await context.Users.AnyAsync())
+        var hasher = new Microsoft.AspNetCore.Identity.PasswordHasher<User>();
+
+        var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Email == "demo@jobtracker.dev");
+        if (existingUser is null)
         {
-            return;
+            var user = new User
+            {
+                UserName = "demo@jobtracker.dev",
+                NormalizedUserName = "DEMO@JOBTRACKER.DEV",
+                Email = "demo@jobtracker.dev",
+                NormalizedEmail = "DEMO@JOBTRACKER.DEV",
+                Name = "Demo User",
+                SecurityStamp = Guid.NewGuid().ToString()
+            };
+            user.PasswordHash = hasher.HashPassword(user, "Demo@123");
+            await context.Users.AddAsync(user);
+        }
+        else
+        {
+            existingUser.UserName = "demo@jobtracker.dev";
+            existingUser.NormalizedUserName = "DEMO@JOBTRACKER.DEV";
+            existingUser.NormalizedEmail = "DEMO@JOBTRACKER.DEV";
+            existingUser.PasswordHash = hasher.HashPassword(existingUser, "Demo@123");
         }
 
-        var user = new User
-        {
-            Name = "Demo User",
-            Email = "demo@jobtracker.dev",
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Demo@123")
-        };
-
-        await context.Users.AddAsync(user);
         await context.SaveChangesAsync();
     }
 
