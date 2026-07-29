@@ -1,7 +1,7 @@
 server:
   - changed-files:
       - any-glob-to-any-file:
-          - "JobTracker.API/**"
+          - "server/JobTracker.API/**"
 
 client:
   - changed-files:
@@ -22,23 +22,23 @@ github-actions:
 database:
   - changed-files:
       - any-glob-to-any-file:
-          - "JobTracker.API/**/Migrations/**"
-          - "JobTracker.API/**/Data/**"
+          - "server/JobTracker.API/**/Migrations/**"
+          - "server/JobTracker.API/**/Data/**"
 
 api:
   - changed-files:
       - any-glob-to-any-file:
-          - "JobTracker.API/**/Controllers/**"
+          - "server/JobTracker.API/**/Controllers/**"
 
 models:
   - changed-files:
       - any-glob-to-any-file:
-          - "JobTracker.API/**/Models/**"
+          - "server/JobTracker.API/**/Models/**"
 
 services:
   - changed-files:
       - any-glob-to-any-file:
-          - "JobTracker.API/**/Services/**"
+          - "server/JobTracker.API/**/Services/**"
 
 ui:
   - changed-files:
