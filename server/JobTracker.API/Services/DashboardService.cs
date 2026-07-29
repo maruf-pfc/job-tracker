@@ -105,9 +105,7 @@ public class DashboardService : IDashboardService
         var responseRate = totalCount > 0 ? Math.Round((double)respondedCount / totalCount * 100, 1) : 0;
         var conversionRate = interviewCount > 0 ? Math.Round((double)offerCount / interviewCount * 100, 1) : 0;
 
-        var fourWeeksAgo = DateTime.UtcNow.AddDays(-28);
         var weeklyTrends = applications
-            .Where(j => j.AppliedAt >= fourWeeksAgo)
             .GroupBy(j => GetWeekOfYear(j.AppliedAt))
             .OrderBy(g => g.Key)
             .Select(g => new WeeklyApplicationTrendDto

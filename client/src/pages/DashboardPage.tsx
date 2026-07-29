@@ -28,81 +28,92 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="p-6 flex items-center justify-center text-slate-500 text-sm">
-        <Clock className="w-4 h-4 animate-spin mr-2" /> Loading analytics...
+      <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center text-sm text-slate-500 flex items-center justify-center gap-2">
+        <Clock className="w-4 h-4 animate-spin text-indigo-600" /> Loading dashboard statistics...
       </div>
     );
   }
 
+  const totalApplications = summary?.totalApplications ?? analytics?.totalApplications ?? 0;
+  const totalInterviews = summary?.totalInterviews ?? analytics?.totalInterviews ?? 0;
+  const totalOffers = summary?.totalOffers ?? analytics?.totalOffers ?? 0;
+  const responseRate = analytics?.responseRatePercentage ?? 0;
+
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6">
+      {/* Header matching ApplicationsPage */}
       <div>
-        <h1 className="text-xl font-bold text-slate-900 dark:text-white">Career Operating System</h1>
-        <p className="text-xs text-slate-500">Analytics-driven job application tracking & pipeline performance.</p>
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
+          Dashboard
+        </h1>
+        <p className="mt-1 text-sm text-slate-600">
+          Track your job search stats, response rate, and application velocity.
+        </p>
       </div>
 
       {/* KPI Overview Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-slate-500">Total Applications</p>
-            <p className="text-2xl font-semibold text-slate-900 dark:text-white mt-1">{summary?.totalApplications ?? 0}</p>
+            <p className="text-sm font-medium text-slate-600">Total Applications</p>
+            <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900">{totalApplications}</p>
           </div>
-          <div className="p-2.5 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 rounded-lg">
-            <Briefcase className="w-5 h-5" />
+          <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
+            <Briefcase className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-slate-500">Response Rate</p>
-            <p className="text-2xl font-semibold text-emerald-600 dark:text-emerald-400 mt-1">
-              {analytics?.responseRatePercentage ?? 0}%
+            <p className="text-sm font-medium text-slate-600">Response Rate</p>
+            <p className="mt-2 text-3xl font-bold tracking-tight text-emerald-600">
+              {responseRate}%
             </p>
           </div>
-          <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 rounded-lg">
-            <TrendingUp className="w-5 h-5" />
+          <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+            <TrendingUp className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-slate-500">Interview Rate</p>
-            <p className="text-2xl font-semibold text-indigo-600 dark:text-indigo-400 mt-1">{summary?.interviews ?? 0}</p>
+            <p className="text-sm font-medium text-slate-600">Interview Rate</p>
+            <p className="mt-2 text-3xl font-bold tracking-tight text-indigo-600">{totalInterviews}</p>
           </div>
-          <div className="p-2.5 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 rounded-lg">
-            <CheckCircle2 className="w-5 h-5" />
+          <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
+            <CheckCircle2 className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-slate-500">Total Offers</p>
-            <p className="text-2xl font-semibold text-amber-600 dark:text-amber-400 mt-1">{summary?.offers ?? 0}</p>
+            <p className="text-sm font-medium text-slate-600">Total Offers</p>
+            <p className="mt-2 text-3xl font-bold tracking-tight text-amber-600">{totalOffers}</p>
           </div>
-          <div className="p-2.5 bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 rounded-lg">
-            <Award className="w-5 h-5" />
+          <div className="p-3 bg-amber-50 text-amber-600 rounded-xl">
+            <Award className="w-6 h-6" />
           </div>
         </div>
       </div>
 
       {/* Analytics Chart Section */}
-      <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <h2 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">Application Velocity (Weekly Trends)</h2>
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-slate-900 mb-4">Application Velocity (Weekly Trends)</h2>
         {analytics?.weeklyTrends && analytics.weeklyTrends.length > 0 ? (
-          <div className="h-64 w-full">
+          <div className="h-72 w-full pt-2">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={analytics.weeklyTrends}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
-                <XAxis dataKey="weekLabel" stroke="#94a3b8" fontSize={12} />
-                <YAxis allowDecimals={false} stroke="#94a3b8" fontSize={12} />
-                <Tooltip contentStyle={{ backgroundColor: "#1e293b", borderColor: "#334155", color: "#fff", borderRadius: "8px" }} />
-                <Bar dataKey="applicationCount" fill="#6366f1" radius={[4, 4, 0, 0]} name="Applications" />
+                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                <XAxis dataKey="weekLabel" stroke="#64748b" fontSize={13} />
+                <YAxis allowDecimals={false} stroke="#64748b" fontSize={13} />
+                <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", color: "#fff", borderRadius: "12px" }} />
+                <Bar dataKey="applicationCount" fill="#4f46e5" radius={[6, 6, 0, 0]} name="Applications" />
               </BarChart>
             </ResponsiveContainer>
           </div>
         ) : (
-          <div className="h-48 flex items-center justify-center text-xs text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-lg">
+          <div className="h-48 flex flex-col items-center justify-center text-sm text-slate-500 border border-dashed border-slate-200 rounded-xl bg-slate-50">
+            <Briefcase className="w-8 h-8 text-slate-400 mb-2" />
             No application activity recorded in recent weeks.
           </div>
         )}

@@ -1,7 +1,7 @@
 export type DashboardSummary = {
   totalApplications: number;
-  interviews: number;
-  offers: number;
-  rejected: number;
-  responseRate: number;
+  totalInterviews: number;
+  totalOffers: number;
+  totalRejected: number;
+  totalSaved: number;
 };
