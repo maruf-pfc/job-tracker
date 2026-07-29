@@ -19,7 +19,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: JobTracker.API
+        working-directory: server/JobTracker.API
 
     steps:
       - name: Checkout repository
