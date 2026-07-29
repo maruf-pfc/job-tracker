@@ -1,6 +1,5 @@
 import { api } from "./api";
 import type { ApiResponse } from "@/types/api";
-
 import type {
   JobApplication,
   PaginatedResponse,
@@ -37,6 +36,16 @@ export async function updateApplication(
   const response = await api.put<ApiResponse<JobApplication>>(
     `/jobapplications/${id}`,
     data,
+  );
+
+  return response.data.data;
+}
+
+export async function updateApplicationStatus(id: string, statusId: string) {
+  const response = await api.patch<ApiResponse<JobApplication>>(
+    `/jobapplications/${id}/status`,
+    JSON.stringify(statusId),
+    { headers: { "Content-Type": "application/json" } }
   );
 
   return response.data.data;

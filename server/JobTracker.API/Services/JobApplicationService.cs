@@ -216,6 +216,30 @@ public class JobApplicationService : IJobApplicationService
         return await GetByIdAsync(id) ?? throw new Exception("Application not found");
     }
 
+    public async Task<JobApplicationDto> UpdateStatusAsync(Guid id, Guid statusId)
+    {
+        var userId = _currentUser.UserId;
+        var application = await _context.JobApplications
+            .FirstOrDefaultAsync(j => j.Id == id && j.UserId == userId);
+
+        if (application is null)
+        {
+            throw new Exception("Application not found");
+        }
+
+        var statusExists = await _context.ApplicationStatuses.AnyAsync(s => s.Id == statusId);
+        if (!statusExists)
+        {
+            throw new Exception("Invalid application status ID");
+        }
+
+        application.ApplicationStatusId = statusId;
+        application.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+        return await GetByIdAsync(id) ?? throw new Exception("Application not found");
+    }
+
     public async Task DeleteAsync(Guid id)
     {
         var userId = _currentUser.UserId;

@@ -112,4 +112,41 @@ public class JobApplicationServiceTests
         Assert.Single(result.Items);
         Assert.Equal("User A Role", result.Items.First().Role);
     }
+
+    [Fact]
+    public async Task UpdateStatusAsync_ShouldChangeStatus_WhenValid()
+    {
+        var db = GetInMemoryDbContext();
+        await SeedLookupDataAsync(db);
+
+        var newStatus = new ApplicationStatus { Id = Guid.NewGuid(), Name = "Interviewing" };
+        db.ApplicationStatuses.Add(newStatus);
+
+        var userId = Guid.NewGuid();
+        var appId = Guid.NewGuid();
+
+        db.JobApplications.Add(new JobApplication
+        {
+            Id = appId,
+            UserId = userId,
+            Role = "Fullstack Dev",
+            CompanyId = Guid.Parse("66666666-6666-6666-6666-666666666666"),
+            PriorityId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+            JobTypeId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+            WorkTypeId = Guid.Parse("33333333-3333-3333-3333-333333333333"),
+            SourcePlatformId = Guid.Parse("44444444-4444-4444-4444-444444444444"),
+            ApplicationStatusId = Guid.Parse("55555555-5555-5555-5555-555555555555")
+        });
+
+        await db.SaveChangesAsync();
+
+        var mockUser = new Mock<ICurrentUserService>();
+        mockUser.Setup(u => u.UserId).Returns(userId);
+
+        var service = new JobApplicationService(db, mockUser.Object);
+
+        var updated = await service.UpdateStatusAsync(appId, newStatus.Id);
+
+        Assert.Equal("Interviewing", updated.ApplicationStatus);
+    }
 }

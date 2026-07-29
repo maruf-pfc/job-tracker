@@ -66,6 +66,18 @@ public class JobApplicationsController : ControllerBase
         );
     }
 
+    [HttpPatch("{id:guid}/status")]
+    public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] Guid statusId)
+    {
+        var result = await _jobApplicationService.UpdateStatusAsync(id, statusId);
+        return Ok(
+            ApiResponse<object>.SuccessResponse(
+                result,
+                "Status updated successfully"
+            )
+        );
+    }
+
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete( Guid id)
     {
