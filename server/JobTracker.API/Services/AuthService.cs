@@ -1,83 +1,79 @@
-using BCrypt.Net;
-using JobTracker.API.Configs;
 using JobTracker.API.DTOs.Auth;
 using JobTracker.API.Helpers;
 using JobTracker.API.Interfaces;
 using JobTracker.API.Models;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace JobTracker.API.Services;
 
 public class AuthService : IAuthService
 {
-    private readonly AppDbContext _context;
+    private readonly UserManager<User> _userManager;
     private readonly IConfiguration _configuration;
 
-    public AuthService(AppDbContext context, IConfiguration configuration)
+    public AuthService(UserManager<User> userManager, IConfiguration configuration)
     {
-        _context = context;
+        _userManager = userManager;
         _configuration = configuration;
     }
 
     public async Task<AuthResponseDto> RegisterAsync(RegisterDto dto)
     {
-        var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
-
-        if (existingUser is not null)
-        {
-            throw new Exception("Email already exists");
-        }
-
         if (dto.Password != dto.ConfirmPassword)
         {
             throw new Exception("Passwords do not match");
         }
 
+        var existingUser = await _userManager.FindByEmailAsync(dto.Email.Trim());
+        if (existingUser is not null)
+        {
+            throw new Exception("Email already exists");
+        }
+
         var user = new User
         {
-            Name = dto.Name.Trim(),
+            UserName = dto.Email.Trim().ToLower(),
             Email = dto.Email.Trim().ToLower(),
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password)
+            Name = dto.Name.Trim()
         };
 
-        _context.Users.Add(user);
-
-        await _context.SaveChangesAsync();
+        var result = await _userManager.CreateAsync(user, dto.Password);
+        if (!result.Succeeded)
+        {
+            var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+            throw new Exception(errors);
+        }
 
         var token = JwtHelper.GenerateToken(user, _configuration);
 
         return new AuthResponseDto
         {
             Token = token,
-            Email = user.Email,
+            Email = user.Email ?? string.Empty,
             Name = user.Name
         };
     }
 
     public async Task<AuthResponseDto> LoginAsync(LoginDto dto)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(
-                u => u.Email == dto.Email.Trim().ToLower()
-            );
-
+        var user = await _userManager.FindByEmailAsync(dto.Email.Trim());
         if (user is null)
         {
             throw new Exception("Invalid credentials");
         }
 
-        var isPasswordValid = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash);
-
+        var isPasswordValid = await _userManager.CheckPasswordAsync(user, dto.Password);
         if (!isPasswordValid)
         {
             throw new Exception("Invalid credentials");
         }
 
-        var token = JwtHelper.GenerateToken( user, _configuration);
+        var token = JwtHelper.GenerateToken(user, _configuration);
 
         return new AuthResponseDto
         {
             Token = token,
-            Email = user.Email,
+            Email = user.Email ?? string.Empty,
             Name = user.Name
         };
     }

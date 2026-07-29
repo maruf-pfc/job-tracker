@@ -27,7 +27,7 @@ public static class JwtHelper
             new List<Claim>
             {
                 new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new(JwtRegisteredClaimNames.Email, user.Email),
+                new(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
                 new(ClaimTypes.Name, user.Name),
             };
 

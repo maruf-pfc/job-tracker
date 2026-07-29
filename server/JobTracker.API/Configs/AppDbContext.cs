@@ -1,13 +1,14 @@
 using JobTracker.API.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace JobTracker.API.Configs;
 
-public class AppDbContext : DbContext
+public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) {}
 
-    public DbSet<User> Users => Set<User>();
     public DbSet<Priority> Priorities => Set<Priority>();
     public DbSet<JobType> JobTypes => Set<JobType>();
     public DbSet<SourcePlatform> SourcePlatforms => Set<SourcePlatform>();
@@ -17,16 +18,9 @@ public class AppDbContext : DbContext
     public DbSet<Company> Companies => Set<Company>();
     public DbSet<InterviewRound> InterviewRounds => Set<InterviewRound>();
 
-    protected override void OnModelCreating(
-        ModelBuilder modelBuilder
-    )
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
-        // User
-        modelBuilder.Entity<User>()
-            .HasIndex(u => u.Email)
-            .IsUnique();
 
         // JobApplication Relationships
         modelBuilder.Entity<JobApplication>()

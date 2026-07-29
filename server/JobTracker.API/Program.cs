@@ -11,6 +11,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using JobTracker.API.Common;
 
+using JobTracker.API.Models;
+using Microsoft.AspNetCore.Identity;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Database
@@ -18,6 +21,18 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+
+// Identity
+builder.Services.AddIdentityCore<User>(options =>
+{
+    options.Password.RequireDigit = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequiredLength = 6;
+})
+.AddRoles<IdentityRole<Guid>>()
+.AddEntityFrameworkStores<AppDbContext>();
 
 // Authentication
 builder.Services

@@ -1,20 +1,16 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 
 namespace JobTracker.API.Models;
 
-public class User : BaseEntity
+public class User : IdentityUser<Guid>
 {
     [Required]
     [MaxLength(100)]
     public string Name { get; set; } = string.Empty;
 
-    [Required]
-    [MaxLength(255)]
-    public string Email { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
-    [Required]
-    public string PasswordHash { get; set; } = string.Empty;
-
-    public ICollection<JobApplication> JobApplications
-    = new List<JobApplication>();
+    public ICollection<JobApplication> JobApplications { get; set; } = new List<JobApplication>();
 }
