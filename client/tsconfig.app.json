@@ -14,10 +14,8 @@
     "noEmit": true,
     "jsx": "react-jsx",
     /* Alias */
-    "ignoreDeprecations": "6.0",
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     },
     /* Linting */
     "noUnusedLocals": true,
