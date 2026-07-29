@@ -2,318 +2,96 @@
 
 A full-stack job application tracking platform built for structured career management, application workflow tracking, and productivity-focused analytics.
 
-Designed as a personal career operating system - not just a CRUD dashboard.
-
-## Overview
-
-Job Tracker helps users:
-
-- track job applications
-- manage company pipelines
-- organize career workflows
-- analyze application progress
-- monitor interview performance
-- maintain structured job-search workflows
-
-The application focuses on:
-
-- operational clarity
-- workflow management
-- long-session usability
-- analytics-driven decisions
-- low-distraction UI/UX
+Designed as a personal career operating system — not just a CRUD dashboard.
 
 ## Tech Stack
 
 ### Frontend
-
-- React 19
-- TypeScript
-- Vite
-- React Query
-- React Router DOM
-- Zustand
-- React Hook Form
-- Zod
-- TailwindCSS v4
-- Axios
-- Sonner
-- React Markdown
-- Lucide React
+- **Framework**: React 19 + TypeScript + Vite
+- **Package Manager & Tooling**: Bun, Vitest, React Testing Library
+- **UI & State**: TailwindCSS v4, Recharts, Zustand, React Query, Lucide Icons
 
 ### Backend
+- **Framework**: ASP.NET Core 10
+- **Authentication**: ASP.NET Core Identity + JWT Tokens + Refresh Token Rotation + Rate Limiting
+- **Database & ORM**: PostgreSQL, Entity Framework Core 10
+- **Testing**: xUnit, Moq, EF Core InMemory
 
-- ASP.NET Core 10
-- Entity Framework Core
-- PostgreSQL
-- JWT Authentication
-- BCrypt Password Hashing
+---
 
 ## Features
 
-### Authentication
+### 1. Authentication & Security
+- **ASP.NET Core Identity**: User management, password hashing, and security policies.
+- **JWT & Refresh Tokens**: Secure token rotation.
+- **Endpoint Rate Limiting**: Fixed-window rate limiter protecting `/api/auth/*`.
 
-- JWT-based authentication
-- Login/Register system
-- Password complexity validation
-- Protected routes
-- Persistent auth state with Zustand
+### 2. Job Applications & Kanban Board
+- **Full CRUD & Filtering**: Search, filter by status, platform, and company.
+- **Kanban Board**: Drag-and-drop / select status transition columns with optimistic UI updates.
+- **PATCH Status Endpoint**: `PATCH /api/jobapplications/{id}/status`.
 
-### Dashboard
+### 3. Interview Rounds Domain
+- **Sub-resource Tracking**: Round type (Technical, HR, System Design), scheduled date, interviewer notes, and outcome.
+- **Visual Timeline**: Dedicated timeline sub-component rendered per application.
 
-- KPI overview
-- Application statistics
-- Interview tracking
-- Offer tracking
-- Response rate tracking
-- Analytics-ready architecture
+### 4. Analytics & Visualization
+- **KPI Metrics**: Response rate, interview conversion rate, total offers.
+- **Recharts Integration**: Weekly application velocity bar charts and status distribution stats.
 
-### Job Application Management
+### 5. Data Import & Export
+- **CSV Stream Export**: Download complete job application history via `GET /api/export/csv`.
+- **Bulk CSV Import**: Import application records via `POST /api/import/csv`.
 
-Track:
+---
 
-- role
-- company
-- application status
-- source platform
-- work type
-- salary range
-- notes
-- markdown notes
-- follow-up dates
-- resume links
-- cover letters
+## Running locally
 
-### Company Management
+### Prerequisites
+- .NET 10 SDK
+- Bun (`>= 1.1`)
+- PostgreSQL database
 
-Manage:
-
-- company profiles
-- career page URLs
-- company websites
-- company notes
-- favorite companies
-- archived companies
-
-### Lookup System
-
-Fully managed lookup entities:
-
-- Priorities
-- Job Types
-- Work Types
-- Source Platforms
-- Application Statuses
-
-Designed for:
-
-- dropdowns
-- filtering
-- analytics
-- workflow consistency
-
-## Project Structure
-
-### Frontend
-
-```txt
-src
-├── components
-├── pages
-├── services
-├── stores
-├── routes
-├── types
-├── lib
-├── styles
-└── config
-```
-
-### Backend
-
-```txt
-JobTracker.API
-├── Controllers
-├── Services
-├── Interfaces
-├── DTOs
-├── Models
-├── Configs
-├── Middlewares
-├── Helpers
-└── Common
-```
-
-## Architecture
-
-The backend follows a layered architecture:
-
-```txt
-Controller
-→ Service
-→ DTO
-→ Entity
-→ Database
-```
-
-Key architectural decisions:
-
-- explicit DTO mapping
-- service abstraction
-- relational entity modeling
-- middleware-based exception handling
-- lookup-driven workflows
-- analytics-ready data structures
-
-## Database Design
-
-Main entities:
-
-- User
-- JobApplication
-- Company
-- Priority
-- JobType
-- WorkType
-- SourcePlatform
-- ApplicationStatus
-
-Relationships are explicitly configured using Entity Framework Core.
-
-## Authentication
-
-Authentication uses:
-
-- JWT access tokens
-- BCrypt password hashing
-- persisted frontend auth state
-
-Password rules:
-
-- minimum 8 characters
-- uppercase letter
-- lowercase letter
-- number
-- special character
-
-## Environment Variables
-
-### Frontend
-
-```env
-VITE_API_BASE_URL=http://localhost:5104/api
-```
-
-### Backend
-
-```env
-ConnectionStrings__DefaultConnection=YOUR_DATABASE_CONNECTION
-Jwt__Key=YOUR_SECRET_KEY
-Jwt__Issuer=JobTracker.API
-Jwt__Audience=JobTracker.Client
-```
-
-## Running The Project
-
-### Frontend
+### 1. Backend
 
 ```bash
-cd client
-
-bun install
-
-bun run dev
-```
-
-### Backend
-
-```bash
-cd JobTracker.API
-
+cd server/JobTracker.API
 dotnet restore
-
 dotnet ef database update
-
 dotnet run
 ```
 
-## Database Migration
+Run test suite:
+```bash
+cd server/JobTracker.API.Tests
+dotnet test
+```
 
-Create migration:
+### 2. Frontend
 
 ```bash
-dotnet ef migrations add MigrationName
+cd client
+bun install
+bun run dev
 ```
 
-Apply migration:
+Run test suite & production build:
+```bash
+cd client
+bun run test
+bun run build
+```
+
+---
+
+## Docker Compose Deployment
+
+To run the complete production stack (PostgreSQL, ASP.NET API, and Nginx Static Frontend):
 
 ```bash
-dotnet ef database update
+docker compose up --build -d
 ```
 
-## API Features
-
-### Current APIs
-
-#### Auth
-
-```txt
-POST /api/auth/register
-POST /api/auth/login
-```
-
-#### Dashboard
-
-```txt
-GET /api/dashboard/stats
-```
-
-#### Job Applications
-
-```txt
-GET    /api/jobapplications
-GET    /api/jobapplications/{id}
-POST   /api/jobapplications
-PUT    /api/jobapplications/{id}
-DELETE /api/jobapplications/{id}
-```
-
-#### Companies
-
-```txt
-GET    /api/companies
-GET    /api/companies/{id}
-POST   /api/companies
-PUT    /api/companies/{id}
-DELETE /api/companies/{id}
-```
-
-#### Lookups
-
-```txt
-/api/priorities
-/api/jobtypes
-/api/worktypes
-/api/sourceplatforms
-/api/applicationstatuses
-```
-
-## Future Roadmap
-
-Planned features:
-
-- advanced filtering
-- search
-- pagination
-- analytics charts
-- markdown preview
-- interview tracking
-- follow-up reminders
-- archive workflow
-- resume template system
-- application insights
-- platform performance analytics
-- dark mode
-- export/import system
-
-This project is built for educational and portfolio purposes.
+- **Frontend App**: `http://localhost`
+- **Backend API**: `http://localhost:8080`
+- **PostgreSQL**: `localhost:5432`
