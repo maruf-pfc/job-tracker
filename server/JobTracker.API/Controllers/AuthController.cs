@@ -2,10 +2,12 @@ using JobTracker.API.Common;
 using JobTracker.API.DTOs.Auth;
 using JobTracker.API.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace JobTracker.API.Controllers;
 
 [ApiController]
+[EnableRateLimiting("AuthPolicy")]
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
