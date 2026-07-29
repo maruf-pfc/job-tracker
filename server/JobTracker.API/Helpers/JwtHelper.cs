@@ -26,7 +26,9 @@ public static class JwtHelper
         var claims =
             new List<Claim>
             {
+                new(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new(ClaimTypes.Email, user.Email ?? string.Empty),
                 new(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
                 new(ClaimTypes.Name, user.Name),
             };

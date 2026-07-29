@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using JobTracker.API.Interfaces;
 
@@ -16,14 +17,14 @@ public class CurrentUserService : ICurrentUserService
     { 
         get
         {
-            var userId = _httpContextAccessor
-                .HttpContext?
-                .User?
-                .FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = _httpContextAccessor.HttpContext?.User;
+            if (user is null) return null;
 
-            return userId is null
-                ? null
-                : Guid.Parse(userId);
+            var userIdStr = user.FindFirstValue(ClaimTypes.NameIdentifier)
+                         ?? user.FindFirstValue(JwtRegisteredClaimNames.Sub)
+                         ?? user.FindFirstValue("sub");
+
+            return string.IsNullOrEmpty(userIdStr) ? null : Guid.Parse(userIdStr);
         }
     }
 }
