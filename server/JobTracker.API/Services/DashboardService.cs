@@ -79,4 +79,60 @@ public class DashboardService : IDashboardService
             .OrderByDescending(x => x.Count)
             .ToListAsync();
     }
+
+    public async Task<DashboardAnalyticsDto> GetAnalyticsAsync()
+    {
+        var userId = _currentUser.UserId;
+        var applications = await _context.JobApplications
+            .Include(j => j.ApplicationStatus)
+            .Where(j => j.UserId == userId)
+            .ToListAsync();
+
+        var totalCount = applications.Count;
+        var interviewCount = applications.Count(j => 
+            j.ApplicationStatus.Name.Equals("Interview", StringComparison.OrdinalIgnoreCase) || 
+            j.ApplicationStatus.Name.Equals("Interviewing", StringComparison.OrdinalIgnoreCase));
+        
+        var offerCount = applications.Count(j => 
+            j.ApplicationStatus.Name.Equals("Offer", StringComparison.OrdinalIgnoreCase));
+
+        var respondedCount = applications.Count(j => 
+            j.ApplicationStatus.Name.Equals("Interview", StringComparison.OrdinalIgnoreCase) ||
+            j.ApplicationStatus.Name.Equals("Interviewing", StringComparison.OrdinalIgnoreCase) ||
+            j.ApplicationStatus.Name.Equals("Offer", StringComparison.OrdinalIgnoreCase) ||
+            j.ApplicationStatus.Name.Equals("Rejected", StringComparison.OrdinalIgnoreCase));
+
+        var responseRate = totalCount > 0 ? Math.Round((double)respondedCount / totalCount * 100, 1) : 0;
+        var conversionRate = interviewCount > 0 ? Math.Round((double)offerCount / interviewCount * 100, 1) : 0;
+
+        var fourWeeksAgo = DateTime.UtcNow.AddDays(-28);
+        var weeklyTrends = applications
+            .Where(j => j.AppliedAt >= fourWeeksAgo)
+            .GroupBy(j => GetWeekOfYear(j.AppliedAt))
+            .OrderBy(g => g.Key)
+            .Select(g => new WeeklyApplicationTrendDto
+            {
+                WeekLabel = $"Week {g.Key}",
+                ApplicationCount = g.Count()
+            })
+            .ToList();
+
+        return new DashboardAnalyticsDto
+        {
+            TotalApplications = totalCount,
+            TotalInterviews = interviewCount,
+            TotalOffers = offerCount,
+            ResponseRatePercentage = responseRate,
+            InterviewConversionRatePercentage = conversionRate,
+            WeeklyTrends = weeklyTrends
+        };
+    }
+
+    private static int GetWeekOfYear(DateTime date)
+    {
+        return System.Globalization.CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(
+            date, 
+            System.Globalization.CalendarWeekRule.FirstFourDayWeek, 
+            DayOfWeek.Monday);
+    }
 }
