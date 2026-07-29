@@ -9,5 +9,6 @@ public interface IJobApplicationService
     Task<JobApplicationDto?> GetByIdAsync(Guid id);
     Task<JobApplicationDto> CreateAsync(CreateJobApplicationDto dto);
     Task<JobApplicationDto> UpdateAsync(Guid id, UpdateJobApplicationDto dto);
+    Task<JobApplicationDto> UpdateStatusAsync(Guid id, Guid statusId);
     Task DeleteAsync(Guid id);
 }
