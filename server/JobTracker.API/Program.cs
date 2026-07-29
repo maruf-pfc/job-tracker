@@ -45,6 +45,7 @@ builder.Services.AddScoped<IWorkTypeService, WorkTypeService>();
 builder.Services.AddScoped<ISourcePlatformService, SourcePlatformService>();
 builder.Services.AddScoped<IApplicationStatusService, ApplicationStatusService>();
 builder.Services.AddScoped<IInterviewRoundService, InterviewRoundService>();
+builder.Services.AddScoped<IImportExportService, ImportExportService>();
 
 // Current User
 builder.Services.AddHttpContextAccessor();
