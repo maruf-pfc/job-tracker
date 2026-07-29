@@ -15,6 +15,7 @@ public class AppDbContext : DbContext
     public DbSet<ApplicationStatus> ApplicationStatuses => Set<ApplicationStatus>();
     public DbSet<JobApplication> JobApplications => Set<JobApplication>();
     public DbSet<Company> Companies => Set<Company>();
+    public DbSet<InterviewRound> InterviewRounds => Set<InterviewRound>();
 
     protected override void OnModelCreating(
         ModelBuilder modelBuilder
@@ -69,5 +70,11 @@ public class AppDbContext : DbContext
             .WithMany(c => c.JobApplications)
             .HasForeignKey(j => j.CompanyId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<InterviewRound>()
+            .HasOne(r => r.JobApplication)
+            .WithMany(j => j.InterviewRounds)
+            .HasForeignKey(r => r.JobApplicationId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

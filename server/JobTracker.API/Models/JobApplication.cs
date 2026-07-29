@@ -58,4 +58,6 @@ public class JobApplication : BaseEntity
 
     [ForeignKey(nameof(WorkTypeId))]
     public WorkType WorkType { get; set; } = null!;
+
+    public ICollection<InterviewRound> InterviewRounds { get; set; } = new List<InterviewRound>();
 }
