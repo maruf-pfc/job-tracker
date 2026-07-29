@@ -57,4 +57,16 @@ public class DashboardController : ControllerBase
             )
         );
     }
+
+    [HttpGet("analytics")]
+    public async Task<IActionResult> GetAnalytics()
+    {
+        var result = await _dashboardService.GetAnalyticsAsync();
+        return Ok(
+            ApiResponse<object>.SuccessResponse(
+                result,
+                "Dashboard analytics fetched successfully"
+            )
+        );
+    }
 }

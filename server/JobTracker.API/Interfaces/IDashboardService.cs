@@ -7,4 +7,5 @@ public interface IDashboardService
     Task<DashboardSummaryDto> GetSummaryAsync();
     Task<List<ApplicationStatusChartDto>> GetApplicationsByStatusAsync();
     Task<List<PlatformAnalyticsDto>> GetApplicationsByPlatformAsync();
+    Task<DashboardAnalyticsDto> GetAnalyticsAsync();
 }
