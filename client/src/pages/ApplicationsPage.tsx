@@ -6,8 +6,9 @@ import ApplicationsTable from "@/components/applications/ApplicationsTable";
 import { KanbanBoard } from "@/components/applications/KanbanBoard";
 import ApplicationModal from "@/components/applications/ApplicationModal";
 import ApplicationForm from "@/components/applications/ApplicationForm";
+import Button from "@/components/ui/Button";
 import { getApplications } from "@/services/jobApplicationService";
-import { LayoutGrid, List } from "lucide-react";
+import { LayoutGrid, List, Plus } from "lucide-react";
 
 export default function ApplicationsPage() {
   const [open, setOpen] = useState(false);
@@ -28,24 +29,20 @@ export default function ApplicationsPage() {
     if (!data?.items) return [];
 
     return data.items.filter((app) => {
-      // Search Match
       const matchesSearch =
         !searchQuery ||
         app.company?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         app.role?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         app.location?.toLowerCase().includes(searchQuery.toLowerCase());
 
-      // Status Match
       const matchesStatus =
         !statusFilter ||
         app.applicationStatus?.toLowerCase() === statusFilter.toLowerCase();
 
-      // Priority Match
       const matchesPriority =
         !priorityFilter ||
         app.priority?.toLowerCase() === priorityFilter.toLowerCase();
 
-      // Work Type Match
       const matchesWorkType =
         !workTypeFilter ||
         app.workType?.toLowerCase() === workTypeFilter.toLowerCase();
@@ -63,32 +60,40 @@ export default function ApplicationsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header and View Mode Toggle */}
+      {/* Top Header & Actions Row */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <ApplicationsHeader onCreate={() => setOpen(true)} />
+        <ApplicationsHeader />
 
-        <div className="flex items-center gap-1 bg-slate-200/80 p-1 rounded-xl self-start md:self-auto">
-          <button
-            onClick={() => setViewMode("table")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-              viewMode === "table"
-                ? "bg-white text-slate-900 shadow-sm"
-                : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            <List className="w-3.5 h-3.5" /> Table
-          </button>
+        <div className="flex flex-wrap items-center gap-3 self-start md:self-auto">
+          {/* Segmented View Mode Toggle */}
+          <div className="flex items-center gap-1 bg-slate-200/80 p-1 rounded-xl">
+            <button
+              onClick={() => setViewMode("table")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                viewMode === "table"
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <List className="w-3.5 h-3.5" /> Table
+            </button>
 
-          <button
-            onClick={() => setViewMode("kanban")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-              viewMode === "kanban"
-                ? "bg-white text-slate-900 shadow-sm"
-                : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            <LayoutGrid className="w-3.5 h-3.5" /> Kanban
-          </button>
+            <button
+              onClick={() => setViewMode("kanban")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                viewMode === "kanban"
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <LayoutGrid className="w-3.5 h-3.5" /> Kanban
+            </button>
+          </div>
+
+          {/* Primary Add Application Button */}
+          <Button onClick={() => setOpen(true)} className="flex items-center gap-2">
+            <Plus className="w-4 h-4" /> Add Application
+          </Button>
         </div>
       </div>
 
