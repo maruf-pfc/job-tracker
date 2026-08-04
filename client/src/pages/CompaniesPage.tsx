@@ -29,9 +29,10 @@ export default function CompaniesPage() {
   const [careerPageUrl, setCareerPageUrl] = useState("");
   const [notes, setNotes] = useState("");
 
-  const { data: companies, isLoading } = useQuery({
+  const { data: companies, isPending } = useQuery({
     queryKey: ["companies"],
     queryFn: getCompanies,
+    staleTime: 5 * 60 * 1000,
   });
 
   const openCreateModal = () => {
@@ -145,7 +146,7 @@ export default function CompaniesPage() {
 
       {/* Table / Cards List */}
       <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-xs">
-        {isLoading ? (
+        {isPending && !companies ? (
           <div className="p-12 text-center text-sm text-slate-500 flex items-center justify-center gap-2">
             <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
             Loading companies...

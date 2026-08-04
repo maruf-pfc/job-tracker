@@ -2,6 +2,10 @@ import { useEffect, useState } from "react";
 import { getDashboardSummary, getDashboardAnalytics } from "@/services/dashboardService";
 import type { DashboardAnalytics } from "@/services/dashboardService";
 import type { DashboardSummary } from "@/types/dashboard";
+import { generateDashboardAiInsights } from "@/services/geminiService";
+import type { AiInsightResult } from "@/services/geminiService";
+import { Link } from "react-router-dom";
+import { toast } from "sonner";
 import {
   BarChart,
   Bar,
@@ -25,6 +29,8 @@ import {
   CheckCircle,
   XCircle,
   Lightbulb,
+  RefreshCw,
+  Key,
 } from "lucide-react";
 
 const STATUS_COLORS = ["#6366f1", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4"];
@@ -33,6 +39,10 @@ export default function DashboardPage() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Gemini AI Insights state
+  const [aiResult, setAiResult] = useState<AiInsightResult | null>(null);
+  const [generatingAi, setGeneratingAi] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -50,20 +60,47 @@ export default function DashboardPage() {
     loadData();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center text-sm text-slate-500 flex items-center justify-center gap-2">
-        <Clock className="w-4 h-4 animate-spin text-indigo-600" /> Loading dashboard analytics & AI insights...
-      </div>
-    );
-  }
-
   const totalApplications = summary?.totalApplications ?? analytics?.totalApplications ?? 0;
   const totalInterviews = summary?.totalInterviews ?? analytics?.totalInterviews ?? 0;
   const totalOffers = summary?.totalOffers ?? analytics?.totalOffers ?? 0;
   const responseRate = analytics?.responseRatePercentage ?? 0;
 
-  // Prepare chart data for Status Distribution
+  const handleGenerateGeminiInsights = async () => {
+    const apiKey = localStorage.getItem("gemini_api_key");
+    if (!apiKey) {
+      toast.error("Please add your Gemini API Key in Settings first!");
+      return;
+    }
+
+    setGeneratingAi(true);
+    try {
+      const res = await generateDashboardAiInsights(
+        {
+          totalApplications,
+          responseRate,
+          totalInterviews,
+          totalOffers,
+        },
+        apiKey
+      );
+      setAiResult(res);
+      toast.success("AI Insights generated via Gemini!");
+    } catch {
+      toast.error("Failed to generate AI insights. Check your Gemini API Key.");
+    } finally {
+      setGeneratingAi(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center text-sm text-slate-500 flex items-center justify-center gap-2">
+        <Clock className="w-4 h-4 animate-spin text-indigo-600" /> Loading dashboard analytics...
+      </div>
+    );
+  }
+
+  // Chart data for Status Distribution
   const statusPieData = analytics?.statusBreakdown
     ? Object.entries(analytics.statusBreakdown).map(([name, value]) => ({ name, value }))
     : [
@@ -72,12 +109,29 @@ export default function DashboardPage() {
         { name: "Offers", value: totalOffers > 0 ? totalOffers : 0 },
       ];
 
+  const defaultAssessment =
+    totalApplications === 0
+      ? "You haven't submitted applications yet this month. Target submitting 5–8 tailored applications per week for Full Stack Engineer roles to maintain consistent response momentum."
+      : `You currently have ${totalApplications} active application(s) with a ${responseRate}% response rate. Your response rate is healthy. Focus on scheduled follow-ups and custom resume tailoring for backend .NET & Full Stack roles.`;
+
+  const defaultDos = [
+    "Follow up on applications that have been pending without response for > 7 business days.",
+    "Use the AI Cover Letter Generator on the Settings page to tailor emails for high-priority targets.",
+    "Log interview feedback immediately after rounds in your markdown notes for future preparation.",
+  ];
+
+  const defaultDonts = [
+    "Don't send generic, non-customized resumes to senior Full Stack or .NET roles.",
+    "Don't leave interview dates blank or untracked without set reminders.",
+    "Don't neglect automated data backups — use n8n or CSV export to preserve historical data.",
+  ];
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-          Dashboard Analytics & Career Insights
+          Dashboard Analytics & Gemini AI Insights
         </h1>
         <p className="mt-1 text-sm text-slate-600">
           Track your job search stats, response rate, application velocity, and AI recommendations.
@@ -131,7 +185,7 @@ export default function DashboardPage() {
 
       {/* Analytics Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Chart 1: Application Velocity (Weekly Trends) */}
+        {/* Chart 1: Application Velocity */}
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
           <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-indigo-600" /> Application Velocity (Weekly Trends)
@@ -185,15 +239,36 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* AI Suggestions & Actionable Guidelines */}
+      {/* AI Suggestions & Gemini Insights */}
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-6">
-        <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
-          <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
-            <Sparkles className="w-6 h-6" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
+              <Sparkles className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-slate-900">Gemini AI Career Coach & Insights</h3>
+              <p className="text-xs text-slate-500">Live AI evaluation based on your active pipeline metrics.</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-base font-bold text-slate-900">AI Career Assistant & Action Guidelines</h3>
-            <p className="text-xs text-slate-500">Automated evaluation of your application momentum and response metrics.</p>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleGenerateGeminiInsights}
+              disabled={generatingAi}
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer shadow-xs disabled:opacity-50"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${generatingAi ? "animate-spin" : ""}`} />
+              {generatingAi ? "Analyzing with Gemini..." : "Generate AI Insights"}
+            </button>
+
+            <Link
+              to="/settings"
+              className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-colors text-xs font-semibold flex items-center gap-1"
+              title="Configure API Key"
+            >
+              <Key className="w-3.5 h-3.5" /> API Key
+            </Link>
           </div>
         </div>
 
@@ -201,12 +276,8 @@ export default function DashboardPage() {
         <div className="p-4 rounded-xl bg-indigo-50/70 border border-indigo-100 flex items-start gap-3">
           <Lightbulb className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />
           <div className="space-y-1 text-xs sm:text-sm text-slate-700">
-            <span className="font-bold text-slate-900 block">AI Velocity Assessment:</span>
-            <p>
-              {totalApplications === 0
-                ? "You haven't submitted applications yet this month. Target submitting 5–8 tailored applications per week for Full Stack Engineer roles to maintain consistent response momentum."
-                : `You currently have ${totalApplications} active application(s) with a ${responseRate}% response rate. Your response rate is healthy. Focus on scheduled follow-ups and custom resume tailoring for backend .NET & Full Stack roles.`}
-            </p>
+            <span className="font-bold text-slate-900 block">AI Velocity & Conversion Assessment:</span>
+            <p>{aiResult?.assessment || defaultAssessment}</p>
           </div>
         </div>
 
@@ -218,18 +289,12 @@ export default function DashboardPage() {
               <CheckCircle className="w-4 h-4 text-emerald-600" /> Recommended Action Items (DOs)
             </h4>
             <ul className="space-y-2 text-xs sm:text-sm text-emerald-950">
-              <li className="flex items-start gap-2">
-                <span className="text-emerald-600 font-bold">•</span>
-                Follow up on applications that have been pending without response for &gt; 7 business days.
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-emerald-600 font-bold">•</span>
-                Use the AI Cover Letter Generator on the Settings page to tailor emails for high-priority targets.
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-emerald-600 font-bold">•</span>
-                Log interview feedback immediately after rounds in your markdown notes for future preparation.
-              </li>
+              {(aiResult?.dos || defaultDos).map((item, idx) => (
+                <li key={idx} className="flex items-start gap-2">
+                  <span className="text-emerald-600 font-bold">•</span>
+                  {item}
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -239,18 +304,12 @@ export default function DashboardPage() {
               <XCircle className="w-4 h-4 text-rose-600" /> Critical Practices to Avoid (DON'Ts)
             </h4>
             <ul className="space-y-2 text-xs sm:text-sm text-rose-950">
-              <li className="flex items-start gap-2">
-                <span className="text-rose-600 font-bold">•</span>
-                Don't send generic, non-customized resumes to senior Full Stack or .NET roles.
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-rose-600 font-bold">•</span>
-                Don't leave interview dates blank or untracked without set reminders.
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-rose-600 font-bold">•</span>
-                Don't neglect automated data backups — use n8n or CSV export to preserve historical data.
-              </li>
+              {(aiResult?.donts || defaultDonts).map((item, idx) => (
+                <li key={idx} className="flex items-start gap-2">
+                  <span className="text-rose-600 font-bold">•</span>
+                  {item}
+                </li>
+              ))}
             </ul>
           </div>
         </div>
