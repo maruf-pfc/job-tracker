@@ -19,9 +19,10 @@ public static class JwtHelper
         var jwtAudience = configuration["Jwt:Audience"]
             ?? throw new Exception("JWT Audience not configured");
 
-        var durationInMinutes = int.Parse(
-                configuration["Jwt:DurationInMinutes"]
-                ?? "10080" );
+        var rawDuration = configuration["Jwt:DurationInMinutes"];
+        var durationInMinutes = int.TryParse(rawDuration, out var mins) && mins > 0
+            ? mins
+            : 10080;
 
         var claims =
             new List<Claim>
