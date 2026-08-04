@@ -45,20 +45,33 @@ public class UserProfile : BaseEntity
     [MaxLength(200)]
     public string? Email { get; set; }
 
-    [MaxLength(1000)]
-    public string? PresentAddress { get; set; }
+    // Present Address Granular Fields
+    [MaxLength(100)] public string? PresentDivision { get; set; }
+    [MaxLength(100)] public string? PresentDistrict { get; set; }
+    [MaxLength(200)] public string? PresentArea { get; set; }
+    [MaxLength(200)] public string? PresentLocation { get; set; }
+    [MaxLength(100)] public string? PresentHouse { get; set; }
+    [MaxLength(100)] public string? PresentUpazila { get; set; }
+    [MaxLength(100)] public string? PresentPoliceStation { get; set; }
+    [MaxLength(100)] public string? PresentPostOffice { get; set; }
+    [MaxLength(50)]  public string? PresentPostCode { get; set; }
 
-    [MaxLength(1000)]
-    public string? PermanentAddress { get; set; }
+    // Permanent Address Granular Fields
+    [MaxLength(100)] public string? PermanentDivision { get; set; }
+    [MaxLength(100)] public string? PermanentDistrict { get; set; }
+    [MaxLength(100)] public string? PermanentUpazila { get; set; }
+    [MaxLength(100)] public string? PermanentUnion { get; set; }
+    [MaxLength(100)] public string? PermanentVillage { get; set; }
+    [MaxLength(100)] public string? PermanentPostOffice { get; set; }
+    [MaxLength(100)] public string? PermanentPoliceStation { get; set; }
+    [MaxLength(50)]  public string? PermanentPostCode { get; set; }
 
-    [MaxLength(4000)]
-    public string? BioSummary { get; set; }
+    [MaxLength(1000)] public string? PresentAddress { get; set; }
+    [MaxLength(1000)] public string? PermanentAddress { get; set; }
 
-    [MaxLength(4000)]
-    public string? EducationDetailsJson { get; set; }
-
-    [MaxLength(4000)]
-    public string? CodingProfilesJson { get; set; }
+    [MaxLength(4000)] public string? BioSummary { get; set; }
+    [MaxLength(4000)] public string? EducationDetailsJson { get; set; }
+    [MaxLength(4000)] public string? CodingProfilesJson { get; set; }
 
     [ForeignKey(nameof(UserId))]
     public User User { get; set; } = null!;

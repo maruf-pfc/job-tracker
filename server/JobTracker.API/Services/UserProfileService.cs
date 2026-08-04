@@ -41,8 +41,28 @@ public class UserProfileService : IUserProfileService
                 MaritalStatus = "Single",
                 MobileNumber = "",
                 Email = user?.Email ?? "demo@jobtracker.dev",
-                PresentAddress = " (House 176/7), Ward 22, Hatirjheel, Khilgaon, Dhaka - 1219",
-                PermanentAddress = ", , , , Cumilla - 3544",
+
+                // Present Address Defaults
+                PresentDivision = "Dhaka",
+                PresentDistrict = "Dhaka",
+                PresentArea = "",
+                PresentLocation = "",
+                PresentHouse = "176/7",
+                PresentUpazila = "Gulshan",
+                PresentPoliceStation = "Hatirjheel",
+                PresentPostOffice = "Khilgaon",
+                PresentPostCode = "1219",
+
+                // Permanent Address Defaults
+                PermanentDivision = "Chattogram",
+                PermanentDistrict = "Cumilla",
+                PermanentUpazila = "",
+                PermanentUnion = "",
+                PermanentVillage = "",
+                PermanentPostOffice = "",
+                PermanentPoliceStation = "",
+                PermanentPostCode = "3544",
+
                 BioSummary = "Full Stack Developer and competitive programmer with hands-on experience building web applications and AI-powered automation tools for real-world business operations.",
             };
 
@@ -77,6 +97,26 @@ public class UserProfileService : IUserProfileService
         profile.MaritalStatus = dto.MaritalStatus;
         profile.MobileNumber = dto.MobileNumber;
         profile.Email = dto.Email;
+
+        profile.PresentDivision = dto.PresentDivision;
+        profile.PresentDistrict = dto.PresentDistrict;
+        profile.PresentArea = dto.PresentArea;
+        profile.PresentLocation = dto.PresentLocation;
+        profile.PresentHouse = dto.PresentHouse;
+        profile.PresentUpazila = dto.PresentUpazila;
+        profile.PresentPoliceStation = dto.PresentPoliceStation;
+        profile.PresentPostOffice = dto.PresentPostOffice;
+        profile.PresentPostCode = dto.PresentPostCode;
+
+        profile.PermanentDivision = dto.PermanentDivision;
+        profile.PermanentDistrict = dto.PermanentDistrict;
+        profile.PermanentUpazila = dto.PermanentUpazila;
+        profile.PermanentUnion = dto.PermanentUnion;
+        profile.PermanentVillage = dto.PermanentVillage;
+        profile.PermanentPostOffice = dto.PermanentPostOffice;
+        profile.PermanentPoliceStation = dto.PermanentPoliceStation;
+        profile.PermanentPostCode = dto.PermanentPostCode;
+
         profile.PresentAddress = dto.PresentAddress;
         profile.PermanentAddress = dto.PermanentAddress;
         profile.BioSummary = dto.BioSummary;
@@ -105,6 +145,26 @@ public class UserProfileService : IUserProfileService
         MaritalStatus = profile.MaritalStatus,
         MobileNumber = profile.MobileNumber,
         Email = profile.Email,
+
+        PresentDivision = profile.PresentDivision,
+        PresentDistrict = profile.PresentDistrict,
+        PresentArea = profile.PresentArea,
+        PresentLocation = profile.PresentLocation,
+        PresentHouse = profile.PresentHouse,
+        PresentUpazila = profile.PresentUpazila,
+        PresentPoliceStation = profile.PresentPoliceStation,
+        PresentPostOffice = profile.PresentPostOffice,
+        PresentPostCode = profile.PresentPostCode,
+
+        PermanentDivision = profile.PermanentDivision,
+        PermanentDistrict = profile.PermanentDistrict,
+        PermanentUpazila = profile.PermanentUpazila,
+        PermanentUnion = profile.PermanentUnion,
+        PermanentVillage = profile.PermanentVillage,
+        PermanentPostOffice = profile.PermanentPostOffice,
+        PermanentPoliceStation = profile.PermanentPoliceStation,
+        PermanentPostCode = profile.PermanentPostCode,
+
         PresentAddress = profile.PresentAddress,
         PermanentAddress = profile.PermanentAddress,
         BioSummary = profile.BioSummary,

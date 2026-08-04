@@ -5,9 +5,11 @@ import { getProfile, updateProfile } from "@/services/profileService";
 import type { UserProfile } from "@/services/profileService";
 import Input from "@/components/ui/Input";
 import Label from "@/components/ui/Label";
-import Textarea from "@/components/ui/Textarea";
 import Button from "@/components/ui/Button";
 import ApplicationModal from "@/components/applications/ApplicationModal";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { motion, AnimatePresence } from "framer-motion";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 import {
   User,
   MapPin,
@@ -19,7 +21,6 @@ import {
   Phone,
   Calendar,
   Building,
-  Trophy,
   Edit,
   Save,
 } from "lucide-react";
@@ -30,6 +31,7 @@ export default function ProfilePage() {
     "personal" | "education" | "experience" | "coding"
   >("personal");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [parent] = useAutoAnimate();
 
   // Form State
   const [formData, setFormData] = useState<UserProfile>({
@@ -39,16 +41,35 @@ export default function ProfilePage() {
     motherName: "",
     mobileNumber: "",
     email: "",
-    presentAddress: "",
-    permanentAddress: "",
+
+    presentDivision: "",
+    presentDistrict: "",
+    presentArea: "",
+    presentLocation: "",
+    presentHouse: "",
+    presentUpazila: "",
+    presentPoliceStation: "",
+    presentPostOffice: "",
+    presentPostCode: "",
+
+    permanentDivision: "",
+    permanentDistrict: "",
+    permanentUpazila: "",
+    permanentUnion: "",
+    permanentVillage: "",
+    permanentPostOffice: "",
+    permanentPoliceStation: "",
+    permanentPostCode: "",
+
     nationalId: "",
     birthRegistration: "",
     bioSummary: "",
   });
 
-  const { data: profile, isLoading } = useQuery({
+  const { data: profile, isPending } = useQuery({
     queryKey: ["user-profile"],
     queryFn: getProfile,
+    staleTime: 5 * 60 * 1000,
   });
 
   const updateMutation = useMutation({
@@ -73,11 +94,18 @@ export default function ProfilePage() {
     updateMutation.mutate(formData);
   };
 
-  if (isLoading) {
+  if (isPending && !profile) {
     return (
-      <div className="p-12 text-center text-slate-500 flex items-center justify-center gap-2">
-        <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-        Loading user profile...
+      <div className="space-y-6">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
+          <div className="flex items-center gap-4">
+            <Skeleton className="w-16 h-16 rounded-2xl" />
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-4 w-64" />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -96,15 +124,37 @@ export default function ProfilePage() {
     maritalStatus: "Single",
     mobileNumber: "",
     email: "demo@jobtracker.dev",
-    presentAddress: " (House 176/7), Ward 22, Hatirjheel, Khilgaon, Dhaka - 1219",
-    permanentAddress: ", , , , Cumilla - 3544",
+
+    presentDivision: "Dhaka",
+    presentDistrict: "Dhaka",
+    presentArea: "",
+    presentLocation: "",
+    presentHouse: "176/7",
+    presentUpazila: "Gulshan",
+    presentPoliceStation: "Hatirjheel",
+    presentPostOffice: "Khilgaon",
+    presentPostCode: "1219",
+
+    permanentDivision: "Chattogram",
+    permanentDistrict: "Cumilla",
+    permanentUpazila: "",
+    permanentUnion: "",
+    permanentVillage: "",
+    permanentPostOffice: "",
+    permanentPoliceStation: "",
+    permanentPostCode: "3544",
+
     bioSummary: "Full Stack Developer and competitive programmer with hands-on experience building web applications and AI-powered automation tools for real-world business operations.",
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" ref={parent}>
       {/* Header Profile Hero Card */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-6">
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-6"
+      >
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-2xl font-bold shadow-md shrink-0">
@@ -179,247 +229,212 @@ export default function ProfilePage() {
         <div className="flex items-center gap-2 overflow-x-auto border-b border-slate-200 pt-2 scrollbar-none">
           <button
             onClick={() => setActiveTab("personal")}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === "personal"
+            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap cursor-pointer ${activeTab === "personal"
                 ? "border-indigo-600 text-indigo-600"
                 : "border-transparent text-slate-500 hover:text-slate-800"
-            }`}
+              }`}
           >
             <User className="w-4 h-4" /> Personal & Address
           </button>
 
           <button
             onClick={() => setActiveTab("education")}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === "education"
+            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap cursor-pointer ${activeTab === "education"
                 ? "border-indigo-600 text-indigo-600"
                 : "border-transparent text-slate-500 hover:text-slate-800"
-            }`}
+              }`}
           >
             <GraduationCap className="w-4 h-4" /> Education & Certifications
           </button>
 
           <button
             onClick={() => setActiveTab("experience")}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === "experience"
+            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap cursor-pointer ${activeTab === "experience"
                 ? "border-indigo-600 text-indigo-600"
                 : "border-transparent text-slate-500 hover:text-slate-800"
-            }`}
+              }`}
           >
             <Briefcase className="w-4 h-4" /> Experience & Projects
           </button>
 
           <button
             onClick={() => setActiveTab("coding")}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === "coding"
+            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap cursor-pointer ${activeTab === "coding"
                 ? "border-indigo-600 text-indigo-600"
                 : "border-transparent text-slate-500 hover:text-slate-800"
-            }`}
+              }`}
           >
             <Code className="w-4 h-4" /> Competitive Programming & Stack
           </button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Tab 1: Personal Information & Addresses */}
-      {activeTab === "personal" && (
-        <div className="space-y-6">
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-            <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-              <User className="w-5 h-5 text-indigo-600" /> Personal Identity Details
-            </h3>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs sm:text-sm">
-              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
-                <span className="text-slate-400 text-xs block font-medium">Name (English)</span>
-                <span className="font-bold text-slate-900">{currentProfile.nameEnglish}</span>
-              </div>
-
-              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
-                <span className="text-slate-400 text-xs block font-medium">Name (Bangla)</span>
-                <span className="font-bold text-slate-900">{currentProfile.nameBangla || "N/A"}</span>
-              </div>
-
-              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
-                <span className="text-slate-400 text-xs block font-medium">Father's Name</span>
-                <span className="font-semibold text-slate-800">{currentProfile.fatherName || "N/A"}</span>
-              </div>
-
-              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
-                <span className="text-slate-400 text-xs block font-medium">Mother's Name</span>
-                <span className="font-semibold text-slate-800">{currentProfile.motherName || "N/A"}</span>
-              </div>
-
-              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
-                <span className="text-slate-400 text-xs block font-medium">Date of Birth</span>
-                <span className="font-semibold text-slate-800 flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5 text-indigo-500" /> 
-                </span>
-              </div>
-
-              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
-                <span className="text-slate-400 text-xs block font-medium">National ID (NID)</span>
-                <span className="font-mono font-semibold text-slate-800">{currentProfile.nationalId || ""}</span>
-              </div>
-
-              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
-                <span className="text-slate-400 text-xs block font-medium">Birth Registration</span>
-                <span className="font-mono font-semibold text-slate-800">{currentProfile.birthRegistration || ""}</span>
-              </div>
-
-              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
-                <span className="text-slate-400 text-xs block font-medium">Nationality & Religion</span>
-                <span className="font-semibold text-slate-800">Bangladeshi | Islam</span>
-              </div>
-
-              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
-                <span className="text-slate-400 text-xs block font-medium">Gender & Marital Status</span>
-                <span className="font-semibold text-slate-800">Male | Single</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Addresses Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-3">
+      <AnimatePresence mode="wait">
+        {activeTab === "personal" && (
+          <motion.div
+            key="personal-tab"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="space-y-6"
+          >
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
               <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-indigo-600" /> Present Address (Voter Address)
+                <User className="w-5 h-5 text-indigo-600" /> Personal Identity Details
               </h3>
-              <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
-                {currentProfile.presentAddress}
-              </p>
-            </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-3">
-              <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-                <Building className="w-5 h-5 text-indigo-600" /> Permanent Address
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
-                {currentProfile.permanentAddress}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Tab 2: Education */}
-      {activeTab === "education" && (
-        <div className="space-y-6">
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-            <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-              <GraduationCap className="w-5 h-5 text-indigo-600" /> Educational Qualifications
-            </h3>
-
-            <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900">B.Sc. in Computer Science & Engineering</h4>
-                  <p className="text-xs font-medium text-indigo-600 mt-0.5">Green University of Bangladesh</p>
-                  <span className="text-xs text-slate-500 block mt-1">Feb 2022 – Feb 2026</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs sm:text-sm">
+                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
+                  <span className="text-slate-400 text-xs block font-medium">Name (English)</span>
+                  <span className="font-bold text-slate-900">{currentProfile.nameEnglish}</span>
                 </div>
-                <div className="text-right">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold">
-                    CGPA: 3.05 / 4.00
+
+                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
+                  <span className="text-slate-400 text-xs block font-medium">Name (Bangla)</span>
+                  <span className="font-bold text-slate-900">{currentProfile.nameBangla || "N/A"}</span>
+                </div>
+
+                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
+                  <span className="text-slate-400 text-xs block font-medium">Father's Name</span>
+                  <span className="font-semibold text-slate-800">{currentProfile.fatherName || "N/A"}</span>
+                </div>
+
+                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
+                  <span className="text-slate-400 text-xs block font-medium">Mother's Name</span>
+                  <span className="font-semibold text-slate-800">{currentProfile.motherName || "N/A"}</span>
+                </div>
+
+                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
+                  <span className="text-slate-400 text-xs block font-medium">Date of Birth</span>
+                  <span className="font-semibold text-slate-800 flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-indigo-500" /> 
                   </span>
                 </div>
-              </div>
 
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900">Higher Secondary Certificate (H.S.C)</h4>
-                  <p className="text-xs text-slate-600 mt-0.5">Board: Dhaka | Group: Science | Roll: 135560</p>
-                  <span className="text-xs text-slate-500 block mt-1">Passing Year: 2020</span>
+                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
+                  <span className="text-slate-400 text-xs block font-medium">National ID (NID)</span>
+                  <span className="font-mono font-semibold text-slate-800">{currentProfile.nationalId || ""}</span>
                 </div>
-                <div className="text-right">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold">
-                    GPA: 4.58 / 5.00
-                  </span>
-                </div>
-              </div>
 
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900">Secondary School Certificate (S.S.C)</h4>
-                  <p className="text-xs text-slate-600 mt-0.5">Board: Dhaka | Group: Science | Roll: 223586</p>
-                  <span className="text-xs text-slate-500 block mt-1">Passing Year: 2018</span>
+                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
+                  <span className="text-slate-400 text-xs block font-medium">Birth Registration</span>
+                  <span className="font-mono font-semibold text-slate-800">{currentProfile.birthRegistration || ""}</span>
                 </div>
-                <div className="text-right">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold">
-                    GPA: 4.61 / 5.00
-                  </span>
+
+                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
+                  <span className="text-slate-400 text-xs block font-medium">Nationality & Religion</span>
+                  <span className="font-semibold text-slate-800">Bangladeshi | Islam</span>
+                </div>
+
+                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
+                  <span className="text-slate-400 text-xs block font-medium">Gender & Marital Status</span>
+                  <span className="font-semibold text-slate-800">Male | Single</span>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
 
-      {/* Tab 3: Experience */}
-      {activeTab === "experience" && (
-        <div className="space-y-6">
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-            <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-              <Briefcase className="w-5 h-5 text-indigo-600" /> Professional Experience
-            </h3>
+            {/* Granular Addresses Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Present Address (Voter Address) */}
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
+                <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-indigo-600" /> Present Address (Voter Address)
+                </h3>
 
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900">Web Developer</h4>
-                  <p className="text-xs font-semibold text-indigo-600">Softvence IT Ltd. (Onsite)</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <span className="text-slate-400 text-xs block font-medium">Division</span>
+                    <strong className="text-slate-900">{currentProfile.presentDivision || "Dhaka"}</strong>
+                  </div>
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <span className="text-slate-400 text-xs block font-medium">District</span>
+                    <strong className="text-slate-900">{currentProfile.presentDistrict || "Dhaka"}</strong>
+                  </div>
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 sm:col-span-2">
+                    <span className="text-slate-400 text-xs block font-medium">Area</span>
+                    <strong className="text-slate-900">{currentProfile.presentArea || ""}</strong>
+                  </div>
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <span className="text-slate-400 text-xs block font-medium">Location</span>
+                    <strong className="text-slate-900">{currentProfile.presentLocation || ""}</strong>
+                  </div>
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <span className="text-slate-400 text-xs block font-medium">House</span>
+                    <strong className="text-slate-900">{currentProfile.presentHouse || "176/7"}</strong>
+                  </div>
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <span className="text-slate-400 text-xs block font-medium">Upazila</span>
+                    <strong className="text-slate-900">{currentProfile.presentUpazila || "Gulshan"}</strong>
+                  </div>
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <span className="text-slate-400 text-xs block font-medium">Police Station</span>
+                    <strong className="text-slate-900">{currentProfile.presentPoliceStation || "Hatirjheel"}</strong>
+                  </div>
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <span className="text-slate-400 text-xs block font-medium">Post Office</span>
+                    <strong className="text-slate-900">{currentProfile.presentPostOffice || "Khilgaon"}</strong>
+                  </div>
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <span className="text-slate-400 text-xs block font-medium">Post Code</span>
+                    <strong className="text-slate-900">{currentProfile.presentPostCode || "1219"}</strong>
+                  </div>
                 </div>
-                <span className="text-xs px-2.5 py-1 rounded-full bg-slate-200 text-slate-700 font-medium">
-                  Sept 2025 – Feb 2026
-                </span>
               </div>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                Developed and delivered modern web platforms and workflow automation solutions for real-world operational use cases, including business websites and Zapier automation pipelines.
-              </p>
+
+              {/* Permanent Address */}
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
+                <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
+                  <Building className="w-5 h-5 text-indigo-600" /> Permanent Address
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <span className="text-slate-400 text-xs block font-medium">Division</span>
+                    <strong className="text-slate-900">{currentProfile.permanentDivision || "Chattogram"}</strong>
+                  </div>
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <span className="text-slate-400 text-xs block font-medium">District</span>
+                    <strong className="text-slate-900">{currentProfile.permanentDistrict || "Cumilla"}</strong>
+                  </div>
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <span className="text-slate-400 text-xs block font-medium">Upazila</span>
+                    <strong className="text-slate-900">{currentProfile.permanentUpazila || ""}</strong>
+                  </div>
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <span className="text-slate-400 text-xs block font-medium">Union</span>
+                    <strong className="text-slate-900">{currentProfile.permanentUnion || ""}</strong>
+                  </div>
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <span className="text-slate-400 text-xs block font-medium">Village</span>
+                    <strong className="text-slate-900">{currentProfile.permanentVillage || ""}</strong>
+                  </div>
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <span className="text-slate-400 text-xs block font-medium">Post Office</span>
+                    <strong className="text-slate-900">{currentProfile.permanentPostOffice || ""}</strong>
+                  </div>
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <span className="text-slate-400 text-xs block font-medium">Police Station</span>
+                    <strong className="text-slate-900">{currentProfile.permanentPoliceStation || ""}</strong>
+                  </div>
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <span className="text-slate-400 text-xs block font-medium">Post Code</span>
+                    <strong className="text-slate-900">{currentProfile.permanentPostCode || "3544"}</strong>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Tab 4: Coding */}
-      {activeTab === "coding" && (
-        <div className="space-y-6">
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-            <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-indigo-600" /> Competitive Programming Profiles
-            </h3>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs sm:text-sm">
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1 text-center">
-                <span className="text-xs text-slate-500 font-medium block">Codeforces</span>
-                <span className="text-lg font-bold text-slate-900">Gray Coder (953)</span>
-                <p className="text-xs text-slate-500">Handle: maruf-sarker</p>
-              </div>
-
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1 text-center">
-                <span className="text-xs text-slate-500 font-medium block">CodeChef</span>
-                <span className="text-lg font-bold text-amber-600">2-Star Coder (1514)</span>
-                <p className="text-xs text-slate-500">Handle: mdmarufsarker</p>
-              </div>
-
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1 text-center">
-                <span className="text-xs text-slate-500 font-medium block">LeetCode</span>
-                <span className="text-lg font-bold text-emerald-600">Rating: 1484</span>
-                <p className="text-xs text-slate-500">1000+ Problems Solved</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Edit Profile Modal */}
       <ApplicationModal
         open={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        title="Edit Personal Profile Data"
+        title="Edit Detailed Profile Information"
       >
-        <form onSubmit={handleSave} className="space-y-4">
+        <form onSubmit={handleSave} className="space-y-4 max-h-[80vh] overflow-y-auto pr-1">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label>Name (English)</Label>
@@ -453,55 +468,41 @@ export default function ProfilePage() {
                 onChange={(e) => setFormData({ ...formData, motherName: e.target.value })}
               />
             </div>
+          </div>
 
-            <div className="space-y-1.5">
-              <Label>Mobile Number</Label>
-              <Input
-                value={formData.mobileNumber || ""}
-                onChange={(e) => setFormData({ ...formData, mobileNumber: e.target.value })}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>Email Address</Label>
-              <Input
-                type="email"
-                value={formData.email || ""}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              />
+          {/* Granular Present Address Controls */}
+          <div className="border-t border-slate-200 pt-3 space-y-3">
+            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Present Address Fields</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div><Label>Division</Label><Input value={formData.presentDivision || ""} onChange={(e) => setFormData({ ...formData, presentDivision: e.target.value })} /></div>
+              <div><Label>District</Label><Input value={formData.presentDistrict || ""} onChange={(e) => setFormData({ ...formData, presentDistrict: e.target.value })} /></div>
+              <div><Label>Upazila</Label><Input value={formData.presentUpazila || ""} onChange={(e) => setFormData({ ...formData, presentUpazila: e.target.value })} /></div>
+              <div><Label>Location</Label><Input value={formData.presentLocation || ""} onChange={(e) => setFormData({ ...formData, presentLocation: e.target.value })} /></div>
+              <div><Label>House</Label><Input value={formData.presentHouse || ""} onChange={(e) => setFormData({ ...formData, presentHouse: e.target.value })} /></div>
+              <div><Label>Police Station</Label><Input value={formData.presentPoliceStation || ""} onChange={(e) => setFormData({ ...formData, presentPoliceStation: e.target.value })} /></div>
+              <div><Label>Post Office</Label><Input value={formData.presentPostOffice || ""} onChange={(e) => setFormData({ ...formData, presentPostOffice: e.target.value })} /></div>
+              <div><Label>Post Code</Label><Input value={formData.presentPostCode || ""} onChange={(e) => setFormData({ ...formData, presentPostCode: e.target.value })} /></div>
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Label>Present Address</Label>
-            <Textarea
-              rows={2}
-              value={formData.presentAddress || ""}
-              onChange={(e) => setFormData({ ...formData, presentAddress: e.target.value })}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>Permanent Address</Label>
-            <Textarea
-              rows={2}
-              value={formData.permanentAddress || ""}
-              onChange={(e) => setFormData({ ...formData, permanentAddress: e.target.value })}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>Bio / Executive Summary</Label>
-            <Textarea
-              rows={3}
-              value={formData.bioSummary || ""}
-              onChange={(e) => setFormData({ ...formData, bioSummary: e.target.value })}
-            />
+          {/* Granular Permanent Address Controls */}
+          <div className="border-t border-slate-200 pt-3 space-y-3">
+            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Permanent Address Fields</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div><Label>Division</Label><Input value={formData.permanentDivision || ""} onChange={(e) => setFormData({ ...formData, permanentDivision: e.target.value })} /></div>
+              <div><Label>District</Label><Input value={formData.permanentDistrict || ""} onChange={(e) => setFormData({ ...formData, permanentDistrict: e.target.value })} /></div>
+              <div><Label>Upazila</Label><Input value={formData.permanentUpazila || ""} onChange={(e) => setFormData({ ...formData, permanentUpazila: e.target.value })} /></div>
+              <div><Label>Union</Label><Input value={formData.permanentUnion || ""} onChange={(e) => setFormData({ ...formData, permanentUnion: e.target.value })} /></div>
+              <div><Label>Village</Label><Input value={formData.permanentVillage || ""} onChange={(e) => setFormData({ ...formData, permanentVillage: e.target.value })} /></div>
+              <div><Label>Police Station</Label><Input value={formData.permanentPoliceStation || ""} onChange={(e) => setFormData({ ...formData, permanentPoliceStation: e.target.value })} /></div>
+              <div><Label>Post Office</Label><Input value={formData.permanentPostOffice || ""} onChange={(e) => setFormData({ ...formData, permanentPostOffice: e.target.value })} /></div>
+              <div><Label>Post Code</Label><Input value={formData.permanentPostCode || ""} onChange={(e) => setFormData({ ...formData, permanentPostCode: e.target.value })} /></div>
+            </div>
           </div>
 
           <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-4">
             <Button type="submit" disabled={updateMutation.isPending} className="flex items-center gap-1.5">
-              <Save className="w-4 h-4" /> {updateMutation.isPending ? "Saving..." : "Save to Database"}
+              <Save className="w-4 h-4" /> {updateMutation.isPending ? "Saving..." : "Save Profile Details"}
             </Button>
           </div>
         </form>
