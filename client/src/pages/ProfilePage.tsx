@@ -320,39 +320,39 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
                   <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                     <span className="text-slate-400 text-xs block font-medium">Division</span>
-                    <strong className="text-slate-900">{currentProfile.presentDivision || "Dhaka"}</strong>
+                    <strong className="text-slate-900">{currentProfile.presentDivision || "Not Provided"}</strong>
                   </div>
                   <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                     <span className="text-slate-400 text-xs block font-medium">District</span>
-                    <strong className="text-slate-900">{currentProfile.presentDistrict || "Dhaka"}</strong>
+                    <strong className="text-slate-900">{currentProfile.presentDistrict || "Not Provided"}</strong>
                   </div>
                   <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 sm:col-span-2">
                     <span className="text-slate-400 text-xs block font-medium">Area</span>
-                    <strong className="text-slate-900">{currentProfile.presentArea || ""}</strong>
+                    <strong className="text-slate-900">{currentProfile.presentArea || "Not Provided"}</strong>
                   </div>
                   <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                     <span className="text-slate-400 text-xs block font-medium">Location</span>
-                    <strong className="text-slate-900">{currentProfile.presentLocation || ""}</strong>
+                    <strong className="text-slate-900">{currentProfile.presentLocation || "Not Provided"}</strong>
                   </div>
                   <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                     <span className="text-slate-400 text-xs block font-medium">House</span>
-                    <strong className="text-slate-900">{currentProfile.presentHouse || "176/7"}</strong>
+                    <strong className="text-slate-900">{currentProfile.presentHouse || "Not Provided"}</strong>
                   </div>
                   <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                     <span className="text-slate-400 text-xs block font-medium">Upazila</span>
-                    <strong className="text-slate-900">{currentProfile.presentUpazila || "Gulshan"}</strong>
+                    <strong className="text-slate-900">{currentProfile.presentUpazila || "Not Provided"}</strong>
                   </div>
                   <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                     <span className="text-slate-400 text-xs block font-medium">Police Station</span>
-                    <strong className="text-slate-900">{currentProfile.presentPoliceStation || "Hatirjheel"}</strong>
+                    <strong className="text-slate-900">{currentProfile.presentPoliceStation || "Not Provided"}</strong>
                   </div>
                   <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                     <span className="text-slate-400 text-xs block font-medium">Post Office</span>
-                    <strong className="text-slate-900">{currentProfile.presentPostOffice || "Khilgaon"}</strong>
+                    <strong className="text-slate-900">{currentProfile.presentPostOffice || "Not Provided"}</strong>
                   </div>
                   <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                     <span className="text-slate-400 text-xs block font-medium">Post Code</span>
-                    <strong className="text-slate-900">{currentProfile.presentPostCode || "1219"}</strong>
+                    <strong className="text-slate-900">{currentProfile.presentPostCode || "Not Provided"}</strong>
                   </div>
                 </div>
               </div>
@@ -366,35 +366,35 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
                   <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                     <span className="text-slate-400 text-xs block font-medium">Division</span>
-                    <strong className="text-slate-900">{currentProfile.permanentDivision || "Chattogram"}</strong>
+                    <strong className="text-slate-900">{currentProfile.permanentDivision || "Not Provided"}</strong>
                   </div>
                   <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                     <span className="text-slate-400 text-xs block font-medium">District</span>
-                    <strong className="text-slate-900">{currentProfile.permanentDistrict || "Cumilla"}</strong>
+                    <strong className="text-slate-900">{currentProfile.permanentDistrict || "Not Provided"}</strong>
                   </div>
                   <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                     <span className="text-slate-400 text-xs block font-medium">Upazila</span>
-                    <strong className="text-slate-900">{currentProfile.permanentUpazila || ""}</strong>
+                    <strong className="text-slate-900">{currentProfile.permanentUpazila || "Not Provided"}</strong>
                   </div>
                   <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                     <span className="text-slate-400 text-xs block font-medium">Union</span>
-                    <strong className="text-slate-900">{currentProfile.permanentUnion || ""}</strong>
+                    <strong className="text-slate-900">{currentProfile.permanentUnion || "Not Provided"}</strong>
                   </div>
                   <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                     <span className="text-slate-400 text-xs block font-medium">Village</span>
-                    <strong className="text-slate-900">{currentProfile.permanentVillage || ""}</strong>
+                    <strong className="text-slate-900">{currentProfile.permanentVillage || "Not Provided"}</strong>
                   </div>
                   <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                     <span className="text-slate-400 text-xs block font-medium">Post Office</span>
-                    <strong className="text-slate-900">{currentProfile.permanentPostOffice || ""}</strong>
+                    <strong className="text-slate-900">{currentProfile.permanentPostOffice || "Not Provided"}</strong>
                   </div>
                   <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                     <span className="text-slate-400 text-xs block font-medium">Police Station</span>
-                    <strong className="text-slate-900">{currentProfile.permanentPoliceStation || ""}</strong>
+                    <strong className="text-slate-900">{currentProfile.permanentPoliceStation || "Not Provided"}</strong>
                   </div>
                   <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                     <span className="text-slate-400 text-xs block font-medium">Post Code</span>
-                    <strong className="text-slate-900">{currentProfile.permanentPostCode || "3544"}</strong>
+                    <strong className="text-slate-900">{currentProfile.permanentPostCode || "Not Provided"}</strong>
                   </div>
                 </div>
               </div>
