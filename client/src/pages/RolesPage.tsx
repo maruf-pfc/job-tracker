@@ -31,7 +31,7 @@ export default function RolesPage() {
   const { data: roles, isPending } = useQuery({
     queryKey: ["job-roles"],
     queryFn: getJobRoles,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 10 * 1000,
   });
 
   const openCreateModal = () => {

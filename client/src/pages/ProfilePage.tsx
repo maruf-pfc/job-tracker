@@ -66,7 +66,7 @@ export default function ProfilePage() {
   const { data: profile, isPending } = useQuery({
     queryKey: ["user-profile"],
     queryFn: getProfile,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 10 * 1000,
   });
 
   const updateMutation = useMutation({

@@ -15,11 +15,14 @@ import Textarea from "@/components/ui/Textarea";
 import ApplicationModal from "@/components/applications/ApplicationModal";
 import ApplicationActions from "@/components/applications/ApplicationActions";
 import { TableRowSkeleton } from "@/components/ui/Skeleton";
-import { Building2, ExternalLink, Globe, MapPin, Plus, Search } from "lucide-react";
+import { Building2, ChevronLeft, ChevronRight, ExternalLink, Globe, MapPin, Plus, Search } from "lucide-react";
+
+const ITEMS_PER_PAGE = 8;
 
 export default function CompaniesPage() {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
 
@@ -33,7 +36,7 @@ export default function CompaniesPage() {
   const { data: companies, isPending } = useQuery({
     queryKey: ["companies"],
     queryFn: getCompanies,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 10 * 1000,
   });
 
   const openCreateModal = () => {
@@ -118,6 +121,12 @@ export default function CompaniesPage() {
     (c) =>
       c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (c.location && c.location.toLowerCase().includes(searchTerm.toLowerCase()))
+  ) || [];
+
+  const totalPages = Math.ceil(filteredCompanies.length / ITEMS_PER_PAGE) || 1;
+  const paginatedCompanies = filteredCompanies.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
   );
 
   return (
@@ -146,7 +155,10 @@ export default function CompaniesPage() {
             type="text"
             placeholder="Search companies by name or location..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-slate-900 placeholder:text-slate-400"
           />
         </div>
@@ -171,7 +183,7 @@ export default function CompaniesPage() {
                 <TableRowSkeleton />
                 <TableRowSkeleton />
               </>
-            ) : !filteredCompanies?.length ? (
+            ) : !filteredCompanies.length ? (
               <tr>
                 <td colSpan={5} className="p-12 text-center">
                   <Building2 className="mx-auto h-8 w-8 text-slate-400 mb-2" />
@@ -182,7 +194,7 @@ export default function CompaniesPage() {
                 </td>
               </tr>
             ) : (
-              filteredCompanies.map((company) => (
+              paginatedCompanies.map((company) => (
                 <tr key={company.id} className="hover:bg-slate-50/80 transition-colors">
                   {/* Company Name */}
                   <td className="px-5 py-4 font-semibold text-slate-900">
@@ -252,6 +264,31 @@ export default function CompaniesPage() {
             )}
           </tbody>
         </table>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-5 py-3 border-t border-slate-100 bg-slate-50/50 text-xs text-slate-600">
+            <span>
+              Showing Page {currentPage} of {totalPages} ({filteredCompanies.length} total companies)
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 disabled:opacity-40 hover:bg-slate-50 transition-colors cursor-pointer"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 disabled:opacity-40 hover:bg-slate-50 transition-colors cursor-pointer"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Create / Edit Company Modal */}
