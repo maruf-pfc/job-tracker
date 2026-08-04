@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   Settings,
   Tags,
+  UserCheck,
 } from "lucide-react";
 
 export const navigation = [
@@ -21,6 +22,11 @@ export const navigation = [
     title: "Companies",
     href: "/companies",
     icon: Building2,
+  },
+  {
+    title: "Roles",
+    href: "/roles",
+    icon: UserCheck,
   },
   {
     title: "Lookups",

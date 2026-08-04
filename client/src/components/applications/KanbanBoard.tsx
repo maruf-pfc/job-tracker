@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import type { JobApplication } from "@/types/job-application";
 import { Building2, MapPin, DollarSign, Calendar, ArrowRightLeft } from "lucide-react";
+import { formatDate } from "@/utils/date";
 
 interface KanbanBoardProps {
   applications: JobApplication[];
@@ -147,7 +148,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                     <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
                       <span className="text-[11px] text-slate-500 flex items-center gap-1">
                         <Calendar className="w-3 h-3 text-slate-400" />
-                        {new Date(app.appliedAt).toLocaleDateString()}
+                        {formatDate(app.appliedAt)}
                       </span>
 
                       <div className="flex items-center gap-1">

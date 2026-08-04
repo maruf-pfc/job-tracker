@@ -13,9 +13,32 @@ public static class DbSeeder
         await SeedWorkTypes(context);
         await SeedSourcePlatforms(context);
         await SeedApplicationStatuses(context);
+        await SeedJobRoles(context);
         await SeedCompanies(context);
         await SeedUsers(context);
         await SeedJobApplications(context);
+    }
+
+    private static async Task SeedJobRoles(AppDbContext context)
+    {
+        if (await context.JobRoles.AnyAsync()) return;
+
+        var roles = new List<JobRole>
+        {
+            new() { Name = "Frontend Engineer" },
+            new() { Name = "Backend Developer" },
+            new() { Name = "Fullstack Engineer" },
+            new() { Name = "Software Engineer" },
+            new() { Name = "DevOps Engineer" },
+            new() { Name = "Mobile Engineer" },
+            new() { Name = "UI/UX Designer" },
+            new() { Name = "Product Manager" },
+            new() { Name = "Data Engineer" },
+            new() { Name = "QA Engineer" }
+        };
+
+        await context.JobRoles.AddRangeAsync(roles);
+        await context.SaveChangesAsync();
     }
 
     // Priorities

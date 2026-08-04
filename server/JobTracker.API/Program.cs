@@ -63,6 +63,7 @@ builder.Services.AddScoped<ISourcePlatformService, SourcePlatformService>();
 builder.Services.AddScoped<IApplicationStatusService, ApplicationStatusService>();
 builder.Services.AddScoped<IInterviewRoundService, InterviewRoundService>();
 builder.Services.AddScoped<IImportExportService, ImportExportService>();
+builder.Services.AddScoped<IJobRoleService, JobRoleService>();
 
 // Current User
 builder.Services.AddHttpContextAccessor();

@@ -7,6 +7,7 @@ import ApplicationStatusBadge from "./ApplicationStatusBadge";
 import ApplicationActions from "./ApplicationActions";
 import DeleteApplicationDialog from "./DeleteApplicationDialog";
 import EditApplicationModal from "./EditApplicationModal";
+import { formatDate } from "@/utils/date";
 import { Building2, MapPin, Calendar, DollarSign, Briefcase } from "lucide-react";
 
 interface ApplicationsTableProps {
@@ -144,7 +145,7 @@ export default function ApplicationsTable({
                   <td className="px-5 py-4 whitespace-nowrap text-xs text-slate-600 font-medium">
                     <div className="flex items-center gap-1.5">
                       <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <span>{new Date(app.appliedAt).toLocaleDateString()}</span>
+                      <span>{formatDate(app.appliedAt)}</span>
                     </div>
                   </td>
 
