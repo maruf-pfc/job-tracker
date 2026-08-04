@@ -21,24 +21,32 @@ public static class DbSeeder
 
     private static async Task SeedJobRoles(AppDbContext context)
     {
-        if (await context.JobRoles.AnyAsync()) return;
-
-        var roles = new List<JobRole>
+        var existingRoles = await context.JobRoles.Select(r => r.Name).ToListAsync();
+        var rolesToSeed = new List<JobRole>
         {
             new() { Name = "Frontend Engineer" },
-            new() { Name = "Backend Developer" },
-            new() { Name = "Fullstack Engineer" },
-            new() { Name = "Software Engineer" },
-            new() { Name = "DevOps Engineer" },
-            new() { Name = "Mobile Engineer" },
-            new() { Name = "UI/UX Designer" },
-            new() { Name = "Product Manager" },
-            new() { Name = "Data Engineer" },
-            new() { Name = "QA Engineer" }
+            new() { Name = "Senior Frontend Developer" },
+            new() { Name = "Backend Engineer (.NET / Go)" },
+            new() { Name = "Fullstack Engineer (React & Node)" },
+            new() { Name = "Software Architect" },
+            new() { Name = "DevOps & Cloud Engineer" },
+            new() { Name = "Site Reliability Engineer (SRE)" },
+            new() { Name = "Mobile Engineer (iOS / Android)" },
+            new() { Name = "AI / ML Engineer" },
+            new() { Name = "Data Platform Engineer" },
+            new() { Name = "UI/UX Product Designer" },
+            new() { Name = "Technical Product Manager" },
+            new() { Name = "QA Automation Engineer" },
+            new() { Name = "Security Engineer" },
+            new() { Name = "Systems Infrastructure Developer" }
         };
 
-        await context.JobRoles.AddRangeAsync(roles);
-        await context.SaveChangesAsync();
+        var newRoles = rolesToSeed.Where(r => !existingRoles.Contains(r.Name, StringComparer.OrdinalIgnoreCase)).ToList();
+        if (newRoles.Any())
+        {
+            await context.JobRoles.AddRangeAsync(newRoles);
+            await context.SaveChangesAsync();
+        }
     }
 
     // Priorities
