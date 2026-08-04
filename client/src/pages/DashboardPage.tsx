@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { getDashboardSummary, getDashboardAnalytics } from "@/services/dashboardService";
 import type { DashboardAnalytics } from "@/services/dashboardService";
 import type { DashboardSummary } from "@/types/dashboard";
-import { generateDashboardAiInsights } from "@/services/geminiService";
+import { generateDashboardAiInsights, getStoredGeminiApiKey } from "@/services/geminiService";
 import type { AiInsightResult } from "@/services/geminiService";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
@@ -66,9 +66,9 @@ export default function DashboardPage() {
   const responseRate = analytics?.responseRatePercentage ?? 0;
 
   const handleGenerateGeminiInsights = async () => {
-    const apiKey = localStorage.getItem("gemini_api_key");
+    const apiKey = getStoredGeminiApiKey();
     if (!apiKey) {
-      toast.error("Please add your Gemini API Key in Settings first!");
+      toast.error("Please add your Gemini API Key in Settings or .env file!");
       return;
     }
 

@@ -4,6 +4,14 @@ export type AiInsightResult = {
   donts: string[];
 };
 
+export function getStoredGeminiApiKey(): string {
+  return (
+    localStorage.getItem("gemini_api_key") ||
+    import.meta.env.VITE_GEMINI_API_KEY ||
+    ""
+  );
+}
+
 export async function generateDashboardAiInsights(
   stats: {
     totalApplications: number;
@@ -11,8 +19,14 @@ export async function generateDashboardAiInsights(
     totalInterviews: number;
     totalOffers: number;
   },
-  apiKey: string
+  apiKey?: string
 ): Promise<AiInsightResult> {
+  const activeKey = apiKey || getStoredGeminiApiKey();
+
+  if (!activeKey) {
+    throw new Error("No Gemini API key provided in localStorage or environment variables.");
+  }
+
   const prompt = `
 You are an expert AI Career Coach for software developers.
 Analyze the following job application stats for a Full Stack Developer:
@@ -31,7 +45,7 @@ Provide a JSON object response matching this exact structure without markdown fo
 
   try {
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${activeKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
