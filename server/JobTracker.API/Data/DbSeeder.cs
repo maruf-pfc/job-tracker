@@ -243,14 +243,13 @@ public static class DbSeeder
         var user = await context.Users.FirstOrDefaultAsync(u => u.Email == "demo@jobtracker.dev");
         if (user is null) return;
 
-        // Reset existing applications for demo user if less than 5 to ensure full showcase
-        var existingCount = await context.JobApplications.CountAsync(j => j.UserId == user.Id);
-        if (existingCount >= 10) return;
+        // Clean and re-seed 12 showcase applications for Demo User
+        var existingApps = await context.JobApplications.Where(j => j.UserId == user.Id).ToListAsync();
+        if (existingApps.Count == 12) return;
 
-        if (existingCount > 0)
+        if (existingApps.Any())
         {
-            var oldApps = await context.JobApplications.Where(j => j.UserId == user.Id).ToListAsync();
-            context.JobApplications.RemoveRange(oldApps);
+            context.JobApplications.RemoveRange(existingApps);
             await context.SaveChangesAsync();
         }
 
@@ -261,12 +260,29 @@ public static class DbSeeder
         var platforms = await context.SourcePlatforms.ToListAsync();
         var workTypes = await context.WorkTypes.ToListAsync();
 
-        Company GetCompany(string name) => companies.First(c => c.Name == name);
-        Priority GetPriority(string name) => priorities.First(p => p.Name == name);
-        JobType GetJobType(string name) => jobTypes.First(j => j.Name == name);
-        ApplicationStatus GetStatus(string name) => statuses.First(s => s.Name == name);
-        SourcePlatform GetPlatform(string name) => platforms.First(p => p.Name == name);
-        WorkType GetWorkType(string name) => workTypes.First(w => w.Name == name);
+        Company GetCompany(string name) =>
+            companies.FirstOrDefault(c => string.Equals(c.Name, name, StringComparison.OrdinalIgnoreCase))
+            ?? companies.First();
+
+        Priority GetPriority(string name) =>
+            priorities.FirstOrDefault(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase))
+            ?? priorities.First();
+
+        JobType GetJobType(string name) =>
+            jobTypes.FirstOrDefault(j => string.Equals(j.Name, name, StringComparison.OrdinalIgnoreCase))
+            ?? jobTypes.First();
+
+        ApplicationStatus GetStatus(string name) =>
+            statuses.FirstOrDefault(s => string.Equals(s.Name, name, StringComparison.OrdinalIgnoreCase))
+            ?? statuses.First();
+
+        SourcePlatform GetPlatform(string name) =>
+            platforms.FirstOrDefault(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase))
+            ?? platforms.First();
+
+        WorkType GetWorkType(string name) =>
+            workTypes.FirstOrDefault(w => string.Equals(w.Name, name, StringComparison.OrdinalIgnoreCase))
+            ?? workTypes.First();
 
         var applications = new List<JobApplication>
         {
