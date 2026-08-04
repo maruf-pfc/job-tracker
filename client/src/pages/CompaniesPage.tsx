@@ -14,6 +14,7 @@ import Button from "@/components/ui/Button";
 import Textarea from "@/components/ui/Textarea";
 import ApplicationModal from "@/components/applications/ApplicationModal";
 import ApplicationActions from "@/components/applications/ApplicationActions";
+import { TableRowSkeleton } from "@/components/ui/Skeleton";
 import { Building2, ExternalLink, Globe, MapPin, Plus, Search } from "lucide-react";
 
 export default function CompaniesPage() {
@@ -57,31 +58,38 @@ export default function CompaniesPage() {
 
   const createMutation = useMutation({
     mutationFn: (req: CreateCompanyRequest) => createCompany(req),
-    onSuccess: () => {
+    onSuccess: (newCompany) => {
       toast.success("Company created successfully");
-      queryClient.invalidateQueries({ queryKey: ["companies"] });
+      queryClient.setQueryData(["companies"], (old: Company[] = []) => [...old, newCompany]);
+      queryClient.refetchQueries({ queryKey: ["companies"] });
       setIsModalOpen(false);
     },
-    onError: () => toast.error("Failed to create company"),
+    onError: (err: any) => toast.error(err.response?.data?.message || "Failed to create company"),
   });
 
   const updateMutation = useMutation({
     mutationFn: (req: CreateCompanyRequest) => updateCompany(editingCompany!.id, req),
-    onSuccess: () => {
+    onSuccess: (updatedCompany) => {
       toast.success("Company updated successfully");
-      queryClient.invalidateQueries({ queryKey: ["companies"] });
+      queryClient.setQueryData(["companies"], (old: Company[] = []) =>
+        old.map((c) => (c.id === updatedCompany.id ? updatedCompany : c))
+      );
+      queryClient.refetchQueries({ queryKey: ["companies"] });
       setIsModalOpen(false);
     },
-    onError: () => toast.error("Failed to update company"),
+    onError: (err: any) => toast.error(err.response?.data?.message || "Failed to update company"),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteCompany(id),
-    onSuccess: () => {
+    onSuccess: (_, deletedId) => {
       toast.success("Company deleted");
-      queryClient.invalidateQueries({ queryKey: ["companies"] });
+      queryClient.setQueryData(["companies"], (old: Company[] = []) =>
+        old.filter((c) => c.id !== deletedId)
+      );
+      queryClient.refetchQueries({ queryKey: ["companies"] });
     },
-    onError: () => toast.error("Failed to delete company"),
+    onError: (err: any) => toast.error(err.response?.data?.message || "Failed to delete company"),
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -146,32 +154,35 @@ export default function CompaniesPage() {
 
       {/* Table / Cards List */}
       <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-xs">
-        {isPending && !companies ? (
-          <div className="p-12 text-center text-sm text-slate-500 flex items-center justify-center gap-2">
-            <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-            Loading companies...
-          </div>
-        ) : !filteredCompanies?.length ? (
-          <div className="p-12 text-center">
-            <Building2 className="mx-auto h-8 w-8 text-slate-400 mb-2" />
-            <h3 className="text-base font-semibold text-slate-900">No companies found</h3>
-            <p className="mt-1 text-sm text-slate-500 max-w-sm mx-auto">
-              Start adding target companies to organize your application workflow.
-            </p>
-          </div>
-        ) : (
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-slate-200 bg-slate-50/80 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                <th className="px-5 py-3.5">Company Name</th>
-                <th className="px-5 py-3.5">Location</th>
-                <th className="px-5 py-3.5">Website</th>
-                <th className="px-5 py-3.5">Career Portal</th>
-                <th className="px-5 py-3.5 text-right">Actions</th>
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="border-b border-slate-200 bg-slate-50/80 text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <th className="px-5 py-3.5">Company Name</th>
+              <th className="px-5 py-3.5">Location</th>
+              <th className="px-5 py-3.5">Website</th>
+              <th className="px-5 py-3.5">Career Portal</th>
+              <th className="px-5 py-3.5 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 bg-white text-sm">
+            {isPending && !companies ? (
+              <>
+                <TableRowSkeleton />
+                <TableRowSkeleton />
+                <TableRowSkeleton />
+              </>
+            ) : !filteredCompanies?.length ? (
+              <tr>
+                <td colSpan={5} className="p-12 text-center">
+                  <Building2 className="mx-auto h-8 w-8 text-slate-400 mb-2" />
+                  <h3 className="text-base font-semibold text-slate-900">No companies found</h3>
+                  <p className="mt-1 text-sm text-slate-500 max-w-sm mx-auto">
+                    Start adding target companies to organize your application workflow.
+                  </p>
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 bg-white text-sm">
-              {filteredCompanies.map((company) => (
+            ) : (
+              filteredCompanies.map((company) => (
                 <tr key={company.id} className="hover:bg-slate-50/80 transition-colors">
                   {/* Company Name */}
                   <td className="px-5 py-4 font-semibold text-slate-900">
@@ -237,10 +248,10 @@ export default function CompaniesPage() {
                     />
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
 
       {/* Create / Edit Company Modal */}

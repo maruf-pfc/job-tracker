@@ -13,6 +13,7 @@ import Label from "@/components/ui/Label";
 import Button from "@/components/ui/Button";
 import ApplicationModal from "@/components/applications/ApplicationModal";
 import ApplicationActions from "@/components/applications/ApplicationActions";
+import { TableRowSkeleton } from "@/components/ui/Skeleton";
 import { UserCheck, Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
 
 const ITEMS_PER_PAGE = 8;
@@ -27,7 +28,7 @@ export default function RolesPage() {
   // Form state
   const [name, setName] = useState("");
 
-  const { data: roles, isLoading } = useQuery({
+  const { data: roles, isPending } = useQuery({
     queryKey: ["job-roles"],
     queryFn: getJobRoles,
     staleTime: 5 * 60 * 1000,
@@ -47,31 +48,38 @@ export default function RolesPage() {
 
   const createMutation = useMutation({
     mutationFn: (req: CreateJobRoleRequest) => createJobRole(req),
-    onSuccess: () => {
+    onSuccess: (newRole) => {
       toast.success("Job role created successfully");
-      queryClient.invalidateQueries({ queryKey: ["job-roles"] });
+      queryClient.setQueryData(["job-roles"], (old: JobRole[] = []) => [...old, newRole]);
+      queryClient.refetchQueries({ queryKey: ["job-roles"] });
       setIsModalOpen(false);
     },
-    onError: () => toast.error("Failed to create job role"),
+    onError: (err: any) => toast.error(err.response?.data?.message || "Failed to create job role"),
   });
 
   const updateMutation = useMutation({
     mutationFn: (req: CreateJobRoleRequest) => updateJobRole(editingRole!.id, req),
-    onSuccess: () => {
+    onSuccess: (updatedRole) => {
       toast.success("Job role updated successfully");
-      queryClient.invalidateQueries({ queryKey: ["job-roles"] });
+      queryClient.setQueryData(["job-roles"], (old: JobRole[] = []) =>
+        old.map((r) => (r.id === updatedRole.id ? updatedRole : r))
+      );
+      queryClient.refetchQueries({ queryKey: ["job-roles"] });
       setIsModalOpen(false);
     },
-    onError: () => toast.error("Failed to update job role"),
+    onError: (err: any) => toast.error(err.response?.data?.message || "Failed to update job role"),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteJobRole(id),
-    onSuccess: () => {
+    onSuccess: (_, deletedId) => {
       toast.success("Job role deleted");
-      queryClient.invalidateQueries({ queryKey: ["job-roles"] });
+      queryClient.setQueryData(["job-roles"], (old: JobRole[] = []) =>
+        old.filter((r) => r.id !== deletedId)
+      );
+      queryClient.refetchQueries({ queryKey: ["job-roles"] });
     },
-    onError: () => toast.error("Failed to delete job role"),
+    onError: (err: any) => toast.error(err.response?.data?.message || "Failed to delete job role"),
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -139,80 +147,81 @@ export default function RolesPage() {
 
       {/* Table List */}
       <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-xs">
-        {isLoading ? (
-          <div className="p-12 text-center text-sm text-slate-500 flex items-center justify-center gap-2">
-            <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-            Loading job roles...
-          </div>
-        ) : !filteredRoles.length ? (
-          <div className="p-12 text-center">
-            <UserCheck className="mx-auto h-8 w-8 text-slate-400 mb-2" />
-            <h3 className="text-base font-semibold text-slate-900">No roles found</h3>
-            <p className="mt-1 text-sm text-slate-500 max-w-sm mx-auto">
-              Add custom job roles and positions to personalize your job tracker.
-            </p>
-          </div>
-        ) : (
-          <>
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-slate-200 bg-slate-50/80 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  <th className="px-5 py-3.5">Role Title</th>
-                  <th className="px-5 py-3.5 text-right">Actions</th>
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="border-b border-slate-200 bg-slate-50/80 text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <th className="px-5 py-3.5">Role Title</th>
+              <th className="px-5 py-3.5 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 bg-white text-sm">
+            {isPending && !roles ? (
+              <>
+                <TableRowSkeleton />
+                <TableRowSkeleton />
+                <TableRowSkeleton />
+              </>
+            ) : !filteredRoles.length ? (
+              <tr>
+                <td colSpan={2} className="p-12 text-center">
+                  <UserCheck className="mx-auto h-8 w-8 text-slate-400 mb-2" />
+                  <h3 className="text-base font-semibold text-slate-900">No roles found</h3>
+                  <p className="mt-1 text-sm text-slate-500 max-w-sm mx-auto">
+                    Add custom job roles and positions to personalize your job tracker.
+                  </p>
+                </td>
+              </tr>
+            ) : (
+              paginatedRoles.map((role) => (
+                <tr key={role.id} className="hover:bg-slate-50/80 transition-colors">
+                  {/* Role Title */}
+                  <td className="px-5 py-4 font-semibold text-slate-900">
+                    <div className="flex items-center gap-2.5">
+                      <UserCheck className="w-4 h-4 text-indigo-600 shrink-0" />
+                      <span>{role.name}</span>
+                    </div>
+                  </td>
+
+                  {/* Actions */}
+                  <td className="px-5 py-4 whitespace-nowrap text-right">
+                    <ApplicationActions
+                      onEdit={() => openEditModal(role)}
+                      onDelete={() => {
+                        if (confirm(`Are you sure you want to delete ${role.name}?`)) {
+                          deleteMutation.mutate(role.id);
+                        }
+                      }}
+                    />
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 bg-white text-sm">
-                {paginatedRoles.map((role) => (
-                  <tr key={role.id} className="hover:bg-slate-50/80 transition-colors">
-                    {/* Role Title */}
-                    <td className="px-5 py-4 font-semibold text-slate-900">
-                      <div className="flex items-center gap-2.5">
-                        <UserCheck className="w-4 h-4 text-indigo-600 shrink-0" />
-                        <span>{role.name}</span>
-                      </div>
-                    </td>
-
-                    {/* Actions */}
-                    <td className="px-5 py-4 whitespace-nowrap text-right">
-                      <ApplicationActions
-                        onEdit={() => openEditModal(role)}
-                        onDelete={() => {
-                          if (confirm(`Are you sure you want to delete ${role.name}?`)) {
-                            deleteMutation.mutate(role.id);
-                          }
-                        }}
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {/* Pagination Controls */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between px-5 py-3 border-t border-slate-100 bg-slate-50/50 text-xs text-slate-600">
-                <span>
-                  Showing Page {currentPage} of {totalPages} ({filteredRoles.length} total roles)
-                </span>
-                <div className="flex items-center gap-2">
-                  <button
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 disabled:opacity-40 hover:bg-slate-50 transition-colors cursor-pointer"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <button
-                    disabled={currentPage === totalPages}
-                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                    className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 disabled:opacity-40 hover:bg-slate-50 transition-colors cursor-pointer"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+              ))
             )}
-          </>
+          </tbody>
+        </table>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-5 py-3 border-t border-slate-100 bg-slate-50/50 text-xs text-slate-600">
+            <span>
+              Showing Page {currentPage} of {totalPages} ({filteredRoles.length} total roles)
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 disabled:opacity-40 hover:bg-slate-50 transition-colors cursor-pointer"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 disabled:opacity-40 hover:bg-slate-50 transition-colors cursor-pointer"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
         )}
       </div>
 

@@ -17,9 +17,40 @@ public class UserProfileService : IUserProfileService
         _currentUserService = currentUserService;
     }
 
+    private async Task<Guid> GetEffectiveUserIdAsync()
+    {
+        var userId = _currentUserService.UserId;
+        if (userId.HasValue && userId.Value != Guid.Empty)
+        {
+            var exists = await _context.Users.AnyAsync(u => u.Id == userId.Value);
+            if (exists) return userId.Value;
+        }
+
+        var firstUser = await _context.Users.FirstOrDefaultAsync();
+        if (firstUser != null)
+        {
+            return firstUser.Id;
+        }
+
+        // Seed generic demo user if none exists in database
+        var defaultUser = new User
+        {
+            UserName = "demo@jobtracker.dev",
+            NormalizedUserName = "DEMO@JOBTRACKER.DEV",
+            Email = "demo@jobtracker.dev",
+            NormalizedEmail = "DEMO@JOBTRACKER.DEV",
+            Name = "Demo User",
+            SecurityStamp = Guid.NewGuid().ToString()
+        };
+        _context.Users.Add(defaultUser);
+        await _context.SaveChangesAsync();
+
+        return defaultUser.Id;
+    }
+
     public async Task<UserProfileDto> GetProfileAsync()
     {
-        var userId = _currentUserService.UserId ?? Guid.Empty;
+        var userId = await GetEffectiveUserIdAsync();
         var profile = await _context.UserProfiles.FirstOrDefaultAsync(p => p.UserId == userId);
 
         if (profile is null)
@@ -28,42 +59,13 @@ public class UserProfileService : IUserProfileService
             profile = new UserProfile
             {
                 UserId = userId,
-                NameEnglish = "Demo User",
-                NameBangla = "",
-                FatherName = "",
-                MotherName = "",
-                DateOfBirth = new DateTime(2003, 8, 19),
+                NameEnglish = user?.Name ?? "Software Engineer",
+                Email = user?.Email ?? "user@example.com",
                 Nationality = "Bangladeshi",
                 Religion = "Islam",
                 Gender = "Male",
-                BirthRegistration = "",
-                NationalId = "",
                 MaritalStatus = "Single",
-                MobileNumber = "",
-                Email = user?.Email ?? "demo@jobtracker.dev",
-
-                // Present Address Defaults
-                PresentDivision = "Dhaka",
-                PresentDistrict = "Dhaka",
-                PresentArea = "",
-                PresentLocation = "",
-                PresentHouse = "176/7",
-                PresentUpazila = "Gulshan",
-                PresentPoliceStation = "Hatirjheel",
-                PresentPostOffice = "Khilgaon",
-                PresentPostCode = "1219",
-
-                // Permanent Address Defaults
-                PermanentDivision = "Chattogram",
-                PermanentDistrict = "Cumilla",
-                PermanentUpazila = "",
-                PermanentUnion = "",
-                PermanentVillage = "",
-                PermanentPostOffice = "",
-                PermanentPoliceStation = "",
-                PermanentPostCode = "3544",
-
-                BioSummary = "Full Stack Developer and competitive programmer with hands-on experience building web applications and AI-powered automation tools for real-world business operations.",
+                BioSummary = "Full Stack Engineer passionate about building modern web applications, scalable APIs, and developer productivity tools.",
             };
 
             _context.UserProfiles.Add(profile);
@@ -75,7 +77,7 @@ public class UserProfileService : IUserProfileService
 
     public async Task<UserProfileDto> UpdateProfileAsync(UserProfileDto dto)
     {
-        var userId = _currentUserService.UserId ?? Guid.Empty;
+        var userId = await GetEffectiveUserIdAsync();
         var profile = await _context.UserProfiles.FirstOrDefaultAsync(p => p.UserId == userId);
 
         if (profile is null)
@@ -84,7 +86,7 @@ public class UserProfileService : IUserProfileService
             _context.UserProfiles.Add(profile);
         }
 
-        profile.NameEnglish = dto.NameEnglish;
+        profile.NameEnglish = dto.NameEnglish ?? string.Empty;
         profile.NameBangla = dto.NameBangla;
         profile.FatherName = dto.FatherName;
         profile.MotherName = dto.MotherName;

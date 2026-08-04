@@ -12,7 +12,7 @@ vi.mock("../api", () => ({
 describe("profileService", () => {
   it("getProfile should return user profile data from API", async () => {
     const mockProfile = {
-      nameEnglish: "Demo User",
+      nameEnglish: "Software Engineer",
       presentDivision: "Dhaka",
       presentPostCode: "1219",
     };
@@ -22,14 +22,14 @@ describe("profileService", () => {
     });
 
     const data = await getProfile();
-    expect(data.nameEnglish).toBe("Demo User");
+    expect(data.nameEnglish).toBe("Software Engineer");
     expect(data.presentDivision).toBe("Dhaka");
     expect(api.get).toHaveBeenCalledWith("/profile");
   });
 
   it("updateProfile should send PUT request with updated data", async () => {
     const updatedProfile = {
-      nameEnglish: "Demo User UPDATED",
+      nameEnglish: "Demo User Updated",
       presentDivision: "Dhaka",
     };
 
@@ -38,7 +38,7 @@ describe("profileService", () => {
     });
 
     const data = await updateProfile(updatedProfile);
-    expect(data.nameEnglish).toBe("Demo User UPDATED");
+    expect(data.nameEnglish).toBe("Demo User Updated");
     expect(api.put).toHaveBeenCalledWith("/profile", updatedProfile);
   });
 });

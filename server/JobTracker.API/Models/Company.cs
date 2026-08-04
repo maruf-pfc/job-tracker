@@ -11,10 +11,10 @@ public class Company : BaseEntity
     [MaxLength(500)]
     public string? CareerPageUrl { get; set; }
 
-    [MaxLength(200)]
+    [MaxLength(500)]
     public string? WebsiteUrl { get; set; }
 
-    [MaxLength(200)]
+    [MaxLength(500)]
     public string? Location { get; set; }
 
     [MaxLength(5000)]
@@ -23,5 +23,5 @@ public class Company : BaseEntity
     public bool IsFavorite { get; set; }
     public bool IsArchived { get; set; }
 
-    public ICollection<JobApplication>JobApplications = new List<JobApplication>();
+    public ICollection<JobApplication> JobApplications = new List<JobApplication>();
 }

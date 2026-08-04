@@ -15,8 +15,7 @@ public class CompanyService : ICompanyService
         _context = context;
     }
 
-    public async Task<List<CompanyDto>>
-    GetAllAsync()
+    public async Task<List<CompanyDto>> GetAllAsync()
     {
         return await _context.Companies
             .OrderBy(c => c.Name)
@@ -33,8 +32,7 @@ public class CompanyService : ICompanyService
             .ToListAsync();
     }
 
-    public async Task<CompanyDto?>
-    GetByIdAsync(Guid id)
+    public async Task<CompanyDto?> GetByIdAsync(Guid id)
     {
         return await _context.Companies
             .Where(c => c.Id == id)
@@ -51,21 +49,18 @@ public class CompanyService : ICompanyService
             .FirstOrDefaultAsync();
     }
 
-    public async Task<CompanyDto>
-    CreateAsync(CreateCompanyDto dto
-    )
+    public async Task<CompanyDto> CreateAsync(CreateCompanyDto dto)
     {
         var company = new Company
-            {
-                Name = dto.Name,
-                CareerPageUrl = dto.CareerPageUrl,
-                WebsiteUrl = dto.WebsiteUrl,
-                Location = dto.Location,
-                Notes = dto.Notes,
-            };
+        {
+            Name = dto.Name.Trim(),
+            CareerPageUrl = dto.CareerPageUrl?.Trim(),
+            WebsiteUrl = dto.WebsiteUrl?.Trim(),
+            Location = dto.Location?.Trim(),
+            Notes = dto.Notes?.Trim(),
+        };
 
         _context.Companies.Add(company);
-
         await _context.SaveChangesAsync();
 
         return new CompanyDto
@@ -80,23 +75,20 @@ public class CompanyService : ICompanyService
         };
     }
 
-    public async Task<CompanyDto?>
-    UpdateAsync(Guid id, CreateCompanyDto dto)
+    public async Task<CompanyDto?> UpdateAsync(Guid id, CreateCompanyDto dto)
     {
-        var company = await _context
-                .Companies
-                .FirstOrDefaultAsync(c => c.Id == id);
-
+        var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == id);
         if (company is null)
         {
             return null;
         }
 
-        company.Name = dto.Name;
-        company.CareerPageUrl = dto.CareerPageUrl;
-        company.WebsiteUrl = dto.WebsiteUrl;
-        company.Location = dto.Location;
-        company.Notes = dto.Notes;
+        company.Name = dto.Name.Trim();
+        company.CareerPageUrl = dto.CareerPageUrl?.Trim();
+        company.WebsiteUrl = dto.WebsiteUrl?.Trim();
+        company.Location = dto.Location?.Trim();
+        company.Notes = dto.Notes?.Trim();
+        company.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
 
@@ -112,22 +104,24 @@ public class CompanyService : ICompanyService
         };
     }
 
-    public async Task<bool>
-    DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(Guid id)
     {
-        var company = await _context
-                .Companies
-                .FirstOrDefaultAsync(c => c.Id == id);
+        var company = await _context.Companies
+            .Include(c => c.JobApplications)
+            .FirstOrDefaultAsync(c => c.Id == id);
 
         if (company is null)
         {
             return false;
         }
 
+        if (company.JobApplications != null && company.JobApplications.Any())
+        {
+            _context.JobApplications.RemoveRange(company.JobApplications);
+        }
+
         _context.Companies.Remove(company);
-
         await _context.SaveChangesAsync();
-
         return true;
     }
 }

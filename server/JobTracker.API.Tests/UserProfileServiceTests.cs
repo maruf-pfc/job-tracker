@@ -38,8 +38,7 @@ public class UserProfileServiceTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal("Demo User", result.NameEnglish);
-        Assert.Equal("Dhaka", result.PresentDivision);
-        Assert.Equal("1219", result.PresentPostCode);
+        Assert.Equal("demo@jobtracker.dev", result.Email);
     }
 
     [Fact]
@@ -56,10 +55,10 @@ public class UserProfileServiceTests
 
         var updateDto = new UserProfileDto
         {
-            NameEnglish = "Demo User UPDATED",
+            NameEnglish = "Demo User Updated",
             PresentDivision = "Dhaka Division",
             PresentPostCode = "1219",
-            MobileNumber = "",
+            MobileNumber = "01700000000",
         };
 
         // Act
@@ -67,7 +66,7 @@ public class UserProfileServiceTests
 
         // Assert
         Assert.NotNull(updatedResult);
-        Assert.Equal("Demo User UPDATED", updatedResult.NameEnglish);
+        Assert.Equal("Demo User Updated", updatedResult.NameEnglish);
         Assert.Equal("Dhaka Division", updatedResult.PresentDivision);
     }
 }

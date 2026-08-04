@@ -35,10 +35,13 @@ export default function ApplicationModal({
     <div
       onClick={onClose}
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 sm:p-6 overflow-y-auto cursor-pointer"
+      data-lenis-prevent
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white shadow-2xl border border-slate-100 flex flex-col cursor-default"
+        onWheel={(e) => e.stopPropagation()}
+        data-lenis-prevent
+        className="relative max-h-[85vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white shadow-2xl border border-slate-100 flex flex-col cursor-default scrollbar-thin scrollbar-thumb-slate-300"
       >
         {/* Sticky Header with prominent X close button */}
         <div className="sticky top-0 z-20 flex items-center justify-between border-b border-slate-200/80 bg-white/95 px-6 py-4 backdrop-blur-md">

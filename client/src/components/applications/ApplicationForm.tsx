@@ -81,20 +81,27 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
       return;
     }
 
+    const targetCompanyId = companies?.find((c) => c.name === initialData.company)?.id || "";
+    const targetPriorityId = priorities?.find((p) => p.name === initialData.priority)?.id || "";
+    const targetStatusId = statuses?.find((s) => s.name === initialData.applicationStatus)?.id || "";
+    const targetWorkTypeId = workTypes?.find((w) => w.name === initialData.workType)?.id || "";
+    const targetJobTypeId = jobTypes?.find((j) => j.name === initialData.jobType)?.id || "";
+    const targetPlatformId = platforms?.find((p) => p.name === initialData.sourcePlatform)?.id || "";
+
     reset({
-      companyId: "",
+      companyId: targetCompanyId,
       role: initialData.role,
       location: initialData.location || "",
       salaryRange: initialData.salaryRange || "",
       notes: initialData.notes || "",
       resumeDriveLink: initialData.resumeDriveLink || "",
-      priorityId: "",
-      sourcePlatformId: "",
-      applicationStatusId: "",
-      workTypeId: "",
-      jobTypeId: "",
+      priorityId: targetPriorityId,
+      sourcePlatformId: targetPlatformId,
+      applicationStatusId: targetStatusId,
+      workTypeId: targetWorkTypeId,
+      jobTypeId: targetJobTypeId,
     });
-  }, [initialData, reset]);
+  }, [initialData, reset, companies, priorities, statuses, workTypes, jobTypes, platforms]);
 
   const mutation = useMutation({
     mutationFn: (data: CreateJobApplicationRequest) => {
