@@ -221,6 +221,18 @@ This repository includes automated GitHub Actions workflows running on every pus
 
 ---
 
+## 📚 Technical Documentation Collection
+
+Comprehensive architecture guides, database ER diagrams, REST API contracts, and troubleshooting records are available in the [`docs/`](docs/) directory:
+
+- 🏗 **[System Architecture & Design](docs/architecture.md)**: Clean architecture layers, component diagrams, system overview.
+- 🗄 **[Database Model & Schema](docs/database_schema.md)**: PostgreSQL ER Diagram, table constraints, indices, and UTC timestamp mappings.
+- 🔌 **[REST API Specifications](docs/api_documentation.md)**: Endpoints reference, request/response DTO schemas, JWT auth requirements.
+- 🛠 **[Troubleshooting & Bug Fixes](docs/troubleshooting_and_bugfixes.md)**: Empirical root cause analysis and resolution log (FK 23503, UTC timestamps, JWT lifetime, seeding, query caching).
+- 🚀 **[Deployment & Webhooks Guide](docs/deployment_and_webhooks.md)**: Docker Compose orchestration, Vercel monorepo settings, n8n / Discord / Telegram integrations.
+
+---
+
 ## 🤝 Contributing Guidelines
 
 We welcome open-source contributions! Follow these steps to contribute:
