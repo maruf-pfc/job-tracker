@@ -34,7 +34,7 @@ export type CreateJobApplicationRequest = {
   notes?: string;
   resumeDriveLink?: string;
   priorityId: string;
-  sourcePlatformId: string;
+  sourcePlatformId?: string;
   applicationStatusId: string;
   workTypeId: string;
   jobTypeId: string;

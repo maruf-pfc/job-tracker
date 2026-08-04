@@ -25,9 +25,23 @@ import type { JobApplication } from "@/types/job-application";
 
 type Props = {
   onSuccess: () => void;
-
   initialData?: JobApplication | null;
 };
+
+const COMMON_ROLES = [
+  "Frontend Engineer",
+  "Backend Developer",
+  "Fullstack Engineer",
+  "Software Engineer",
+  "DevOps Engineer",
+  "Mobile Engineer (iOS/Android)",
+  "UI/UX Designer",
+  "Product Manager",
+  "Data Engineer",
+  "QA / Test Engineer",
+  "Solutions Architect",
+  "Engineering Manager",
+];
 
 export default function ApplicationForm({ onSuccess, initialData }: Props) {
   const queryClient = useQueryClient();
@@ -36,31 +50,10 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
     register,
     handleSubmit,
     reset,
-
     formState: { errors },
   } = useForm<CreateJobApplicationRequest>({
     resolver: zodResolver(createJobApplicationSchema),
   });
-
-  useEffect(() => {
-    if (!initialData) {
-      return;
-    }
-
-    reset({
-      companyId: "",
-      role: initialData.role,
-      location: initialData.location,
-      salaryRange: initialData.salaryRange,
-      notes: initialData.notes,
-      resumeDriveLink: initialData.resumeDriveLink,
-      priorityId: "",
-      sourcePlatformId: "",
-      applicationStatusId: "",
-      workTypeId: "",
-      jobTypeId: "",
-    });
-  }, [initialData, reset]);
 
   const { data: companies } = useQuery({
     queryKey: ["companies"],
@@ -92,13 +85,39 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
     queryFn: getJobTypes,
   });
 
+  useEffect(() => {
+    if (!initialData) {
+      return;
+    }
+
+    reset({
+      companyId: "",
+      role: initialData.role,
+      location: initialData.location || "",
+      salaryRange: initialData.salaryRange || "",
+      notes: initialData.notes || "",
+      resumeDriveLink: initialData.resumeDriveLink || "",
+      priorityId: "",
+      sourcePlatformId: "",
+      applicationStatusId: "",
+      workTypeId: "",
+      jobTypeId: "",
+    });
+  }, [initialData, reset]);
+
   const mutation = useMutation({
     mutationFn: (data: CreateJobApplicationRequest) => {
+      // Auto-assign first platform ID if not set
+      const payload = {
+        ...data,
+        sourcePlatformId: data.sourcePlatformId || platforms?.[0]?.id || "",
+      };
+
       if (initialData) {
-        return updateApplication(initialData.id, data);
+        return updateApplication(initialData.id, payload);
       }
 
-      return createApplication(data);
+      return createApplication(payload);
     },
 
     onSuccess: async () => {
@@ -131,148 +150,153 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {/* Section 1: Job Information */}
       <ApplicationFormSection
         title="Job Information"
         description="Basic application and role details."
       >
         <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
+          {/* Company Dropdown */}
+          <div className="space-y-1.5">
             <Label>Company</Label>
-
             <Select {...register("companyId")}>
               <option value="">Select company</option>
-
               {companies?.map((company) => (
                 <option key={company.id} value={company.id}>
                   {company.name}
                 </option>
               ))}
             </Select>
-
             {errors.companyId && (
-              <p className="text-sm text-red-600">Company is required</p>
+              <p className="text-xs text-red-600">{errors.companyId.message}</p>
             )}
           </div>
 
-          <div className="space-y-2">
+          {/* Role Dropdown */}
+          <div className="space-y-1.5">
             <Label>Role</Label>
-
-            <Input placeholder="Frontend Engineer" {...register("role")} />
-
+            <Select {...register("role")}>
+              <option value="">Select role</option>
+              {COMMON_ROLES.map((roleName) => (
+                <option key={roleName} value={roleName}>
+                  {roleName}
+                </option>
+              ))}
+            </Select>
             {errors.role && (
-              <p className="text-sm text-red-600">{errors.role.message}</p>
+              <p className="text-xs text-red-600">{errors.role.message}</p>
             )}
           </div>
 
-          <div className="space-y-2">
+          {/* Location */}
+          <div className="space-y-1.5">
             <Label>Location</Label>
-
-            <Input placeholder="Remote" {...register("location")} />
+            <Input
+              placeholder="e.g. Dhaka, Bangladesh"
+              {...register("location")}
+            />
           </div>
 
-          <div className="space-y-2">
+          {/* Salary Range */}
+          <div className="space-y-1.5">
             <Label>Salary Range</Label>
-
-            <Input placeholder="$80k - $120k" {...register("salaryRange")} />
+            <Input
+              placeholder="e.g. 50,000 BDT - 80,000 BDT"
+              {...register("salaryRange")}
+            />
           </div>
         </div>
       </ApplicationFormSection>
 
+      {/* Section 2: Application Workflow */}
       <ApplicationFormSection
         title="Application Workflow"
-        description="Track application status and sourcing."
+        description="Track application status, priority, and job types."
       >
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="space-y-2">
+        <div className="grid gap-4 md:grid-cols-2">
+          {/* Status */}
+          <div className="space-y-1.5">
             <Label>Status</Label>
-
             <Select {...register("applicationStatusId")}>
               <option value="">Select status</option>
-
               {statuses?.map((status) => (
                 <option key={status.id} value={status.id}>
                   {status.name}
                 </option>
               ))}
             </Select>
+            {errors.applicationStatusId && (
+              <p className="text-xs text-red-600">{errors.applicationStatusId.message}</p>
+            )}
           </div>
 
-          <div className="space-y-2">
+          {/* Priority */}
+          <div className="space-y-1.5">
             <Label>Priority</Label>
-
             <Select {...register("priorityId")}>
               <option value="">Select priority</option>
-
               {priorities?.map((priority) => (
                 <option key={priority.id} value={priority.id}>
                   {priority.name}
                 </option>
               ))}
             </Select>
+            {errors.priorityId && (
+              <p className="text-xs text-red-600">{errors.priorityId.message}</p>
+            )}
           </div>
 
-          <div className="space-y-2">
-            <Label>Platform</Label>
-
-            <Select {...register("sourcePlatformId")}>
-              <option value="">Select platform</option>
-
-              {platforms?.map((platform) => (
-                <option key={platform.id} value={platform.id}>
-                  {platform.name}
-                </option>
-              ))}
-            </Select>
-          </div>
-
-          <div className="space-y-2">
+          {/* Work Type */}
+          <div className="space-y-1.5">
             <Label>Work Type</Label>
-
             <Select {...register("workTypeId")}>
               <option value="">Select work type</option>
-
               {workTypes?.map((workType) => (
                 <option key={workType.id} value={workType.id}>
                   {workType.name}
                 </option>
               ))}
             </Select>
+            {errors.workTypeId && (
+              <p className="text-xs text-red-600">{errors.workTypeId.message}</p>
+            )}
           </div>
 
-          <div className="space-y-2">
+          {/* Job Type */}
+          <div className="space-y-1.5">
             <Label>Job Type</Label>
-
             <Select {...register("jobTypeId")}>
               <option value="">Select job type</option>
-
               {jobTypes?.map((jobType) => (
                 <option key={jobType.id} value={jobType.id}>
                   {jobType.name}
                 </option>
               ))}
             </Select>
+            {errors.jobTypeId && (
+              <p className="text-xs text-red-600">{errors.jobTypeId.message}</p>
+            )}
           </div>
         </div>
       </ApplicationFormSection>
 
+      {/* Section 3: Notes & Documents */}
       <ApplicationFormSection
         title="Notes & Documents"
         description="Store markdown notes and supporting links."
       >
         <div className="space-y-4">
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label>Notes</Label>
-
             <Textarea
-              rows={8}
+              rows={6}
               placeholder="Interview insights, company culture notes, follow-up reminders..."
               {...register("notes")}
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label>Resume Link</Label>
-
             <Input
               placeholder="https://drive.google.com/..."
               {...register("resumeDriveLink")}
