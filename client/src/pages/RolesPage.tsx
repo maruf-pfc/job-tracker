@@ -12,7 +12,8 @@ import Input from "@/components/ui/Input";
 import Label from "@/components/ui/Label";
 import Button from "@/components/ui/Button";
 import ApplicationModal from "@/components/applications/ApplicationModal";
-import { UserCheck, Plus, Pencil, Trash2, Search } from "lucide-react";
+import ApplicationActions from "@/components/applications/ApplicationActions";
+import { UserCheck, Plus, Search } from "lucide-react";
 
 export default function RolesPage() {
   const queryClient = useQueryClient();
@@ -159,26 +160,14 @@ export default function RolesPage() {
 
                   {/* Actions */}
                   <td className="px-5 py-4 whitespace-nowrap text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <button
-                        onClick={() => openEditModal(role)}
-                        className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
-                        title="Edit role"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (confirm(`Are you sure you want to delete ${role.name}?`)) {
-                            deleteMutation.mutate(role.id);
-                          }
-                        }}
-                        className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                        title="Delete role"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                    <ApplicationActions
+                      onEdit={() => openEditModal(role)}
+                      onDelete={() => {
+                        if (confirm(`Are you sure you want to delete ${role.name}?`)) {
+                          deleteMutation.mutate(role.id);
+                        }
+                      }}
+                    />
                   </td>
                 </tr>
               ))}

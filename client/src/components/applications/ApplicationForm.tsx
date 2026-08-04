@@ -9,6 +9,7 @@ import Textarea from "@/components/ui/Textarea";
 import Select from "@/components/ui/Select";
 import Button from "@/components/ui/Button";
 import { getCompanies } from "@/services/companyService";
+import { getJobRoles } from "@/services/jobRoleService";
 import { getPriorities } from "@/services/priorityService";
 import { getApplicationStatuses } from "@/services/applicationStatusService";
 import { getSourcePlatforms } from "@/services/sourcePlatformService";
@@ -28,21 +29,6 @@ type Props = {
   initialData?: JobApplication | null;
 };
 
-const COMMON_ROLES = [
-  "Frontend Engineer",
-  "Backend Developer",
-  "Fullstack Engineer",
-  "Software Engineer",
-  "DevOps Engineer",
-  "Mobile Engineer (iOS/Android)",
-  "UI/UX Designer",
-  "Product Manager",
-  "Data Engineer",
-  "QA / Test Engineer",
-  "Solutions Architect",
-  "Engineering Manager",
-];
-
 export default function ApplicationForm({ onSuccess, initialData }: Props) {
   const queryClient = useQueryClient();
 
@@ -58,6 +44,11 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
   const { data: companies } = useQuery({
     queryKey: ["companies"],
     queryFn: getCompanies,
+  });
+
+  const { data: jobRoles } = useQuery({
+    queryKey: ["job-roles"],
+    queryFn: getJobRoles,
   });
 
   const { data: priorities } = useQuery({
@@ -172,14 +163,14 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
             )}
           </div>
 
-          {/* Role Dropdown */}
+          {/* Role Dropdown from Database */}
           <div className="space-y-1.5">
             <Label>Role</Label>
             <Select {...register("role")}>
               <option value="">Select role</option>
-              {COMMON_ROLES.map((roleName) => (
-                <option key={roleName} value={roleName}>
-                  {roleName}
+              {jobRoles?.map((r) => (
+                <option key={r.id} value={r.name}>
+                  {r.name}
                 </option>
               ))}
             </Select>

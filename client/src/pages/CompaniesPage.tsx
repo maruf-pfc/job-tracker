@@ -13,7 +13,8 @@ import Label from "@/components/ui/Label";
 import Button from "@/components/ui/Button";
 import Textarea from "@/components/ui/Textarea";
 import ApplicationModal from "@/components/applications/ApplicationModal";
-import { Building2, ExternalLink, Globe, MapPin, Plus, Pencil, Trash2, Search } from "lucide-react";
+import ApplicationActions from "@/components/applications/ApplicationActions";
+import { Building2, ExternalLink, Globe, MapPin, Plus, Search } from "lucide-react";
 
 export default function CompaniesPage() {
   const queryClient = useQueryClient();
@@ -225,26 +226,14 @@ export default function CompaniesPage() {
 
                   {/* Actions */}
                   <td className="px-5 py-4 whitespace-nowrap text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <button
-                        onClick={() => openEditModal(company)}
-                        className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
-                        title="Edit company"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (confirm(`Are you sure you want to delete ${company.name}?`)) {
-                            deleteMutation.mutate(company.id);
-                          }
-                        }}
-                        className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                        title="Delete company"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                    <ApplicationActions
+                      onEdit={() => openEditModal(company)}
+                      onDelete={() => {
+                        if (confirm(`Are you sure you want to delete ${company.name}?`)) {
+                          deleteMutation.mutate(company.id);
+                        }
+                      }}
+                    />
                   </td>
                 </tr>
               ))}

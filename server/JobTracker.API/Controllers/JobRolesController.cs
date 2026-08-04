@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace JobTracker.API.Controllers;
 
 [ApiController]
+[Route("api/[controller]")]
 [Route("api/job-roles")]
 [Authorize]
 public class JobRolesController : ControllerBase
