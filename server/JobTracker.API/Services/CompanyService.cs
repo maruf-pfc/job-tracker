@@ -106,18 +106,21 @@ public class CompanyService : ICompanyService
 
     public async Task<bool> DeleteAsync(Guid id)
     {
-        var company = await _context.Companies
-            .Include(c => c.JobApplications)
-            .FirstOrDefaultAsync(c => c.Id == id);
+        var company = await _context.Companies.FindAsync(id);
 
         if (company is null)
         {
             return false;
         }
 
-        if (company.JobApplications != null && company.JobApplications.Any())
+        // Delete linked job applications first to avoid FK constraint violation
+        var linkedApps = await _context.JobApplications
+            .Where(j => j.CompanyId == id)
+            .ToListAsync();
+
+        if (linkedApps.Any())
         {
-            _context.JobApplications.RemoveRange(company.JobApplications);
+            _context.JobApplications.RemoveRange(linkedApps);
         }
 
         _context.Companies.Remove(company);

@@ -8,7 +8,7 @@ public class UserProfileDto
     public string? NameBangla { get; set; }
     public string? FatherName { get; set; }
     public string? MotherName { get; set; }
-    public DateTime? DateOfBirth { get; set; }
+    public DateOnly? DateOfBirth { get; set; }
     public string? Nationality { get; set; }
     public string? Religion { get; set; }
     public string? Gender { get; set; }

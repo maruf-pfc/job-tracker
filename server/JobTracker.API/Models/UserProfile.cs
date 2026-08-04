@@ -19,7 +19,7 @@ public class UserProfile : BaseEntity
     [MaxLength(200)]
     public string? MotherName { get; set; }
 
-    public DateTime? DateOfBirth { get; set; }
+    public DateOnly? DateOfBirth { get; set; }
 
     [MaxLength(100)]
     public string? Nationality { get; set; } = "Bangladeshi";

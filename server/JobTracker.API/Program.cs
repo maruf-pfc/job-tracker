@@ -13,6 +13,9 @@ using JobTracker.API.Models;
 using Microsoft.AspNetCore.Identity;
 using Serilog;
 
+// Enable Npgsql legacy timestamp behavior (allows DateTime.Unspecified with timestamptz)
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Serilog Logging
@@ -78,7 +81,13 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 // Controllers & Swagger
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy =
+            System.Text.Json.JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -95,11 +104,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-// JSON Serialization
-builder.Services.ConfigureHttpJsonOptions(options =>
-{
-    options.SerializerOptions.PropertyNamingPolicy = null;
-});
+
 
 // Rate Limiting
 builder.Services.AddRateLimiter(options =>
