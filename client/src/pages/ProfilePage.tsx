@@ -15,7 +15,6 @@ import {
   GraduationCap,
   Briefcase,
   Code,
-  Globe,
   Mail,
   Phone,
   Calendar,
@@ -284,7 +283,7 @@ export default function ProfilePage() {
                 <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
                   <span className="text-slate-400 text-xs block font-medium">Date of Birth</span>
                   <span className="font-semibold text-slate-800 flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-indigo-500" /> {currentProfile.dateOfBirth ? formatDate(currentProfile.dateOfBirth) : "Not Provided"}
+                    <Calendar className="w-3.5 h-3.5 text-indigo-500" /> {currentProfile.dateOfBirth ? new Date(currentProfile.dateOfBirth).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" }) : "Not Provided"}
                   </span>
                 </div>
 

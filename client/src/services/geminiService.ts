@@ -43,19 +43,15 @@ Provide a JSON object response matching this exact structure without markdown fo
 }
 `;
 
-  // Complete prioritized list of Gemini Pro & Flash models for maximum capability & speed
+  // Prioritized list of real Gemini models — highest capability first
   const models = [
-    "gemini-3.5-pro",
-    "gemini-3.5-flash",
-    "gemini-3.0-pro",
-    "gemini-3.0-flash",
     "gemini-2.5-pro",
     "gemini-2.5-flash",
-    "gemini-2.0-pro-exp",
     "gemini-2.0-flash",
-    "gemini-1.5-pro",
+    "gemini-2.0-pro-exp",
     "gemini-1.5-pro-latest",
     "gemini-1.5-flash-latest",
+    "gemini-1.5-pro",
     "gemini-1.5-flash",
   ];
 
