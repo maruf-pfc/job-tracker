@@ -1,14 +1,12 @@
 import { useState } from "react";
-import { useAuthStore } from "@/stores/authStore";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import Textarea from "@/components/ui/Textarea";
-import { Download, Upload, ShieldCheck, Database, Bot, Sparkles, Send, Bell } from "lucide-react";
+import { Download, Upload, Database, Bot, Sparkles, Send, Bell } from "lucide-react";
 import { api } from "@/services/api";
 import { toast } from "sonner";
 
 export default function SettingsPage() {
-  const user = useAuthStore((state) => state.user);
   const [importing, setImporting] = useState(false);
 
   // Integrations State
@@ -224,20 +222,6 @@ export default function SettingsPage() {
             />
           </label>
         </div>
-      </div>
-
-      {/* Security Status */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
-        <div className="flex items-center gap-3">
-          <ShieldCheck className="w-6 h-6 text-emerald-600 shrink-0" />
-          <div>
-            <h4 className="text-sm font-bold text-slate-900">Security & Authentication Status</h4>
-            <p className="text-xs text-slate-500">Logged in as {user?.email ?? "demo@jobtracker.dev"} (ASP.NET Core Identity JWT)</p>
-          </div>
-        </div>
-        <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">
-          Active & Protected
-        </span>
       </div>
     </div>
   );

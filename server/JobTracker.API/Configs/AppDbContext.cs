@@ -19,6 +19,7 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
     public DbSet<InterviewRound> InterviewRounds => Set<InterviewRound>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<JobRole> JobRoles => Set<JobRole>();
+    public DbSet<UserProfile> UserProfiles => Set<UserProfile>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

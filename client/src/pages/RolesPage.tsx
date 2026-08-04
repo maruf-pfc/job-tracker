@@ -13,11 +13,14 @@ import Label from "@/components/ui/Label";
 import Button from "@/components/ui/Button";
 import ApplicationModal from "@/components/applications/ApplicationModal";
 import ApplicationActions from "@/components/applications/ApplicationActions";
-import { UserCheck, Plus, Search } from "lucide-react";
+import { UserCheck, Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
+
+const ITEMS_PER_PAGE = 8;
 
 export default function RolesPage() {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<JobRole | null>(null);
 
@@ -27,6 +30,7 @@ export default function RolesPage() {
   const { data: roles, isLoading } = useQuery({
     queryKey: ["job-roles"],
     queryFn: getJobRoles,
+    staleTime: 5 * 60 * 1000,
   });
 
   const openCreateModal = () => {
@@ -90,6 +94,12 @@ export default function RolesPage() {
 
   const filteredRoles = roles?.filter((r) =>
     r.name.toLowerCase().includes(searchTerm.toLowerCase())
+  ) || [];
+
+  const totalPages = Math.ceil(filteredRoles.length / ITEMS_PER_PAGE) || 1;
+  const paginatedRoles = filteredRoles.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
   );
 
   return (
@@ -118,20 +128,23 @@ export default function RolesPage() {
             type="text"
             placeholder="Search roles..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-slate-900 placeholder:text-slate-400"
           />
         </div>
       </div>
 
-      {/* Table / Cards List */}
+      {/* Table List */}
       <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-xs">
         {isLoading ? (
           <div className="p-12 text-center text-sm text-slate-500 flex items-center justify-center gap-2">
             <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
             Loading job roles...
           </div>
-        ) : !filteredRoles?.length ? (
+        ) : !filteredRoles.length ? (
           <div className="p-12 text-center">
             <UserCheck className="mx-auto h-8 w-8 text-slate-400 mb-2" />
             <h3 className="text-base font-semibold text-slate-900">No roles found</h3>
@@ -140,39 +153,66 @@ export default function RolesPage() {
             </p>
           </div>
         ) : (
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-slate-200 bg-slate-50/80 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                <th className="px-5 py-3.5">Role Title</th>
-                <th className="px-5 py-3.5 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 bg-white text-sm">
-              {filteredRoles.map((role) => (
-                <tr key={role.id} className="hover:bg-slate-50/80 transition-colors">
-                  {/* Role Title */}
-                  <td className="px-5 py-4 font-semibold text-slate-900">
-                    <div className="flex items-center gap-2.5">
-                      <UserCheck className="w-4 h-4 text-indigo-600 shrink-0" />
-                      <span>{role.name}</span>
-                    </div>
-                  </td>
-
-                  {/* Actions */}
-                  <td className="px-5 py-4 whitespace-nowrap text-right">
-                    <ApplicationActions
-                      onEdit={() => openEditModal(role)}
-                      onDelete={() => {
-                        if (confirm(`Are you sure you want to delete ${role.name}?`)) {
-                          deleteMutation.mutate(role.id);
-                        }
-                      }}
-                    />
-                  </td>
+          <>
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50/80 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  <th className="px-5 py-3.5">Role Title</th>
+                  <th className="px-5 py-3.5 text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-100 bg-white text-sm">
+                {paginatedRoles.map((role) => (
+                  <tr key={role.id} className="hover:bg-slate-50/80 transition-colors">
+                    {/* Role Title */}
+                    <td className="px-5 py-4 font-semibold text-slate-900">
+                      <div className="flex items-center gap-2.5">
+                        <UserCheck className="w-4 h-4 text-indigo-600 shrink-0" />
+                        <span>{role.name}</span>
+                      </div>
+                    </td>
+
+                    {/* Actions */}
+                    <td className="px-5 py-4 whitespace-nowrap text-right">
+                      <ApplicationActions
+                        onEdit={() => openEditModal(role)}
+                        onDelete={() => {
+                          if (confirm(`Are you sure you want to delete ${role.name}?`)) {
+                            deleteMutation.mutate(role.id);
+                          }
+                        }}
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between px-5 py-3 border-t border-slate-100 bg-slate-50/50 text-xs text-slate-600">
+                <span>
+                  Showing Page {currentPage} of {totalPages} ({filteredRoles.length} total roles)
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 disabled:opacity-40 hover:bg-slate-50 transition-colors cursor-pointer"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <button
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 disabled:opacity-40 hover:bg-slate-50 transition-colors cursor-pointer"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 

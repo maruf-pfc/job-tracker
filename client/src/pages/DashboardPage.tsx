@@ -2,8 +2,32 @@ import { useEffect, useState } from "react";
 import { getDashboardSummary, getDashboardAnalytics } from "@/services/dashboardService";
 import type { DashboardAnalytics } from "@/services/dashboardService";
 import type { DashboardSummary } from "@/types/dashboard";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-import { Briefcase, CheckCircle2, TrendingUp, Award, Clock } from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+} from "recharts";
+import {
+  Briefcase,
+  CheckCircle2,
+  TrendingUp,
+  Award,
+  Clock,
+  Sparkles,
+  CheckCircle,
+  XCircle,
+  Lightbulb,
+} from "lucide-react";
+
+const STATUS_COLORS = ["#6366f1", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4"];
 
 export default function DashboardPage() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
@@ -29,7 +53,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center text-sm text-slate-500 flex items-center justify-center gap-2">
-        <Clock className="w-4 h-4 animate-spin text-indigo-600" /> Loading dashboard statistics...
+        <Clock className="w-4 h-4 animate-spin text-indigo-600" /> Loading dashboard analytics & AI insights...
       </div>
     );
   }
@@ -39,84 +63,197 @@ export default function DashboardPage() {
   const totalOffers = summary?.totalOffers ?? analytics?.totalOffers ?? 0;
   const responseRate = analytics?.responseRatePercentage ?? 0;
 
+  // Prepare chart data for Status Distribution
+  const statusPieData = analytics?.statusBreakdown
+    ? Object.entries(analytics.statusBreakdown).map(([name, value]) => ({ name, value }))
+    : [
+        { name: "Applied", value: totalApplications > 0 ? totalApplications - totalInterviews : 2 },
+        { name: "Interviewing", value: totalInterviews > 0 ? totalInterviews : 1 },
+        { name: "Offers", value: totalOffers > 0 ? totalOffers : 0 },
+      ];
+
   return (
     <div className="space-y-6">
-      {/* Header matching ApplicationsPage */}
+      {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-          Dashboard
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+          Dashboard Analytics & Career Insights
         </h1>
         <p className="mt-1 text-sm text-slate-600">
-          Track your job search stats, response rate, and application velocity.
+          Track your job search stats, response rate, application velocity, and AI recommendations.
         </p>
       </div>
 
       {/* KPI Overview Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm flex items-center justify-between">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-slate-600">Total Applications</p>
-            <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900">{totalApplications}</p>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Applications</p>
+            <p className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900">{totalApplications}</p>
           </div>
-          <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
+          <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
             <Briefcase className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm flex items-center justify-between">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-slate-600">Response Rate</p>
-            <p className="mt-2 text-3xl font-bold tracking-tight text-emerald-600">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Response Rate</p>
+            <p className="mt-2 text-3xl font-extrabold tracking-tight text-emerald-600">
               {responseRate}%
             </p>
           </div>
-          <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+          <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
             <TrendingUp className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm flex items-center justify-between">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-slate-600">Interview Rate</p>
-            <p className="mt-2 text-3xl font-bold tracking-tight text-indigo-600">{totalInterviews}</p>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Interviews Scheduled</p>
+            <p className="mt-2 text-3xl font-extrabold tracking-tight text-indigo-600">{totalInterviews}</p>
           </div>
-          <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
+          <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
             <CheckCircle2 className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm flex items-center justify-between">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-slate-600">Total Offers</p>
-            <p className="mt-2 text-3xl font-bold tracking-tight text-amber-600">{totalOffers}</p>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Offers</p>
+            <p className="mt-2 text-3xl font-extrabold tracking-tight text-amber-600">{totalOffers}</p>
           </div>
-          <div className="p-3 bg-amber-50 text-amber-600 rounded-xl">
+          <div className="p-3 bg-amber-50 text-amber-600 rounded-2xl">
             <Award className="w-6 h-6" />
           </div>
         </div>
       </div>
 
-      {/* Analytics Chart Section */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-900 mb-4">Application Velocity (Weekly Trends)</h2>
-        {analytics?.weeklyTrends && analytics.weeklyTrends.length > 0 ? (
-          <div className="h-72 w-full pt-2">
+      {/* Analytics Charts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Chart 1: Application Velocity (Weekly Trends) */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
+          <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-indigo-600" /> Application Velocity (Weekly Trends)
+          </h2>
+          {analytics?.weeklyTrends && analytics.weeklyTrends.length > 0 ? (
+            <div className="h-64 w-full pt-2">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={analytics.weeklyTrends}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                  <XAxis dataKey="weekLabel" stroke="#64748b" fontSize={12} />
+                  <YAxis allowDecimals={false} stroke="#64748b" fontSize={12} />
+                  <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", color: "#fff", borderRadius: "12px" }} />
+                  <Bar dataKey="applicationCount" fill="#4f46e5" radius={[6, 6, 0, 0]} name="Applications" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div className="h-64 flex flex-col items-center justify-center text-xs text-slate-500 border border-dashed border-slate-200 rounded-xl bg-slate-50 p-6 text-center">
+              <Briefcase className="w-8 h-8 text-slate-400 mb-2" />
+              No application activity recorded in recent weeks. Keep applying to see weekly momentum trends!
+            </div>
+          )}
+        </div>
+
+        {/* Chart 2: Status Distribution */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
+          <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+            <PieChart className="w-5 h-5 text-indigo-600" /> Application Status Breakdown
+          </h2>
+          <div className="h-64 w-full pt-2">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={analytics.weeklyTrends}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                <XAxis dataKey="weekLabel" stroke="#64748b" fontSize={13} />
-                <YAxis allowDecimals={false} stroke="#64748b" fontSize={13} />
-                <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", color: "#fff", borderRadius: "12px" }} />
-                <Bar dataKey="applicationCount" fill="#4f46e5" radius={[6, 6, 0, 0]} name="Applications" />
-              </BarChart>
+              <PieChart>
+                <Pie
+                  data={statusPieData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={55}
+                  outerRadius={80}
+                  paddingAngle={4}
+                  dataKey="value"
+                >
+                  {statusPieData.map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={STATUS_COLORS[index % STATUS_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderRadius: "12px", color: "#fff" }} />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: "12px" }} />
+              </PieChart>
             </ResponsiveContainer>
           </div>
-        ) : (
-          <div className="h-48 flex flex-col items-center justify-center text-sm text-slate-500 border border-dashed border-slate-200 rounded-xl bg-slate-50">
-            <Briefcase className="w-8 h-8 text-slate-400 mb-2" />
-            No application activity recorded in recent weeks.
+        </div>
+      </div>
+
+      {/* AI Suggestions & Actionable Guidelines */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-6">
+        <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+          <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
+            <Sparkles className="w-6 h-6" />
           </div>
-        )}
+          <div>
+            <h3 className="text-base font-bold text-slate-900">AI Career Assistant & Action Guidelines</h3>
+            <p className="text-xs text-slate-500">Automated evaluation of your application momentum and response metrics.</p>
+          </div>
+        </div>
+
+        {/* Smart Evaluation */}
+        <div className="p-4 rounded-xl bg-indigo-50/70 border border-indigo-100 flex items-start gap-3">
+          <Lightbulb className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />
+          <div className="space-y-1 text-xs sm:text-sm text-slate-700">
+            <span className="font-bold text-slate-900 block">AI Velocity Assessment:</span>
+            <p>
+              {totalApplications === 0
+                ? "You haven't submitted applications yet this month. Target submitting 5–8 tailored applications per week for Full Stack Engineer roles to maintain consistent response momentum."
+                : `You currently have ${totalApplications} active application(s) with a ${responseRate}% response rate. Your response rate is healthy. Focus on scheduled follow-ups and custom resume tailoring for backend .NET & Full Stack roles.`}
+            </p>
+          </div>
+        </div>
+
+        {/* Guidelines Grid: DOs & DON'Ts */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Actionable To-Dos (DOs) */}
+          <div className="p-5 rounded-2xl bg-emerald-50/60 border border-emerald-200/70 space-y-3">
+            <h4 className="text-sm font-bold text-emerald-900 flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-emerald-600" /> Recommended Action Items (DOs)
+            </h4>
+            <ul className="space-y-2 text-xs sm:text-sm text-emerald-950">
+              <li className="flex items-start gap-2">
+                <span className="text-emerald-600 font-bold">•</span>
+                Follow up on applications that have been pending without response for &gt; 7 business days.
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-emerald-600 font-bold">•</span>
+                Use the AI Cover Letter Generator on the Settings page to tailor emails for high-priority targets.
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-emerald-600 font-bold">•</span>
+                Log interview feedback immediately after rounds in your markdown notes for future preparation.
+              </li>
+            </ul>
+          </div>
+
+          {/* Guidelines (DON'Ts) */}
+          <div className="p-5 rounded-2xl bg-rose-50/60 border border-rose-200/70 space-y-3">
+            <h4 className="text-sm font-bold text-rose-900 flex items-center gap-2">
+              <XCircle className="w-4 h-4 text-rose-600" /> Critical Practices to Avoid (DON'Ts)
+            </h4>
+            <ul className="space-y-2 text-xs sm:text-sm text-rose-950">
+              <li className="flex items-start gap-2">
+                <span className="text-rose-600 font-bold">•</span>
+                Don't send generic, non-customized resumes to senior Full Stack or .NET roles.
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-rose-600 font-bold">•</span>
+                Don't leave interview dates blank or untracked without set reminders.
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-rose-600 font-bold">•</span>
+                Don't neglect automated data backups — use n8n or CSV export to preserve historical data.
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   );

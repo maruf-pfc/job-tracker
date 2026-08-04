@@ -1,25 +1,105 @@
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { getProfile, updateProfile } from "@/services/profileService";
+import type { UserProfile } from "@/services/profileService";
+import Input from "@/components/ui/Input";
+import Label from "@/components/ui/Label";
+import Textarea from "@/components/ui/Textarea";
+import Button from "@/components/ui/Button";
+import ApplicationModal from "@/components/applications/ApplicationModal";
 import {
   User,
   MapPin,
   GraduationCap,
   Briefcase,
   Code,
-  Award,
   Globe,
   Mail,
   Phone,
   Calendar,
-  FileText,
   Building,
-  CheckCircle2,
   Trophy,
+  Edit,
+  Save,
 } from "lucide-react";
 
 export default function ProfilePage() {
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<
     "personal" | "education" | "experience" | "coding"
   >("personal");
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  // Form State
+  const [formData, setFormData] = useState<UserProfile>({
+    nameEnglish: "",
+    nameBangla: "",
+    fatherName: "",
+    motherName: "",
+    mobileNumber: "",
+    email: "",
+    presentAddress: "",
+    permanentAddress: "",
+    nationalId: "",
+    birthRegistration: "",
+    bioSummary: "",
+  });
+
+  const { data: profile, isLoading } = useQuery({
+    queryKey: ["user-profile"],
+    queryFn: getProfile,
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (data: UserProfile) => updateProfile(data),
+    onSuccess: () => {
+      toast.success("Profile updated in database successfully!");
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
+      setIsEditModalOpen(false);
+    },
+    onError: () => toast.error("Failed to update profile"),
+  });
+
+  const openEditModal = () => {
+    if (profile) {
+      setFormData(profile);
+    }
+    setIsEditModalOpen(true);
+  };
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateMutation.mutate(formData);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="p-12 text-center text-slate-500 flex items-center justify-center gap-2">
+        <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+        Loading user profile...
+      </div>
+    );
+  }
+
+  const currentProfile = profile || {
+    nameEnglish: "Demo User",
+    nameBangla: "",
+    fatherName: "",
+    motherName: "",
+    dateOfBirth: "",
+    nationality: "Bangladeshi",
+    religion: "Islam",
+    gender: "Male",
+    birthRegistration: "",
+    nationalId: "",
+    maritalStatus: "Single",
+    mobileNumber: "",
+    email: "demo@jobtracker.dev",
+    presentAddress: " (House 176/7), Ward 22, Hatirjheel, Khilgaon, Dhaka - 1219",
+    permanentAddress: ", , , , Cumilla - 3544",
+    bioSummary: "Full Stack Developer and competitive programmer with hands-on experience building web applications and AI-powered automation tools for real-world business operations.",
+  };
 
   return (
     <div className="space-y-6">
@@ -33,11 +113,13 @@ export default function ProfilePage() {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-bold text-slate-900">
-                  Demo User
+                  {currentProfile.nameEnglish}
                 </h1>
-                <span className="text-sm text-slate-500 font-normal">
-                  ()
-                </span>
+                {currentProfile.nameBangla && (
+                  <span className="text-sm text-slate-500 font-normal">
+                    ({currentProfile.nameBangla})
+                  </span>
+                )}
               </div>
               <p className="text-sm font-medium text-indigo-600 mt-0.5">
                 Full Stack Developer & Competitive Programmer
@@ -47,22 +129,25 @@ export default function ProfilePage() {
                   <MapPin className="w-3.5 h-3.5 text-slate-400" /> Dhaka, Bangladesh
                 </span>
                 <span className="flex items-center gap-1">
-                  <Mail className="w-3.5 h-3.5 text-slate-400" /> demo@jobtracker.dev
+                  <Mail className="w-3.5 h-3.5 text-slate-400" /> {currentProfile.email}
                 </span>
                 <span className="flex items-center gap-1">
-                  <Phone className="w-3.5 h-3.5 text-slate-400" /> 
+                  <Phone className="w-3.5 h-3.5 text-slate-400" /> {currentProfile.mobileNumber}
                 </span>
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-2 self-start sm:self-auto">
+            <Button onClick={openEditModal} className="flex items-center gap-1.5">
+              <Edit className="w-4 h-4" /> Edit Profile
+            </Button>
+
             <a
               href="https://github.com/your-github-username"
               target="_blank"
               rel="noreferrer"
-              className="p-2 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors font-semibold text-xs flex items-center gap-1"
-              title="GitHub"
+              className="px-3 py-2 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors font-semibold text-xs flex items-center gap-1"
             >
               GitHub
             </a>
@@ -70,8 +155,7 @@ export default function ProfilePage() {
               href="https://linkedin.com"
               target="_blank"
               rel="noreferrer"
-              className="p-2 text-slate-600 hover:text-indigo-600 bg-slate-100 hover:bg-indigo-50 rounded-xl transition-colors font-semibold text-xs flex items-center gap-1"
-              title="LinkedIn"
+              className="px-3 py-2 text-slate-600 hover:text-indigo-600 bg-slate-100 hover:bg-indigo-50 rounded-xl transition-colors font-semibold text-xs flex items-center gap-1"
             >
               LinkedIn
             </a>
@@ -79,8 +163,7 @@ export default function ProfilePage() {
               href="https://your-portfolio.dev"
               target="_blank"
               rel="noreferrer"
-              className="p-2 text-slate-600 hover:text-emerald-600 bg-slate-100 hover:bg-emerald-50 rounded-xl transition-colors font-semibold text-xs flex items-center gap-1"
-              title="Portfolio"
+              className="px-3 py-2 text-slate-600 hover:text-emerald-600 bg-slate-100 hover:bg-emerald-50 rounded-xl transition-colors font-semibold text-xs flex items-center gap-1"
             >
               <Globe className="w-3.5 h-3.5" /> Portfolio
             </a>
@@ -89,7 +172,7 @@ export default function ProfilePage() {
 
         {/* Developer Bio Summary */}
         <div className="pt-4 border-t border-slate-100 text-xs sm:text-sm text-slate-600 leading-relaxed">
-          Full Stack Developer and competitive programmer with hands-on experience building web applications and AI-powered automation tools for real-world business operations. Skilled in delivering end-to-end products from database design and API development to responsive frontend interfaces. Currently deepening expertise in backend engineering.
+          {currentProfile.bioSummary}
         </div>
 
         {/* Tab Navigation */}
@@ -151,22 +234,22 @@ export default function ProfilePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs sm:text-sm">
               <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
                 <span className="text-slate-400 text-xs block font-medium">Name (English)</span>
-                <span className="font-bold text-slate-900">Demo User</span>
+                <span className="font-bold text-slate-900">{currentProfile.nameEnglish}</span>
               </div>
 
               <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
                 <span className="text-slate-400 text-xs block font-medium">Name (Bangla)</span>
-                <span className="font-bold text-slate-900"></span>
+                <span className="font-bold text-slate-900">{currentProfile.nameBangla || "N/A"}</span>
               </div>
 
               <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
                 <span className="text-slate-400 text-xs block font-medium">Father's Name</span>
-                <span className="font-semibold text-slate-800"></span>
+                <span className="font-semibold text-slate-800">{currentProfile.fatherName || "N/A"}</span>
               </div>
 
               <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
                 <span className="text-slate-400 text-xs block font-medium">Mother's Name</span>
-                <span className="font-semibold text-slate-800"></span>
+                <span className="font-semibold text-slate-800">{currentProfile.motherName || "N/A"}</span>
               </div>
 
               <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
@@ -178,12 +261,12 @@ export default function ProfilePage() {
 
               <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
                 <span className="text-slate-400 text-xs block font-medium">National ID (NID)</span>
-                <span className="font-mono font-semibold text-slate-800"></span>
+                <span className="font-mono font-semibold text-slate-800">{currentProfile.nationalId || ""}</span>
               </div>
 
               <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
                 <span className="text-slate-400 text-xs block font-medium">Birth Registration</span>
-                <span className="font-mono font-semibold text-slate-800"></span>
+                <span className="font-mono font-semibold text-slate-800">{currentProfile.birthRegistration || ""}</span>
               </div>
 
               <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
@@ -200,36 +283,28 @@ export default function ProfilePage() {
 
           {/* Addresses Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Present Address */}
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-3">
               <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-indigo-600" /> Present Address (Voter Address)
               </h3>
-              <div className="space-y-2 text-xs sm:text-sm text-slate-700">
-                <p><strong className="text-slate-900">Location / House:</strong>  (House 176/7)</p>
-                <p><strong className="text-slate-900">Area:</strong> Hatirjheel, Dhaka North City Corp (Ward 22)</p>
-                <p><strong className="text-slate-900">Thana / Police Station:</strong> Hatirjheel (Gulshan Upazila)</p>
-                <p><strong className="text-slate-900">District & Post:</strong> Khilgaon, Dhaka - 1219</p>
-              </div>
+              <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                {currentProfile.presentAddress}
+              </p>
             </div>
 
-            {/* Permanent Address */}
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-3">
               <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
                 <Building className="w-5 h-5 text-indigo-600" /> Permanent Address
               </h3>
-              <div className="space-y-2 text-xs sm:text-sm text-slate-700">
-                <p><strong className="text-slate-900">Village:</strong> ,  Union</p>
-                <p><strong className="text-slate-900">Police Station:</strong> ,  Upazila</p>
-                <p><strong className="text-slate-900">District:</strong> Cumilla (Chattogram Division)</p>
-                <p><strong className="text-slate-900">Post Office & Code:</strong>  - 3544</p>
-              </div>
+              <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                {currentProfile.permanentAddress}
+              </p>
             </div>
           </div>
         </div>
       )}
 
-      {/* Tab 2: Education & Certifications */}
+      {/* Tab 2: Education */}
       {activeTab === "education" && (
         <div className="space-y-6">
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
@@ -238,15 +313,10 @@ export default function ProfilePage() {
             </h3>
 
             <div className="space-y-4">
-              {/* B.Sc. */}
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <h4 className="text-sm font-bold text-slate-900">
-                    B.Sc. in Computer Science & Engineering
-                  </h4>
-                  <p className="text-xs font-medium text-indigo-600 mt-0.5">
-                    Green University of Bangladesh
-                  </p>
+                  <h4 className="text-sm font-bold text-slate-900">B.Sc. in Computer Science & Engineering</h4>
+                  <p className="text-xs font-medium text-indigo-600 mt-0.5">Green University of Bangladesh</p>
                   <span className="text-xs text-slate-500 block mt-1">Feb 2022 – Feb 2026</span>
                 </div>
                 <div className="text-right">
@@ -256,7 +326,6 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              {/* H.S.C */}
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h4 className="text-sm font-bold text-slate-900">Higher Secondary Certificate (H.S.C)</h4>
@@ -270,7 +339,6 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              {/* S.S.C */}
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h4 className="text-sm font-bold text-slate-900">Secondary School Certificate (S.S.C)</h4>
@@ -285,33 +353,10 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
-
-          {/* Certifications */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-            <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-              <Award className="w-5 h-5 text-indigo-600" /> Certifications & Achievements
-            </h3>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1">
-                <h4 className="font-bold text-slate-900 flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" /> SQL (Basic) Certificate
-                </h4>
-                <p className="text-xs text-slate-500">Verified Database & Query Management Proficiency</p>
-              </div>
-
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1">
-                <h4 className="font-bold text-slate-900 flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Problem-Solving (Basic) Certificate
-                </h4>
-                <p className="text-xs text-slate-500">Algorithms & Data Structures Competency</p>
-              </div>
-            </div>
-          </div>
         </div>
       )}
 
-      {/* Tab 3: Experience & Projects */}
+      {/* Tab 3: Experience */}
       {activeTab === "experience" && (
         <div className="space-y-6">
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
@@ -330,60 +375,14 @@ export default function ProfilePage() {
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                Developed and delivered modern web platforms and workflow automation solutions for real-world operational use cases, including business websites and Zapier automation pipelines to streamline repetitive workflows, lead collection, third-party integrations, and operational processes across multiple projects.
+                Developed and delivered modern web platforms and workflow automation solutions for real-world operational use cases, including business websites and Zapier automation pipelines.
               </p>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-            <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-              <FileText className="w-5 h-5 text-indigo-600" /> Key Portfolio Projects
-            </h3>
-
-            <div className="space-y-4">
-              <div className="p-4.5 rounded-xl border border-slate-200 bg-slate-50/60 space-y-2">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-base font-bold text-slate-900">StoreDesk — Full Stack Inventory Management System</h4>
-                  <a href="https://github.com/your-github-username" target="_blank" rel="noreferrer" className="text-xs text-indigo-600 hover:underline flex items-center gap-1 font-medium">
-                    Repository
-                  </a>
-                </div>
-                <p className="text-xs sm:text-sm text-slate-600">
-                  Designed and developed a modern inventory management platform featuring category/item management, stock tracking, issue-return workflows, low-stock monitoring, operational dashboard analytics, and JWT authentication.
-                </p>
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  {["React", "TypeScript", "Tailwind CSS", "Zustand", "TanStack Query", "ASP.NET Core", "PostgreSQL", "Docker"].map((tech) => (
-                    <span key={tech} className="px-2 py-0.5 rounded-md bg-white border border-slate-200 text-[11px] font-semibold text-slate-700">
-                      {tech}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="p-4.5 rounded-xl border border-slate-200 bg-slate-50/60 space-y-2">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-base font-bold text-slate-900">Job Tracker — Personal CRM for Job Hunting</h4>
-                  <a href="https://github.com/your-github-username" target="_blank" rel="noreferrer" className="text-xs text-indigo-600 hover:underline flex items-center gap-1 font-medium">
-                    Repository
-                  </a>
-                </div>
-                <p className="text-xs sm:text-sm text-slate-600">
-                  Full-stack job tracking platform for managing applications, companies, follow-ups, interview pipelines, and career workflows in a single operational workspace with dashboard analytics.
-                </p>
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  {["React", "TypeScript", "Tailwind CSS", "TanStack Query", "ASP.NET Core Identity", "PostgreSQL", "JWT"].map((tech) => (
-                    <span key={tech} className="px-2 py-0.5 rounded-md bg-white border border-slate-200 text-[11px] font-semibold text-slate-700">
-                      {tech}
-                    </span>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Tab 4: Competitive Programming & Stack */}
+      {/* Tab 4: Coding */}
       {activeTab === "coding" && (
         <div className="space-y-6">
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
@@ -411,49 +410,102 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
-
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-            <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-              <Code className="w-5 h-5 text-indigo-600" /> Core Technologies & Tools
-            </h3>
-
-            <div className="space-y-3 text-xs sm:text-sm">
-              <div>
-                <span className="font-bold text-slate-900 block mb-1">Languages:</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {["C", "C++", "C#", "Java", "JavaScript", "TypeScript", "Python"].map((item) => (
-                    <span key={item} className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 font-semibold">
-                      {item}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <span className="font-bold text-slate-900 block mb-1">Frameworks & Libraries:</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {[".NET", "ASP.NET Core", "React.js", "Next.js", "Node.js", "Express.js", "Tailwind CSS"].map((item) => (
-                    <span key={item} className="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-semibold">
-                      {item}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <span className="font-bold text-slate-900 block mb-1">Databases & Infrastructure:</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {["PostgreSQL", "MySQL", "MongoDB", "Docker", "VPS", "Vercel", "Coolify", "Linux"].map((item) => (
-                    <span key={item} className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 font-semibold">
-                      {item}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       )}
+
+      {/* Edit Profile Modal */}
+      <ApplicationModal
+        open={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        title="Edit Personal Profile Data"
+      >
+        <form onSubmit={handleSave} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label>Name (English)</Label>
+              <Input
+                value={formData.nameEnglish}
+                onChange={(e) => setFormData({ ...formData, nameEnglish: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Name (Bangla)</Label>
+              <Input
+                value={formData.nameBangla || ""}
+                onChange={(e) => setFormData({ ...formData, nameBangla: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Father's Name</Label>
+              <Input
+                value={formData.fatherName || ""}
+                onChange={(e) => setFormData({ ...formData, fatherName: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Mother's Name</Label>
+              <Input
+                value={formData.motherName || ""}
+                onChange={(e) => setFormData({ ...formData, motherName: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Mobile Number</Label>
+              <Input
+                value={formData.mobileNumber || ""}
+                onChange={(e) => setFormData({ ...formData, mobileNumber: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Email Address</Label>
+              <Input
+                type="email"
+                value={formData.email || ""}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Present Address</Label>
+            <Textarea
+              rows={2}
+              value={formData.presentAddress || ""}
+              onChange={(e) => setFormData({ ...formData, presentAddress: e.target.value })}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Permanent Address</Label>
+            <Textarea
+              rows={2}
+              value={formData.permanentAddress || ""}
+              onChange={(e) => setFormData({ ...formData, permanentAddress: e.target.value })}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Bio / Executive Summary</Label>
+            <Textarea
+              rows={3}
+              value={formData.bioSummary || ""}
+              onChange={(e) => setFormData({ ...formData, bioSummary: e.target.value })}
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-4">
+            <Button type="submit" disabled={updateMutation.isPending} className="flex items-center gap-1.5">
+              <Save className="w-4 h-4" /> {updateMutation.isPending ? "Saving..." : "Save to Database"}
+            </Button>
+          </div>
+        </form>
+      </ApplicationModal>
     </div>
   );
 }

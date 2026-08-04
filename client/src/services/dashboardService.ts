@@ -14,6 +14,7 @@ export type DashboardAnalytics = {
   totalInterviews: number;
   totalOffers: number;
   weeklyTrends: WeeklyTrend[];
+  statusBreakdown?: Record<string, number>;
 };
 
 export async function getDashboardSummary(): Promise<DashboardSummary> {

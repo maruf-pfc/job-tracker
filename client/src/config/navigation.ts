@@ -5,6 +5,7 @@ import {
   Settings,
   UserCheck,
   User,
+  BookOpen,
 } from "lucide-react";
 
 export const navigation = [
@@ -32,6 +33,11 @@ export const navigation = [
     title: "Profile",
     href: "/profile",
     icon: User,
+  },
+  {
+    title: "Docs",
+    href: "/docs",
+    icon: BookOpen,
   },
   {
     title: "Settings",
