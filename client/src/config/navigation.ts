@@ -3,8 +3,8 @@ import {
   Building2,
   LayoutDashboard,
   Settings,
-  Tags,
   UserCheck,
+  User,
 } from "lucide-react";
 
 export const navigation = [
@@ -29,9 +29,9 @@ export const navigation = [
     icon: UserCheck,
   },
   {
-    title: "Lookups",
-    href: "/lookups",
-    icon: Tags,
+    title: "Profile",
+    href: "/profile",
+    icon: User,
   },
   {
     title: "Settings",

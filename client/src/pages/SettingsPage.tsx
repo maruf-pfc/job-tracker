@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
-import { Download, Upload, User, ShieldCheck, Database } from "lucide-react";
+import Textarea from "@/components/ui/Textarea";
+import { Download, Upload, ShieldCheck, Database, Bot, Sparkles, Send, Bell } from "lucide-react";
 import { api } from "@/services/api";
 import { toast } from "sonner";
 
@@ -10,13 +11,50 @@ export default function SettingsPage() {
   const user = useAuthStore((state) => state.user);
   const [importing, setImporting] = useState(false);
 
+  // Integrations State
+  const [n8nWebhookUrl, setN8nWebhookUrl] = useState(
+    localStorage.getItem("n8n_webhook_url") || ""
+  );
+  const [telegramToken, setTelegramToken] = useState(
+    localStorage.getItem("telegram_token") || ""
+  );
+  const [telegramChatId, setTelegramChatId] = useState(
+    localStorage.getItem("telegram_chat_id") || ""
+  );
+  const [discordWebhookUrl, setDiscordWebhookUrl] = useState(
+    localStorage.getItem("discord_webhook_url") || ""
+  );
+
+  // AI Assistance State
+  const [geminiApiKey, setGeminiApiKey] = useState(
+    localStorage.getItem("gemini_api_key") || ""
+  );
+  const [customAiPrompt, setCustomAiPrompt] = useState(
+    localStorage.getItem("custom_ai_prompt") ||
+      "Generate a professional cold email and cover letter customized for this job application using my profile details."
+  );
+
+  const handleSaveIntegrations = () => {
+    localStorage.setItem("n8n_webhook_url", n8nWebhookUrl);
+    localStorage.setItem("telegram_token", telegramToken);
+    localStorage.setItem("telegram_chat_id", telegramChatId);
+    localStorage.setItem("discord_webhook_url", discordWebhookUrl);
+    toast.success("Automation & Webhook settings saved!");
+  };
+
+  const handleSaveAiConfig = () => {
+    localStorage.setItem("gemini_api_key", geminiApiKey);
+    localStorage.setItem("custom_ai_prompt", customAiPrompt);
+    toast.success("AI Assistance settings saved!");
+  };
+
   const handleExportCsv = async () => {
     try {
       const response = await api.get("/export/csv", { responseType: "blob" });
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `job_applications_${new Date().toISOString().slice(0,10)}.csv`);
+      link.setAttribute("download", `job_applications_${new Date().toISOString().slice(0, 10)}.csv`);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -50,56 +88,132 @@ export default function SettingsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-          Settings
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+          Settings & Integrations
         </h1>
         <p className="mt-1 text-sm text-slate-600">
-          Manage account security, workspace preferences, and data import/export.
+          Manage automation webhooks (n8n, Telegram, Discord, Excel sync), AI key configs, and data backups.
         </p>
       </div>
 
-      {/* Profile Section */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 space-y-4">
+      {/* AI Assistant Configuration */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 space-y-4 shadow-xs">
         <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
           <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
-            <User className="w-6 h-6" />
+            <Sparkles className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-base font-semibold text-slate-900">Account Profile</h3>
-            <p className="text-xs text-slate-500">Your personal details and authentication identity.</p>
+            <h3 className="text-base font-bold text-slate-900">AI Cover Letter & Email Generator</h3>
+            <p className="text-xs text-slate-500">Configure your Gemini / OpenAI API key to automatically draft emails and cover letters.</p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-slate-700 block">Google Gemini / OpenAI API Key</label>
+            <Input
+              type="password"
+              placeholder="AIzaSy..."
+              value={geminiApiKey}
+              onChange={(e) => setGeminiApiKey(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-slate-700 block">Default Custom System Prompt</label>
+            <Textarea
+              rows={3}
+              value={customAiPrompt}
+              onChange={(e) => setCustomAiPrompt(e.target.value)}
+              placeholder="Instructions for generating tailored emails based on job roles..."
+            />
+          </div>
+
+          <Button onClick={handleSaveAiConfig} className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4" /> Save AI Configuration
+          </Button>
+        </div>
+      </div>
+
+      {/* Automation Webhooks & Integrations */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 space-y-4 shadow-xs">
+        <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+          <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+            <Bot className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-slate-900">n8n, Webhook & Bot Integrations</h3>
+            <p className="text-xs text-slate-500">Trigger live n8n Excel sheet backups or send alerts to Telegram/Discord on new applications.</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="text-xs font-medium text-slate-700 block mb-1">Full Name</label>
-            <Input value={user?.name ?? "Demo User"} readOnly className="bg-slate-50" />
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+              <Send className="w-3.5 h-3.5 text-indigo-500" /> n8n / Excel Webhook URL
+            </label>
+            <Input
+              placeholder="https://n8n.example.com/webhook/job-application"
+              value={n8nWebhookUrl}
+              onChange={(e) => setN8nWebhookUrl(e.target.value)}
+            />
           </div>
-          <div>
-            <label className="text-xs font-medium text-slate-700 block mb-1">Email Address</label>
-            <Input value={user?.email ?? "demo@jobtracker.dev"} readOnly className="bg-slate-50" />
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+              <Bell className="w-3.5 h-3.5 text-indigo-500" /> Discord Webhook URL
+            </label>
+            <Input
+              placeholder="https://discord.com/api/webhooks/..."
+              value={discordWebhookUrl}
+              onChange={(e) => setDiscordWebhookUrl(e.target.value)}
+            />
           </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-slate-700 block">Telegram Bot Token</label>
+            <Input
+              placeholder="123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ"
+              value={telegramToken}
+              onChange={(e) => setTelegramToken(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-slate-700 block">Telegram Chat / Channel ID</label>
+            <Input
+              placeholder="-100123456789"
+              value={telegramChatId}
+              onChange={(e) => setTelegramChatId(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className="pt-2">
+          <Button onClick={handleSaveIntegrations} className="flex items-center gap-2">
+            <Bot className="w-4 h-4" /> Save Automation Settings
+          </Button>
         </div>
       </div>
 
-      {/* Data Import/Export Section */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 space-y-4">
+      {/* Data Backup & Export Section */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 space-y-4 shadow-xs">
         <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
-          <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+          <div className="p-3 bg-amber-50 text-amber-600 rounded-xl">
             <Database className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-base font-semibold text-slate-900">Data Backup & Export</h3>
-            <p className="text-xs text-slate-500">Import or export your job applications as CSV format.</p>
+            <h3 className="text-base font-bold text-slate-900">Data Backup & Restore</h3>
+            <p className="text-xs text-slate-500">Export your complete job tracking pipeline as CSV or import back data.</p>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4 pt-2">
+        <div className="flex flex-wrap items-center gap-4">
           <Button onClick={handleExportCsv} className="flex items-center gap-2">
-            <Download className="w-4 h-4" /> Export CSV Data
+            <Download className="w-4 h-4" /> Export CSV Backup
           </Button>
 
-          <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-xl transition-colors">
+          <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition-colors">
             <Upload className="w-4 h-4" /> {importing ? "Importing..." : "Import CSV File"}
             <input
               type="file"
@@ -113,15 +227,15 @@ export default function SettingsPage() {
       </div>
 
       {/* Security Status */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 flex items-center justify-between">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
         <div className="flex items-center gap-3">
-          <ShieldCheck className="w-5 h-5 text-emerald-600" />
+          <ShieldCheck className="w-6 h-6 text-emerald-600 shrink-0" />
           <div>
-            <h4 className="text-sm font-semibold text-slate-900">Authentication Method</h4>
-            <p className="text-xs text-slate-500">ASP.NET Core Identity with JWT Bearer Token Security</p>
+            <h4 className="text-sm font-bold text-slate-900">Security & Authentication Status</h4>
+            <p className="text-xs text-slate-500">Logged in as {user?.email ?? "demo@jobtracker.dev"} (ASP.NET Core Identity JWT)</p>
           </div>
         </div>
-        <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-full">
+        <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">
           Active & Protected
         </span>
       </div>

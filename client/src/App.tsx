@@ -7,7 +7,7 @@ import DashboardPage from "./pages/DashboardPage";
 import ApplicationsPage from "./pages/ApplicationsPage";
 import CompaniesPage from "./pages/CompaniesPage";
 import RolesPage from "./pages/RolesPage";
-import LookupsPage from "./pages/LookupsPage";
+import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AppLayout from "./components/layout/AppLayout";
@@ -32,7 +32,7 @@ export default function App() {
             <Route path="/applications" element={<ApplicationsPage />} />
             <Route path="/companies" element={<CompaniesPage />} />
             <Route path="/roles" element={<RolesPage />} />
-            <Route path="/lookups" element={<LookupsPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
         </Route>
