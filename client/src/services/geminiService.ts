@@ -43,30 +43,33 @@ Provide a JSON object response matching this exact structure without markdown fo
 }
 `;
 
-  try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${activeKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-        }),
+  // Try candidate models in order: gemini-2.0-flash, gemini-1.5-flash-latest, gemini-1.5-pro
+  const models = ["gemini-2.0-flash", "gemini-1.5-flash-latest", "gemini-1.5-flash"];
+  let lastError: Error | null = null;
+
+  for (const model of models) {
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${activeKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+          }),
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        const cleanJson = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
+        return JSON.parse(cleanJson);
       }
-    );
-
-    if (!response.ok) {
-      throw new Error(`Gemini API Error: ${response.statusText}`);
+    } catch (err: any) {
+      lastError = err;
     }
-
-    const data = await response.json();
-    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-
-    // Clean any markdown codeblocks if returned
-    const cleanJson = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
-    return JSON.parse(cleanJson);
-  } catch (error) {
-    console.error("Failed to generate Gemini AI insights:", error);
-    throw error;
   }
+
+  throw lastError || new Error("Failed to generate Gemini AI insights across all models.");
 }
