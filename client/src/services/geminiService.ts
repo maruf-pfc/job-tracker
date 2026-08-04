@@ -43,8 +43,22 @@ Provide a JSON object response matching this exact structure without markdown fo
 }
 `;
 
-  // Try candidate models in order: gemini-2.0-flash, gemini-1.5-flash-latest, gemini-1.5-pro
-  const models = ["gemini-2.0-flash", "gemini-1.5-flash-latest", "gemini-1.5-flash"];
+  // Complete prioritized list of Gemini Pro & Flash models for maximum capability & speed
+  const models = [
+    "gemini-3.5-pro",
+    "gemini-3.5-flash",
+    "gemini-3.0-pro",
+    "gemini-3.0-flash",
+    "gemini-2.5-pro",
+    "gemini-2.5-flash",
+    "gemini-2.0-pro-exp",
+    "gemini-2.0-flash",
+    "gemini-1.5-pro",
+    "gemini-1.5-pro-latest",
+    "gemini-1.5-flash-latest",
+    "gemini-1.5-flash",
+  ];
+
   let lastError: Error | null = null;
 
   for (const model of models) {
@@ -71,5 +85,5 @@ Provide a JSON object response matching this exact structure without markdown fo
     }
   }
 
-  throw lastError || new Error("Failed to generate Gemini AI insights across all models.");
+  throw lastError || new Error("Failed to generate Gemini AI insights across all Pro & Flash models.");
 }
