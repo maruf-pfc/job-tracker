@@ -94,41 +94,31 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      {/* AI Assistant Configuration */}
+      {/* Custom Email & Cover Letter Templates */}
       <div className="rounded-2xl border border-slate-200 bg-white p-6 space-y-4 shadow-xs">
         <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
           <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
             <Sparkles className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-slate-900">AI Cover Letter & Email Generator</h3>
-            <p className="text-xs text-slate-500">Configure your Gemini / OpenAI API key to automatically draft emails and cover letters.</p>
+            <h3 className="text-base font-bold text-slate-900">Custom Email & Cover Letter Template</h3>
+            <p className="text-xs text-slate-500">Define reusable application templates and custom prompts for quick recruiter responses.</p>
           </div>
         </div>
 
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 block">Google Gemini / OpenAI API Key</label>
-            <Input
-              type="password"
-              placeholder="AIzaSy..."
-              value={geminiApiKey}
-              onChange={(e) => setGeminiApiKey(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 block">Default Custom System Prompt</label>
+            <label className="text-xs font-semibold text-slate-700 block">Default Recruiter Outreach Template</label>
             <Textarea
               rows={3}
               value={customAiPrompt}
               onChange={(e) => setCustomAiPrompt(e.target.value)}
-              placeholder="Instructions for generating tailored emails based on job roles..."
+              placeholder="Instructions or template for generating tailored emails based on job roles..."
             />
           </div>
 
           <Button onClick={handleSaveAiConfig} className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4" /> Save AI Configuration
+            <Sparkles className="w-4 h-4" /> Save Template Configuration
           </Button>
         </div>
       </div>

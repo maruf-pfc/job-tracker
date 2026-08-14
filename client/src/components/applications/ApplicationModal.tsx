@@ -58,7 +58,7 @@ export default function ApplicationModal({
         </div>
 
         {/* Content Body */}
-        <div className="p-6">{children}</div>
+        <div className="p-4 sm:p-6">{children}</div>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
@@ -6,6 +6,8 @@ import Lenis from "lenis";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function AppLayout() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   useEffect(() => {
     const lenis = new Lenis({
       duration: 1.2,
@@ -27,13 +29,16 @@ export default function AppLayout() {
 
   return (
     <div className="flex min-h-screen bg-slate-50">
-      <Sidebar />
+      <Sidebar
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+      />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <Header />
+        <Header onMenuToggle={() => setIsMobileMenuOpen((prev) => !prev)} />
 
         <main className="flex-1 overflow-y-auto">
-          <div className="mx-auto w-full max-w-7xl p-6">
+          <div className="mx-auto w-full max-w-7xl p-4 sm:p-6">
             <AnimatePresence mode="wait">
               <motion.div
                 initial={{ opacity: 0, y: 10 }}

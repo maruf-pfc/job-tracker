@@ -64,6 +64,7 @@ client/src/
 ```
 
 ### Key Frontend Capabilities
-- **React Query (TanStack Query v5)**: Optimistic UI updates for 0ms interaction latency, query invalidation, and automatic background revalidation.
+- **Responsive Mobile Navigation Drawer**: Seamlessly transitions between fixed desktop sidebar (`lg:flex`) and an interactive slide-out overlay drawer on mobile viewports (< 1024px) driven by `framer-motion` backdrop animations.
+- **React Query (TanStack Query v5)**: Optimistic UI updates for 0ms interaction latency, query invalidation, and automatic background revalidation (`staleTime: 10s`).
 - **Lenis Smooth Scroll & Framer Motion**: Liquid inertia momentum scrolling and fluid page transitions.
 - **Zustand State Management**: Lightweight global store for JWT token storage and user auth session persistence.

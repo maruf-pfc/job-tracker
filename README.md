@@ -10,7 +10,7 @@
 [![TailwindCSS v4](https://img.shields.io/badge/TailwindCSS-v4-38BDF8?logo=tailwindcss)](https://tailwindcss.com/)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-job--trackerr.vercel.app-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://job-trackerr.vercel.app)
 
-An open-source, full-stack job application tracking platform built for structured career management, Kanban application pipeline tracking, Gemini AI career coaching, and productivity-focused analytics.
+An open-source, full-stack job application tracking platform built for structured career management, Kanban application pipeline tracking, automated webhooks, and productivity-focused analytics.
 
 🌐 **Live Production App**: [https://job-trackerr.vercel.app](https://job-trackerr.vercel.app)
 
