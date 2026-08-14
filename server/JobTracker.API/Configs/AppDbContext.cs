@@ -97,5 +97,31 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
             .WithMany(j => j.InterviewRounds)
             .HasForeignKey(r => r.JobApplicationId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Database Indexes for Performance Optimization
+        modelBuilder.Entity<JobApplication>()
+            .HasIndex(j => new { j.UserId, j.CreatedAt })
+            .HasDatabaseName("IX_JobApplications_UserId_CreatedAt");
+
+        modelBuilder.Entity<JobApplication>()
+            .HasIndex(j => new { j.UserId, j.ApplicationStatusId })
+            .HasDatabaseName("IX_JobApplications_UserId_ApplicationStatusId");
+
+        modelBuilder.Entity<JobApplication>()
+            .HasIndex(j => j.CompanyId)
+            .HasDatabaseName("IX_JobApplications_CompanyId");
+
+        modelBuilder.Entity<Company>()
+            .HasIndex(c => c.Name)
+            .HasDatabaseName("IX_Companies_Name");
+
+        modelBuilder.Entity<JobRole>()
+            .HasIndex(r => r.Name)
+            .HasDatabaseName("IX_JobRoles_Name");
+
+        modelBuilder.Entity<UserProfile>()
+            .HasIndex(p => p.UserId)
+            .IsUnique()
+            .HasDatabaseName("IX_UserProfiles_UserId");
     }
 }

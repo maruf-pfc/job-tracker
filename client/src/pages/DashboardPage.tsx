@@ -2,10 +2,6 @@ import { useEffect, useState } from "react";
 import { getDashboardSummary, getDashboardAnalytics } from "@/services/dashboardService";
 import type { DashboardAnalytics } from "@/services/dashboardService";
 import type { DashboardSummary } from "@/types/dashboard";
-import { generateDashboardAiInsights, getStoredGeminiApiKey } from "@/services/geminiService";
-import type { AiInsightResult } from "@/services/geminiService";
-import { Link } from "react-router-dom";
-import { toast } from "sonner";
 import {
   BarChart,
   Bar,
@@ -29,8 +25,6 @@ import {
   CheckCircle,
   XCircle,
   Lightbulb,
-  RefreshCw,
-  Key,
 } from "lucide-react";
 
 const STATUS_COLORS = ["#6366f1", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4"];
@@ -39,10 +33,6 @@ export default function DashboardPage() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
-
-  // Gemini AI Insights state
-  const [aiResult, setAiResult] = useState<AiInsightResult | null>(null);
-  const [generatingAi, setGeneratingAi] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -64,33 +54,6 @@ export default function DashboardPage() {
   const totalInterviews = summary?.totalInterviews ?? analytics?.totalInterviews ?? 0;
   const totalOffers = summary?.totalOffers ?? analytics?.totalOffers ?? 0;
   const responseRate = analytics?.responseRatePercentage ?? 0;
-
-  const handleGenerateGeminiInsights = async () => {
-    const apiKey = getStoredGeminiApiKey();
-    if (!apiKey) {
-      toast.error("Please add your Gemini API Key in Settings or .env file!");
-      return;
-    }
-
-    setGeneratingAi(true);
-    try {
-      const res = await generateDashboardAiInsights(
-        {
-          totalApplications,
-          responseRate,
-          totalInterviews,
-          totalOffers,
-        },
-        apiKey
-      );
-      setAiResult(res);
-      toast.success("AI Insights generated via Gemini!");
-    } catch {
-      toast.error("Failed to generate AI insights. Check your Gemini API Key.");
-    } finally {
-      setGeneratingAi(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -270,7 +233,7 @@ export default function DashboardPage() {
               <CheckCircle className="w-4 h-4 text-emerald-600" /> Recommended Action Items (DOs)
             </h4>
             <ul className="space-y-2 text-xs sm:text-sm text-emerald-950">
-              {(aiResult?.dos || defaultDos).map((item, idx) => (
+              {defaultDos.map((item, idx) => (
                 <li key={idx} className="flex items-start gap-2">
                   <span className="text-emerald-600 font-bold">•</span>
                   {item}
@@ -285,7 +248,7 @@ export default function DashboardPage() {
               <XCircle className="w-4 h-4 text-rose-600" /> Critical Practices to Avoid (DON'Ts)
             </h4>
             <ul className="space-y-2 text-xs sm:text-sm text-rose-950">
-              {(aiResult?.donts || defaultDonts).map((item, idx) => (
+              {defaultDonts.map((item, idx) => (
                 <li key={idx} className="flex items-start gap-2">
                   <span className="text-rose-600 font-bold">•</span>
                   {item}

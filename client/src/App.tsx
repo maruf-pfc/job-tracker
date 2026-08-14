@@ -8,7 +8,6 @@ import ApplicationsPage from "./pages/ApplicationsPage";
 import CompaniesPage from "./pages/CompaniesPage";
 import RolesPage from "./pages/RolesPage";
 import ProfilePage from "./pages/ProfilePage";
-import DocsPage from "./pages/DocsPage";
 import SettingsPage from "./pages/SettingsPage";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AppLayout from "./components/layout/AppLayout";
@@ -34,7 +33,6 @@ export default function App() {
             <Route path="/companies" element={<CompaniesPage />} />
             <Route path="/roles" element={<RolesPage />} />
             <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/docs" element={<DocsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
         </Route>

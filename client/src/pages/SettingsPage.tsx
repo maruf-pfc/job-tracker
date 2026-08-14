@@ -23,10 +23,7 @@ export default function SettingsPage() {
     localStorage.getItem("discord_webhook_url") || ""
   );
 
-  // AI Assistance State
-  const [geminiApiKey, setGeminiApiKey] = useState(
-    localStorage.getItem("gemini_api_key") || ""
-  );
+  // Custom Prompt Template State
   const [customAiPrompt, setCustomAiPrompt] = useState(
     localStorage.getItem("custom_ai_prompt") ||
       "Generate a professional cold email and cover letter customized for this job application using my profile details."
@@ -41,9 +38,8 @@ export default function SettingsPage() {
   };
 
   const handleSaveAiConfig = () => {
-    localStorage.setItem("gemini_api_key", geminiApiKey);
     localStorage.setItem("custom_ai_prompt", customAiPrompt);
-    toast.success("AI Assistance settings saved!");
+    toast.success("Template settings saved!");
   };
 
   const handleExportCsv = async () => {
