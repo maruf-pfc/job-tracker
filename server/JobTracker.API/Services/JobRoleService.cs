@@ -21,7 +21,7 @@ public class JobRoleService : IJobRoleService
     {
         var userId = _currentUser.UserId;
         return await _context.JobRoles
-            .Where(r => r.UserId == userId || r.UserId == null)
+            .Where(r => r.UserId == userId)
             .OrderBy(r => r.Name)
             .Select(r => new JobRoleDto
             {

@@ -30,6 +30,16 @@ public class UserProfileServiceTests
         var testUserId = Guid.NewGuid();
         mockCurrentUserService.Setup(s => s.UserId).Returns(testUserId);
 
+        var testUser = new User
+        {
+            Id = testUserId,
+            Name = "Test Developer",
+            Email = "test@jobtracker.dev",
+            UserName = "test@jobtracker.dev"
+        };
+        context.Users.Add(testUser);
+        await context.SaveChangesAsync();
+
         var service = new UserProfileService(context, mockCurrentUserService.Object);
 
         // Act
@@ -37,8 +47,9 @@ public class UserProfileServiceTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Demo User", result.NameEnglish);
-        Assert.Equal("demo@jobtracker.dev", result.Email);
+        Assert.Equal("Test Developer", result.NameEnglish);
+        Assert.Equal("test@jobtracker.dev", result.Email);
+        Assert.Equal(string.Empty, result.BioSummary);
     }
 
     [Fact]

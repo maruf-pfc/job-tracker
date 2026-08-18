@@ -17,35 +17,15 @@ public class UserProfileService : IUserProfileService
         _currentUserService = currentUserService;
     }
 
-    private async Task<Guid> GetEffectiveUserIdAsync()
+    private Task<Guid> GetEffectiveUserIdAsync()
     {
         var userId = _currentUserService.UserId;
         if (userId.HasValue && userId.Value != Guid.Empty)
         {
-            var exists = await _context.Users.AnyAsync(u => u.Id == userId.Value);
-            if (exists) return userId.Value;
+            return Task.FromResult(userId.Value);
         }
 
-        var firstUser = await _context.Users.FirstOrDefaultAsync();
-        if (firstUser != null)
-        {
-            return firstUser.Id;
-        }
-
-        // Seed generic demo user if none exists in database
-        var defaultUser = new User
-        {
-            UserName = "demo@jobtracker.dev",
-            NormalizedUserName = "DEMO@JOBTRACKER.DEV",
-            Email = "demo@jobtracker.dev",
-            NormalizedEmail = "DEMO@JOBTRACKER.DEV",
-            Name = "Demo User",
-            SecurityStamp = Guid.NewGuid().ToString()
-        };
-        _context.Users.Add(defaultUser);
-        await _context.SaveChangesAsync();
-
-        return defaultUser.Id;
+        throw new UnauthorizedAccessException("User is not authenticated.");
     }
 
     public async Task<UserProfileDto> GetProfileAsync()
@@ -59,13 +39,11 @@ public class UserProfileService : IUserProfileService
             profile = new UserProfile
             {
                 UserId = userId,
-                NameEnglish = user?.Name ?? "Software Engineer",
-                Email = user?.Email ?? "user@example.com",
-                Nationality = "Bangladeshi",
-                Religion = "Islam",
-                Gender = "Male",
-                MaritalStatus = "Single",
-                BioSummary = "Full Stack Engineer passionate about building modern web applications, scalable APIs, and developer productivity tools.",
+                NameEnglish = user?.Name ?? string.Empty,
+                Email = user?.Email ?? string.Empty,
+                BioSummary = string.Empty,
+                EducationDetailsJson = "[]",
+                CodingProfilesJson = "[]"
             };
 
             _context.UserProfiles.Add(profile);

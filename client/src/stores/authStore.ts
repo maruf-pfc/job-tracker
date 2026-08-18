@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { queryClient } from "@/lib/queryClient";
 
 type User = {
   id?: string;
@@ -27,6 +28,11 @@ export const useAuthStore = create<AuthState>()(
       initialized: false,
 
       setAuth: (token, user) => {
+        try {
+          queryClient.clear();
+        } catch {
+          // ignore
+        }
         set({
           token,
           user,
@@ -36,6 +42,11 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: () => {
+        try {
+          queryClient.clear();
+        } catch {
+          // ignore
+        }
         set({
           token: null,
           user: null,

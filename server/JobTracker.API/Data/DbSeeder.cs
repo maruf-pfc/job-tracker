@@ -14,25 +14,43 @@ public static class DbSeeder
         await SeedWorkTypes(context);
         await SeedSourcePlatforms(context);
         await SeedApplicationStatuses(context);
+        await SeedUsers(context);
         await SeedJobRoles(context);
         await SeedCompanies(context);
-        await SeedUsers(context);
         await SeedJobApplications(context);
         await SeedRejectionRetrospectives(context);
     }
 
     private static async Task SeedJobRoles(AppDbContext context)
     {
-        var existingRoles = await context.JobRoles.Select(r => r.Name).ToListAsync();
+        var demoUser = await context.Users.FirstOrDefaultAsync(u => u.Email == "demo@jobtracker.dev");
+        if (demoUser is null) return;
+
+        // Reassign any legacy unassigned roles to demoUser so they are isolated from regular users
+        var orphanedRoles = await context.JobRoles.Where(r => r.UserId == null).ToListAsync();
+        foreach (var r in orphanedRoles)
+        {
+            r.UserId = demoUser.Id;
+        }
+        if (orphanedRoles.Any())
+        {
+            await context.SaveChangesAsync();
+        }
+
+        var existingRoles = await context.JobRoles
+            .Where(r => r.UserId == demoUser.Id)
+            .Select(r => r.Name)
+            .ToListAsync();
+
         var rolesToSeed = new List<JobRole>
         {
-            new() { Name = "Senior Frontend Developer" },
-            new() { Name = "Backend Engineer (.NET / Go)" },
-            new() { Name = "Fullstack Engineer (React & Node)" },
-            new() { Name = "Assistant Programmer / IT Officer (Govt)" },
-            new() { Name = "Senior Officer (IT) - Govt Bank" },
-            new() { Name = "DevOps & Cloud Engineer" },
-            new() { Name = "AI / ML Engineer" }
+            new() { Name = "Senior Frontend Developer", UserId = demoUser.Id },
+            new() { Name = "Backend Engineer (.NET / Go)", UserId = demoUser.Id },
+            new() { Name = "Fullstack Engineer (React & Node)", UserId = demoUser.Id },
+            new() { Name = "Assistant Programmer / IT Officer (Govt)", UserId = demoUser.Id },
+            new() { Name = "Senior Officer (IT) - Govt Bank", UserId = demoUser.Id },
+            new() { Name = "DevOps & Cloud Engineer", UserId = demoUser.Id },
+            new() { Name = "AI / ML Engineer", UserId = demoUser.Id }
         };
 
         var newRoles = rolesToSeed.Where(r => !existingRoles.Contains(r.Name, StringComparer.OrdinalIgnoreCase)).ToList();
@@ -164,16 +182,34 @@ public static class DbSeeder
 
     private static async Task SeedCompanies(AppDbContext context)
     {
-        var existingCompanyNames = await context.Companies.Select(c => c.Name).ToListAsync();
+        var demoUser = await context.Users.FirstOrDefaultAsync(u => u.Email == "demo@jobtracker.dev");
+        if (demoUser is null) return;
+
+        // Reassign any legacy unassigned companies to demoUser so they are isolated from regular users
+        var orphanedCompanies = await context.Companies.Where(c => c.UserId == null).ToListAsync();
+        foreach (var c in orphanedCompanies)
+        {
+            c.UserId = demoUser.Id;
+        }
+        if (orphanedCompanies.Any())
+        {
+            await context.SaveChangesAsync();
+        }
+
+        var existingCompanyNames = await context.Companies
+            .Where(c => c.UserId == demoUser.Id)
+            .Select(c => c.Name)
+            .ToListAsync();
+
         var companiesToSeed = new List<Company>
         {
-            new() { Name = "Google", CareerPageUrl = "https://careers.google.com", WebsiteUrl = "https://google.com", Location = "Mountain View, CA (Remote)" },
-            new() { Name = "Microsoft", CareerPageUrl = "https://careers.microsoft.com", WebsiteUrl = "https://microsoft.com", Location = "Redmond, WA (Hybrid)" },
-            new() { Name = "Bangladesh Bank", CareerPageUrl = "https://erecruiter.bb.org.bd", WebsiteUrl = "https://bb.org.bd", Location = "Motijheel, Dhaka" },
-            new() { Name = "BPDB (Power Board)", CareerPageUrl = "http://bpdb.teletalk.com.bd", WebsiteUrl = "http://bpdb.gov.bd", Location = "Dhaka, Bangladesh" },
-            new() { Name = "BPSC (Public Service)", CareerPageUrl = "http://bpsc.teletalk.com.bd", WebsiteUrl = "http://bpsc.gov.bd", Location = "Agargaon, Dhaka" },
-            new() { Name = "Vercel", CareerPageUrl = "https://vercel.com/careers", WebsiteUrl = "https://vercel.com", Location = "San Francisco, CA (Remote)" },
-            new() { Name = "Stripe", CareerPageUrl = "https://stripe.com/jobs", WebsiteUrl = "https://stripe.com", Location = "San Francisco, CA (Hybrid)" }
+            new() { Name = "Google", CareerPageUrl = "https://careers.google.com", WebsiteUrl = "https://google.com", Location = "Mountain View, CA (Remote)", UserId = demoUser.Id },
+            new() { Name = "Microsoft", CareerPageUrl = "https://careers.microsoft.com", WebsiteUrl = "https://microsoft.com", Location = "Redmond, WA (Hybrid)", UserId = demoUser.Id },
+            new() { Name = "Bangladesh Bank", CareerPageUrl = "https://erecruiter.bb.org.bd", WebsiteUrl = "https://bb.org.bd", Location = "Motijheel, Dhaka", UserId = demoUser.Id },
+            new() { Name = "BPDB (Power Board)", CareerPageUrl = "http://bpdb.teletalk.com.bd", WebsiteUrl = "http://bpdb.gov.bd", Location = "Dhaka, Bangladesh", UserId = demoUser.Id },
+            new() { Name = "BPSC (Public Service)", CareerPageUrl = "http://bpsc.teletalk.com.bd", WebsiteUrl = "http://bpsc.gov.bd", Location = "Agargaon, Dhaka", UserId = demoUser.Id },
+            new() { Name = "Vercel", CareerPageUrl = "https://vercel.com/careers", WebsiteUrl = "https://vercel.com", Location = "San Francisco, CA (Remote)", UserId = demoUser.Id },
+            new() { Name = "Stripe", CareerPageUrl = "https://stripe.com/jobs", WebsiteUrl = "https://stripe.com", Location = "San Francisco, CA (Hybrid)", UserId = demoUser.Id }
         };
 
         var newCompanies = companiesToSeed.Where(c => !existingCompanyNames.Contains(c.Name, StringComparer.OrdinalIgnoreCase)).ToList();
@@ -218,7 +254,7 @@ public static class DbSeeder
                 await context.SaveChangesAsync();
             }
 
-            // Clean and Seed Admin User Profile
+            // Ensure Admin User Profile has NO dummy bio data
             var adminProfile = await context.UserProfiles.FirstOrDefaultAsync(p => p.UserId == adminUser.Id);
             if (adminProfile is null)
             {
@@ -227,32 +263,18 @@ public static class DbSeeder
                     UserId = adminUser.Id,
                     NameEnglish = adminUser.Name,
                     Email = normalizedEmail,
-                    Nationality = "Bangladeshi",
-                    Religion = "Islam",
-                    Gender = "Male",
-                    MaritalStatus = "Single",
-                    BioSummary = "Full Stack Engineer & Career Aspirant. Experienced with .NET 10, React, PostgreSQL, and Competitive Govt/Bank ICT Recruitment Exams.",
-                    PresentDivision = "Dhaka",
-                    PresentDistrict = "Dhaka",
-                    PresentArea = "Gulshan",
-                    PresentLocation = "Main Road",
-                    PresentHouse = "HQ",
-                    PresentUpazila = "Gulshan",
-                    PresentPoliceStation = "Gulshan",
-                    PresentPostOffice = "Gulshan",
-                    PresentPostCode = "1212",
-                    PermanentDivision = "Dhaka",
-                    PermanentDistrict = "Dhaka",
-                    PermanentUpazila = "Dhaka North",
-                    PermanentUnion = "Ward 1",
-                    PermanentVillage = "Central",
-                    PermanentPostOffice = "Central",
-                    PermanentPoliceStation = "Central",
-                    PermanentPostCode = "1200",
-                    EducationDetailsJson = "[{\"degree\":\"B.Sc in Computer Science & Engineering\",\"institution\":\"University / Engineering College\",\"year\":\"2022\",\"result\":\"3.85 / 4.00\"}]",
+                    BioSummary = string.Empty,
+                    EducationDetailsJson = "[]",
                     CodingProfilesJson = "[]"
                 };
                 await context.UserProfiles.AddAsync(adminProfile);
+                await context.SaveChangesAsync();
+            }
+            else if (adminProfile.BioSummary?.Contains("Full Stack Engineer & Career Aspirant") == true)
+            {
+                adminProfile.BioSummary = string.Empty;
+                adminProfile.EducationDetailsJson = "[]";
+                adminProfile.CodingProfilesJson = "[]";
                 await context.SaveChangesAsync();
             }
         }
@@ -312,30 +334,84 @@ public static class DbSeeder
             await context.UserProfiles.AddAsync(profile);
             await context.SaveChangesAsync();
         }
+
+        // Clean any seeded dummy profile data from non-demo users
+        var nonDemoProfiles = await context.UserProfiles
+            .Where(p => p.UserId != demoUser.Id)
+            .ToListAsync();
+
+        foreach (var p in nonDemoProfiles)
+        {
+            if (p.BioSummary != null && (
+                p.BioSummary.Contains("Full Stack Engineer") ||
+                p.BioSummary.Contains("Career Aspirant") ||
+                p.BioSummary.Contains("Aspirant") ||
+                p.EducationDetailsJson?.Contains("University of Dhaka / BUET") == true
+            ))
+            {
+                p.BioSummary = string.Empty;
+                p.EducationDetailsJson = "[]";
+                p.CodingProfilesJson = "[]";
+                p.PresentDivision = null;
+                p.PresentDistrict = null;
+                p.PresentArea = null;
+                p.PresentLocation = null;
+                p.PresentHouse = null;
+                p.PresentUpazila = null;
+                p.PresentPoliceStation = null;
+                p.PresentPostOffice = null;
+                p.PresentPostCode = null;
+                p.PermanentDivision = null;
+                p.PermanentDistrict = null;
+                p.PermanentUpazila = null;
+                p.PermanentUnion = null;
+                p.PermanentVillage = null;
+                p.PermanentPostOffice = null;
+                p.PermanentPoliceStation = null;
+                p.PermanentPostCode = null;
+                p.Nationality = null;
+                p.Religion = null;
+                p.Gender = null;
+                p.MaritalStatus = null;
+            }
+        }
+        if (nonDemoProfiles.Any())
+        {
+            await context.SaveChangesAsync();
+        }
     }
 
     private static async Task SeedJobApplications(AppDbContext context)
     {
-        // Ensure Admin account is clean and has NO dummy applications
-        var adminEmail = Environment.GetEnvironmentVariable("ADMIN_EMAIL")?.Trim();
-        if (!string.IsNullOrWhiteSpace(adminEmail))
-        {
-            var adminUser = await context.Users.FirstOrDefaultAsync(u => u.Email == adminEmail.ToLowerInvariant());
-            if (adminUser != null)
-            {
-                var adminDummyApps = await context.JobApplications.Where(j => j.UserId == adminUser.Id).ToListAsync();
-                if (adminDummyApps.Any())
-                {
-                    var adminRetros = await context.RejectionRetrospectives.Where(r => r.UserId == adminUser.Id).ToListAsync();
-                    context.RejectionRetrospectives.RemoveRange(adminRetros);
-                    context.JobApplications.RemoveRange(adminDummyApps);
-                    await context.SaveChangesAsync();
-                }
-            }
-        }
-
         var demoUser = await context.Users.FirstOrDefaultAsync(u => u.Email == "demo@jobtracker.dev");
         if (demoUser is null) return;
+
+        // 1. Purge all dummy applications, rounds, and retrospectives from any non-demo users
+        var dummyRoles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Assistant Programmer (Govt)",
+            "Senior Backend Engineer",
+            "Senior Officer (IT)",
+            "Lead .NET & Cloud Architect",
+            "Staff Software Engineer",
+            "Lead Cloud Architect & Staff Engineer"
+        };
+
+        var nonDemoDummyApps = await context.JobApplications
+            .Where(j => j.UserId != demoUser.Id && dummyRoles.Contains(j.Role))
+            .ToListAsync();
+
+        if (nonDemoDummyApps.Any())
+        {
+            var appIds = nonDemoDummyApps.Select(a => a.Id).ToList();
+            var retros = await context.RejectionRetrospectives.Where(r => appIds.Contains(r.JobApplicationId) || r.UserId != demoUser.Id).ToListAsync();
+            var rounds = await context.InterviewRounds.Where(ir => appIds.Contains(ir.JobApplicationId)).ToListAsync();
+
+            context.RejectionRetrospectives.RemoveRange(retros);
+            context.InterviewRounds.RemoveRange(rounds);
+            context.JobApplications.RemoveRange(nonDemoDummyApps);
+            await context.SaveChangesAsync();
+        }
 
         var existingApps = await context.JobApplications.Where(j => j.UserId == demoUser.Id).ToListAsync();
         if (existingApps.Count >= 6) return;
@@ -346,7 +422,7 @@ public static class DbSeeder
             await context.SaveChangesAsync();
         }
 
-        var companies = await context.Companies.ToListAsync();
+        var companies = await context.Companies.Where(c => c.UserId == demoUser.Id).ToListAsync();
         var priorities = await context.Priorities.ToListAsync();
         var jobTypes = await context.JobTypes.ToListAsync();
         var statuses = await context.ApplicationStatuses.ToListAsync();
@@ -448,31 +524,31 @@ public static class DbSeeder
                 UserId = demoUser.Id,
                 CompanyId = GetCompany("Microsoft").Id,
                 Role = "Staff Software Engineer",
-                JobUrl = "https://careers.microsoft.com/us/en/job/987654",
+                JobUrl = "https://careers.microsoft.com",
                 Location = "Redmond, WA (Hybrid)",
                 SalaryRange = "$180,000 - $220,000",
-                Notes = "Rejected after System Design round on distributed consensus and high-availability partitioning.",
+                Notes = "Completed System Design and Algorithms on-site loops.",
                 AppliedAt = DateTime.UtcNow.AddDays(-30),
-                PriorityId = GetPriority("High").Id,
+                PriorityId = GetPriority("Medium").Id,
                 JobTypeId = GetJobType("Full Time").Id,
-                SourcePlatformId = GetPlatform("Company Website").Id,
+                SourcePlatformId = GetPlatform("LinkedIn").Id,
                 ApplicationStatusId = GetStatus("Rejected").Id,
                 WorkTypeId = GetWorkType("Hybrid").Id
             },
             new()
             {
                 UserId = demoUser.Id,
-                CompanyId = GetCompany("BPSC (Public Service)").Id,
-                Role = "Assistant Network Engineer (Govt)",
-                JobUrl = "http://bpsc.teletalk.com.bd",
-                Location = "Agargaon, Dhaka",
-                SalaryRange = "Grade-9 (22,000 - 53,060 BDT)",
-                Notes = "Failed in preliminary MCQ test due to negative marking on analytical math shortcuts.",
-                AppliedAt = DateTime.UtcNow.AddDays(-35),
-                PriorityId = GetPriority("Medium").Id,
-                JobTypeId = GetJobType("Govt / Cadre Service").Id,
-                SourcePlatformId = GetPlatform("BPSC (bpsc.gov.bd)").Id,
-                ApplicationStatusId = GetStatus("Rejected").Id,
+                CompanyId = GetCompany("bKash Limited").Id,
+                Role = "Lead Cloud Architect & Staff Engineer",
+                JobUrl = "https://www.bkash.com/career",
+                Location = "Dhaka, Bangladesh",
+                SalaryRange = "250,000 - 320,000 BDT/month",
+                Notes = "Exploratory bookmark for fintech microservices architecture.",
+                AppliedAt = DateTime.UtcNow.AddDays(-2),
+                PriorityId = GetPriority("Low").Id,
+                JobTypeId = GetJobType("Full Time").Id,
+                SourcePlatformId = GetPlatform("LinkedIn").Id,
+                ApplicationStatusId = GetStatus("Saved").Id,
                 WorkTypeId = GetWorkType("Onsite").Id
             }
         };
@@ -485,6 +561,19 @@ public static class DbSeeder
     {
         var demoUser = await context.Users.FirstOrDefaultAsync(u => u.Email == "demo@jobtracker.dev");
         if (demoUser is null) return;
+
+        // Clean any retrospectives not belonging to demoUser if created from dummy data
+        var nonDemoRetros = await context.RejectionRetrospectives
+            .Where(r => r.UserId != demoUser.Id && (r.JobDomain == "Corporate" || r.JobDomain == "Govt & Bank") && (
+                r.FailedStage == "System Design Round" || r.FailedStage == "MCQ / Preliminary Test"
+            ))
+            .ToListAsync();
+
+        if (nonDemoRetros.Any())
+        {
+            context.RejectionRetrospectives.RemoveRange(nonDemoRetros);
+            await context.SaveChangesAsync();
+        }
 
         if (await context.RejectionRetrospectives.AnyAsync(r => r.UserId == demoUser.Id))
         {

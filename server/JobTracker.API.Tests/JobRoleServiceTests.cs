@@ -80,10 +80,6 @@ public class JobRoleServiceTests
         var service1 = new JobRoleService(context, CreateUserMock(user1Id).Object);
         var service2 = new JobRoleService(context, CreateUserMock(user2Id).Object);
 
-        // Add a global seeded role (UserId = null)
-        context.JobRoles.Add(new JobRole { Id = Guid.NewGuid(), Name = "Global Fullstack Role", UserId = null });
-        await context.SaveChangesAsync();
-
         // User 1 creates private role
         var user1Role = await service1.CreateAsync(new CreateJobRoleDto { Name = "User1 Specialist Role" });
 
@@ -95,13 +91,11 @@ public class JobRoleServiceTests
         // User 2 queries all
         var user2List = await service2.GetAllAsync();
 
-        // Assert Isolation on Read
+        // Assert Strict Isolation on Read
         Assert.Contains(user1List, r => r.Name == "User1 Specialist Role");
-        Assert.Contains(user1List, r => r.Name == "Global Fullstack Role");
         Assert.DoesNotContain(user1List, r => r.Name == "User2 Secret Role");
 
         Assert.Contains(user2List, r => r.Name == "User2 Secret Role");
-        Assert.Contains(user2List, r => r.Name == "Global Fullstack Role");
         Assert.DoesNotContain(user2List, r => r.Name == "User1 Specialist Role");
 
         // Act - User 2 attempts to update User 1's role

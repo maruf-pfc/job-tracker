@@ -21,7 +21,7 @@ public class CompanyService : ICompanyService
     {
         var userId = _currentUser.UserId;
         return await _context.Companies
-            .Where(c => c.UserId == userId || c.UserId == null)
+            .Where(c => c.UserId == userId)
             .OrderBy(c => c.Name)
             .Select(c => new CompanyDto
             {
@@ -40,7 +40,7 @@ public class CompanyService : ICompanyService
     {
         var userId = _currentUser.UserId;
         return await _context.Companies
-            .Where(c => c.Id == id && (c.UserId == userId || c.UserId == null))
+            .Where(c => c.Id == id && c.UserId == userId)
             .Select(c => new CompanyDto
             {
                 Id = c.Id,

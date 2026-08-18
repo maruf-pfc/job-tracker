@@ -84,10 +84,6 @@ public class CompanyServiceTests
         var service1 = new CompanyService(context, CreateUserMock(user1Id).Object);
         var service2 = new CompanyService(context, CreateUserMock(user2Id).Object);
 
-        // Add a global seeded company (UserId = null)
-        context.Companies.Add(new Company { Id = Guid.NewGuid(), Name = "Global Default Corp", UserId = null });
-        await context.SaveChangesAsync();
-
         // User 1 creates a private company
         var user1Company = await service1.CreateAsync(new CreateCompanyDto { Name = "User1 Private Tech" });
 
@@ -99,13 +95,11 @@ public class CompanyServiceTests
         // User 2 queries all
         var user2List = await service2.GetAllAsync();
 
-        // Assert Isolation on Read
+        // Assert Strict Isolation on Read
         Assert.Contains(user1List, c => c.Name == "User1 Private Tech");
-        Assert.Contains(user1List, c => c.Name == "Global Default Corp");
         Assert.DoesNotContain(user1List, c => c.Name == "User2 Secret Labs");
 
         Assert.Contains(user2List, c => c.Name == "User2 Secret Labs");
-        Assert.Contains(user2List, c => c.Name == "Global Default Corp");
         Assert.DoesNotContain(user2List, c => c.Name == "User1 Private Tech");
 
         // Act - User 2 attempts to update User 1's company
