@@ -115,21 +115,27 @@ public class AiAdvisorService : IAiAdvisorService
         // Compute SHA-256 data hash of user's current data state
         var dataSignature = ComputeDataSignature(applications, retrospectives, userProfile);
 
-        // Check cache if not forcing refresh
+        // Daily Refresh Policy: If not forcing refresh, check if we already have an analysis generated today
         if (!forceRefresh)
         {
             var cached = await _context.UserAiInsights
-                .FirstOrDefaultAsync(i => i.UserId == userId.Value && i.DataHash == dataSignature);
+                .FirstOrDefaultAsync(i => i.UserId == userId.Value);
 
             if (cached != null)
             {
-                _logger.LogInformation("Returning cached AI Career Insights for user {UserId} with hash {Hash}", userId, dataSignature);
-                return MapFromEntity(cached, isCached: true);
+                var lastGenerated = cached.UpdatedAt;
+                var isGeneratedToday = lastGenerated.Date == DateTime.UtcNow.Date;
+
+                if (isGeneratedToday)
+                {
+                    _logger.LogInformation("Returning daily cached AI Career Insights for user {UserId} (Generated at: {Date})", userId, lastGenerated);
+                    return MapFromEntity(cached, isCached: true);
+                }
             }
         }
 
-        // Generate fresh analysis via Gemini API
-        _logger.LogInformation("Generating fresh AI Career Advisor analysis for user {UserId}", userId);
+        // Generate fresh daily analysis via Gemini API
+        _logger.LogInformation("Generating fresh daily AI Career Advisor analysis for user {UserId}", userId);
         var newInsight = await GenerateGeminiAnalysisAsync(applications, retrospectives, userProfile, dataSignature);
 
         // Upsert into Database Cache

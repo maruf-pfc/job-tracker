@@ -88,12 +88,12 @@ export const AiCareerAdvisorCard: React.FC<AiCareerAdvisorCardProps> = ({
               }`}
               title={
                 insights.isCached
-                  ? "Generated from your latest pipeline state with 0 redundant API calls"
-                  : "Freshly generated analysis"
+                  ? "Daily synthesized intelligence stored in database with zero redundant AI calls."
+                  : "Freshly generated daily analysis stored in database."
               }
             >
               <ShieldCheck className="w-3.5 h-3.5" />
-              <span>{insights.isCached ? "Instant Cache" : "Fresh Analysis"}</span>
+              <span>{insights.isCached ? "Daily Cache" : "Daily Analysis"}</span>
               <span className="opacity-60">• {formattedDate}</span>
             </span>
 

@@ -27,7 +27,6 @@ export function useApplications() {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.APPLICATIONS }),
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.DASHBOARD_ANALYTICS }),
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.AI_ADVISOR }),
     ]);
   };
 
