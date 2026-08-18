@@ -12,12 +12,18 @@ JobTracker utilizes PostgreSQL as its relational database management system, man
 erDiagram
     AspNetUsers ||--o| UserProfiles : "has profile"
     AspNetUsers ||--o{ JobApplications : "owns applications"
+    AspNetUsers ||--o{ Companies : "creates custom"
+    AspNetUsers ||--o{ JobRoles : "creates custom"
+    AspNetUsers ||--o{ RejectionRetrospectives : "records post-mortems"
+    AspNetUsers ||--o| UserAiInsights : "receives AI insights"
+
     Companies ||--o{ JobApplications : "has applications"
     Priorities ||--o{ JobApplications : "categorizes"
     JobTypes ||--o{ JobApplications : "categorizes"
     ApplicationStatuses ||--o{ JobApplications : "tracks status"
     SourcePlatforms ||--o{ JobApplications : "originates from"
     WorkTypes ||--o{ JobApplications : "classifies"
+    JobApplications ||--o| RejectionRetrospectives : "diagnosed by"
 
     AspNetUsers {
         Guid Id PK
@@ -25,6 +31,40 @@ erDiagram
         string Name
         string PasswordHash
         DateTimeOffset CreatedAt
+    }
+
+    UserAiInsights {
+        Guid Id PK
+        Guid UserId FK
+        string DataHash "SHA-256 state signature"
+        string ExecutiveSummary
+        string GovtVsCorporateStrategy
+        string KeyStrengthsJson
+        string CriticalGapsJson
+        string ActionPlanJson
+        int TotalApplicationsAnalyzed
+        DateTime CreatedAt
+        DateTime UpdatedAt
+    }
+
+    RejectionRetrospectives {
+        Guid Id PK
+        Guid UserId FK
+        Guid JobApplicationId FK
+        string JobDomain "Corporate Tech / Govt & Bank"
+        string FailedStage
+        string PrimaryRootCause
+        double DifficultyRating
+        double TimePressureRating
+        double ConfidenceRating
+        string PreparationDuration
+        string SubjectTopicGapsJson
+        string ExternalBlockersJson
+        string WhatWentWell
+        string WhatFailed
+        string ActionablePlan
+        DateTime CreatedAt
+        DateTime UpdatedAt
     }
 
     UserProfiles {
@@ -41,12 +81,20 @@ erDiagram
 
     Companies {
         Guid Id PK
+        Guid UserId FK "Nullable for shared templates"
         string Name
         string Location
         string WebsiteUrl
         string CareerPageUrl
         string Notes
         bool IsFavorite
+    }
+
+    JobRoles {
+        Guid Id PK
+        Guid UserId FK "Nullable for shared templates"
+        string Name
+        string Description
     }
 
     JobApplications {
@@ -66,11 +114,6 @@ erDiagram
         Guid WorkTypeId FK
     }
 
-    JobRoles {
-        Guid Id PK
-        string Name
-    }
-
     Priorities {
         Guid Id PK
         string Name
@@ -80,56 +123,20 @@ erDiagram
     ApplicationStatuses {
         Guid Id PK
         string Name
-        string Color
+        int StepOrder
     }
 ```
 
 ---
 
-## 📝 Entity Definitions
+## 🔑 Database Indexes & Constraints
 
-### 1. `JobApplications` Entity
-The core application record. Connects a user to a target company, role, status, priority, and application metadata.
-
-| Column | Type | Constraints | Description |
+| Table | Index Name | Columns | Purpose |
 | :--- | :--- | :--- | :--- |
-| `Id` | `uuid` | Primary Key | Unique Identifier |
-| `UserId` | `uuid` | Foreign Key | References `AspNetUsers.Id` |
-| `CompanyId` | `uuid` | Foreign Key | References `Companies.Id` |
-| `Role` | `varchar(200)` | Required | Position title |
-| `JobUrl` | `text` | Optional | Link to job posting |
-| `SalaryRange` | `varchar(100)` | Optional | Salary expectation |
-| `Notes` | `text` | Optional | Markdown notes & interview prep |
-| `AppliedAt` | `timestamptz` | Required | Application submission date |
-| `FollowUpDate` | `timestamptz` | Optional | Reminder follow-up date |
-| `PriorityId` | `uuid` | Foreign Key | References `Priorities.Id` |
-| `JobTypeId` | `uuid` | Foreign Key | References `JobTypes.Id` |
-| `ApplicationStatusId` | `uuid` | Foreign Key | References `ApplicationStatuses.Id` |
-| `SourcePlatformId` | `uuid` | Foreign Key | References `SourcePlatforms.Id` |
-| `WorkTypeId` | `uuid` | Foreign Key | References `WorkTypes.Id` |
-
-### 2. `Companies` Entity
-Stores target companies and corporate career portals.
-
-| Column | Type | Constraints | Description |
-| :--- | :--- | :--- | :--- |
-| `Id` | `uuid` | Primary Key | Unique Identifier |
-| `Name` | `varchar(200)` | Required | Company Name |
-| `Location` | `varchar(200)` | Optional | HQ or office location |
-| `WebsiteUrl` | `text` | Optional | Official site URL |
-| `CareerPageUrl` | `text` | Optional | Careers page link |
-| `Notes` | `text` | Optional | Tech stack notes |
-
-### 3. `UserProfiles` Entity
-Extends identity user with granular career and academic details. Includes 17 granular address fields, JSON education arrays, and coding profiles.
-
-| Column | Type | Constraints | Description |
-| :--- | :--- | :--- | :--- |
-| `Id` | `uuid` | Primary Key | Unique Identifier |
-| `UserId` | `uuid` | Foreign Key, Unique | References `AspNetUsers.Id` |
-| `BioSummary` | `text` | Optional | Professional summary |
-| `DateOfBirth` | `date` | Optional | Date of birth (`DateOnly?`) |
-| `PresentAddress` | `text` | Optional | Present voter address |
-| `PermanentAddress` | `text` | Optional | Permanent home address |
-| `EducationDetailsJson` | `jsonb / text` | Optional | Academic background JSON array |
-| `CodingProfilesJson` | `jsonb / text` | Optional | GitHub, LeetCode, Codeforces URLs |
+| **`UserAiInsights`** | `IX_UserAiInsights_UserId_DataHash` | `(UserId, DataHash)` | O(1) Instant Cache Lookup by Pipeline State |
+| **`RejectionRetrospectives`** | `IX_RejectionRetrospectives_JobApplicationId` | `JobApplicationId` (Unique) | Enforce 1 post-mortem survey per application |
+| **`RejectionRetrospectives`** | `IX_RejectionRetrospectives_UserId_CreatedAt` | `(UserId, CreatedAt)` | Fast user-specific failure analytics queries |
+| **`Companies`** | `IX_Companies_UserId_Name` | `(UserId, Name)` | Fast multi-tenant company lookup & uniqueness |
+| **`JobRoles`** | `IX_JobRoles_UserId_Name` | `(UserId, Name)` | Fast multi-tenant role lookup & uniqueness |
+| **`UserProfiles`** | `IX_UserProfiles_UserId` | `UserId` (Unique) | 1-to-1 Profile Mapping |
+| **`JobApplications`** | `IX_JobApplications_UserId_AppliedAt` | `(UserId, AppliedAt)` | Chronological pipeline indexing |
