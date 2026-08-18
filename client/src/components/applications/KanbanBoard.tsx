@@ -1,12 +1,25 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  Building2,
+  Calendar,
+  DollarSign,
+  MapPin,
+  ArrowRightLeft,
+  AlertTriangle,
+  Landmark,
+  ExternalLink,
+} from "lucide-react";
+import { toast } from "sonner";
+import { updateApplicationStatus } from "@/services/jobApplicationService";
+import { formatDate } from "@/lib/utils";
 import type { JobApplication } from "@/types/job-application";
-import { Building2, MapPin, DollarSign, Calendar, ArrowRightLeft } from "lucide-react";
-import { formatDate } from "@/utils/date";
+import RejectionRetrospectiveModal from "./RejectionRetrospectiveModal";
 
-interface KanbanBoardProps {
-  applications: JobApplication[];
-  onStatusChange?: (updatedApp: JobApplication) => void;
-}
+type Props = {
+  applications?: JobApplication[];
+  isLoading?: boolean;
+};
 
 const DEFAULT_COLUMNS = [
   "Saved",
@@ -18,67 +31,84 @@ const DEFAULT_COLUMNS = [
   "Interview",
   "Offer",
   "Rejected",
-  "Ghosted",
 ];
 
-const STATUS_COLOR_MAP: Record<string, { bg: string; text: string; border: string }> = {
-  Saved: { bg: "bg-slate-100", text: "text-slate-700", border: "border-slate-300" },
-  Applied: { bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-200" },
-  "MCQ / Preliminary": { bg: "bg-violet-50", text: "text-violet-700", border: "border-violet-200" },
-  "Written Exam": { bg: "bg-sky-50", text: "text-sky-700", border: "border-sky-200" },
-  "Practical / Skill Test": { bg: "bg-cyan-50", text: "text-cyan-700", border: "border-cyan-200" },
-  "Viva Voce": { bg: "bg-purple-50", text: "text-purple-700", border: "border-purple-200" },
-  Interview: { bg: "bg-indigo-50", text: "text-indigo-700", border: "border-indigo-200" },
-  Offer: { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200" },
-  Rejected: { bg: "bg-rose-50", text: "text-rose-700", border: "border-rose-200" },
-  Ghosted: { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200" },
+const STATUS_COLOR_MAP: Record<string, { bg: string; border: string; text: string }> = {
+  Saved: { bg: "bg-slate-100", border: "border-slate-300", text: "text-slate-700" },
+  Applied: { bg: "bg-blue-50", border: "border-blue-200", text: "text-blue-700" },
+  "MCQ / Preliminary": { bg: "bg-cyan-50", border: "border-cyan-200", text: "text-cyan-800" },
+  "Written Exam": { bg: "bg-indigo-50", border: "border-indigo-200", text: "text-indigo-800" },
+  "Practical / Skill Test": { bg: "bg-teal-50", border: "border-teal-200", text: "text-teal-800" },
+  "Viva Voce": { bg: "bg-amber-50", border: "border-amber-200", text: "text-amber-800" },
+  Interview: { bg: "bg-purple-50", border: "border-purple-200", text: "text-purple-700" },
+  Offer: { bg: "bg-emerald-50", border: "border-emerald-200", text: "text-emerald-700" },
+  Rejected: { bg: "bg-rose-50", border: "border-rose-200", text: "text-rose-700" },
 };
 
-export const KanbanBoard: React.FC<KanbanBoardProps> = ({
-  applications: initialApps,
-  onStatusChange,
-}) => {
-  const [prevInitialApps, setPrevInitialApps] = useState<JobApplication[]>(initialApps);
-  const [apps, setApps] = useState<JobApplication[]>(initialApps);
-  const [activeMobileColumn, setActiveMobileColumn] = useState<string>("Applied");
+export function KanbanBoard({ applications, isLoading }: Props) {
+  const queryClient = useQueryClient();
+  const [retrospectiveApp, setRetrospectiveApp] = useState<JobApplication | null>(null);
+  const [activeMobileColumn, setActiveMobileColumn] = useState<string>("Saved");
 
-  if (prevInitialApps !== initialApps) {
-    setPrevInitialApps(initialApps);
-    setApps(initialApps);
+  const mutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: string }) =>
+      updateApplicationStatus(id, status),
+    onSuccess: async (_, variables) => {
+      toast.success("Application status updated");
+      await queryClient.invalidateQueries({ queryKey: ["applications"] });
+      await queryClient.invalidateQueries({ queryKey: ["dashboard-summary"] });
+      await queryClient.invalidateQueries({ queryKey: ["dashboard-analytics"] });
+
+      if (variables.status.toLowerCase() === "rejected") {
+        const found = applications?.find((a) => a.id === variables.id);
+        if (found) {
+          setRetrospectiveApp(found);
+        }
+      }
+    },
+    onError: (err: unknown) => {
+      const axiosErr = err as { response?: { data?: { message?: string } } };
+      toast.error(axiosErr.response?.data?.message || "Failed to update status");
+    },
+  });
+
+  const getColumnApps = (statusName: string) => {
+    return (
+      applications?.filter(
+        (app) => app.applicationStatus?.toLowerCase() === statusName.toLowerCase()
+      ) || []
+    );
+  };
+
+  const handleMoveStatus = (appId: string, newStatus: string) => {
+    mutation.mutate({ id: appId, status: newStatus });
+  };
+
+  const isGovtOrBank = (app: JobApplication) => {
+    const jt = (app.jobType || "").toLowerCase();
+    const sp = (app.sourcePlatform || "").toLowerCase();
+    const comp = (app.company || "").toLowerCase();
+    return (
+      jt.includes("govt") ||
+      jt.includes("bank") ||
+      jt.includes("cadre") ||
+      sp.includes("teletalk") ||
+      sp.includes("bpsc") ||
+      sp.includes("erecruiter") ||
+      comp.includes("bpsc") ||
+      comp.includes("bank") ||
+      comp.includes("ministry")
+    );
+  };
+
+  if (isLoading) {
+    return null;
   }
 
-  const handleMoveStatus = async (appId: string, newStatusName: string) => {
-    const appToUpdate = apps.find((a) => a.id === appId);
-    if (!appToUpdate) return;
-
-    const previousStatus = appToUpdate.applicationStatus;
-    const updatedApps = apps.map((a) =>
-      a.id === appId ? { ...a, applicationStatus: newStatusName } : a
-    );
-    setApps(updatedApps);
-
-    try {
-      if (onStatusChange) {
-        onStatusChange({ ...appToUpdate, applicationStatus: newStatusName });
-      }
-    } catch (err) {
-      console.error("Failed to update status, rolling back:", err);
-      setApps((prev) =>
-        prev.map((a) => (a.id === appId ? { ...a, applicationStatus: previousStatus } : a))
-      );
-    }
-  };
-
-  const getColumnApps = (columnName: string) => {
-    return apps.filter(
-      (a) => a.applicationStatus?.toLowerCase() === columnName.toLowerCase()
-    );
-  };
-
   return (
-    <div className="space-y-4">
-      {/* Mobile Column Quick Switcher */}
-      <div className="md:hidden flex overflow-x-auto gap-2 pb-2 scrollbar-none">
+    <div className="w-full">
+      {/* Mobile Column Switcher */}
+      <div className="flex md:hidden items-center gap-1.5 overflow-x-auto pb-3 mb-2 scrollbar-none">
         {DEFAULT_COLUMNS.map((column) => {
           const count = getColumnApps(column).length;
           const isActive = activeMobileColumn === column;
@@ -86,9 +116,9 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
             <button
               key={column}
               onClick={() => setActiveMobileColumn(column)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${
                 isActive
-                  ? "bg-slate-900 text-white shadow-sm"
+                  ? "bg-slate-900 text-white shadow-xs"
                   : "bg-slate-100 text-slate-600 hover:bg-slate-200"
               }`}
             >
@@ -130,61 +160,111 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 
               {/* Cards Container */}
               <div className="space-y-3 flex-1 overflow-y-auto max-h-[600px] pr-1">
-                {columnApplications.map((app) => (
-                  <div
-                    key={app.id}
-                    className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all space-y-3"
-                  >
-                    <div>
-                      <h4 className="text-sm font-semibold text-slate-900 leading-snug">
-                        {app.role}
-                      </h4>
-                      <p className="text-xs text-slate-600 flex items-center gap-1.5 mt-1 font-medium">
-                        <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                        <span className="truncate">{app.company}</span>
-                      </p>
-                    </div>
+                {columnApplications.map((app) => {
+                  const isGovt = isGovtOrBank(app);
+                  return (
+                    <div
+                      key={app.id}
+                      className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all space-y-3"
+                    >
+                      <div>
+                        <div className="flex items-start justify-between gap-1.5">
+                          <h4 className="text-sm font-semibold text-slate-900 leading-snug">
+                            {app.role}
+                          </h4>
+                          {app.jobUrl && (
+                            <a
+                              href={app.jobUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              title={isGovt ? "View Govt Circular" : "View Job Post"}
+                              className="text-slate-400 hover:text-indigo-600 shrink-0 p-0.5"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </a>
+                          )}
+                        </div>
+                        <p className="text-xs text-slate-600 flex items-center gap-1.5 mt-1 font-medium">
+                          {isGovt ? (
+                            <Landmark className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                          ) : (
+                            <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          )}
+                          <span className="truncate">{app.company}</span>
+                        </p>
+                      </div>
 
-                    {(app.location || app.salaryRange) && (
-                      <div className="flex flex-wrap items-center gap-2.5 text-xs text-slate-500 pt-0.5">
-                        {app.location && (
-                          <span className="flex items-center gap-1">
-                            <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                            <span>{app.location}</span>
+                      {/* Domain & Platform Tags */}
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        {isGovt ? (
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                            🏛️ Govt/Bank
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200/60">
+                            🏢 Corporate
                           </span>
                         )}
-                        {app.salaryRange && (
-                          <span className="flex items-center gap-1">
-                            <DollarSign className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                            <span>{app.salaryRange}</span>
+                        {app.sourcePlatform && (
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 text-slate-600 truncate max-w-[130px]">
+                            {app.sourcePlatform}
                           </span>
                         )}
                       </div>
-                    )}
 
-                    <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
-                      <span className="text-[11px] text-slate-500 flex items-center gap-1">
-                        <Calendar className="w-3 h-3 text-slate-400" />
-                        {formatDate(app.appliedAt)}
-                      </span>
+                      {(app.location || app.salaryRange) && (
+                        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 pt-0.5">
+                          {app.location && (
+                            <span className="flex items-center gap-1">
+                              <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                              <span className="truncate max-w-[110px]">{app.location}</span>
+                            </span>
+                          )}
+                          {app.salaryRange && (
+                            <span className="flex items-center gap-1 font-mono text-[11px]">
+                              <DollarSign className="w-3 h-3 text-slate-400 shrink-0" />
+                              <span className="truncate max-w-[110px]">{app.salaryRange}</span>
+                            </span>
+                          )}
+                        </div>
+                      )}
 
-                      <div className="flex items-center gap-1">
-                        <ArrowRightLeft className="w-3 h-3 text-slate-400" />
-                        <select
-                          value={column}
-                          onChange={(e) => handleMoveStatus(app.id, e.target.value)}
-                          className="text-[11px] bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-slate-700 font-medium cursor-pointer hover:bg-slate-100 transition-colors focus:ring-1 focus:ring-indigo-500 max-w-[110px] truncate"
-                        >
-                          {DEFAULT_COLUMNS.map((col) => (
-                            <option key={col} value={col}>
-                              {col}
-                            </option>
-                          ))}
-                        </select>
+                      <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
+                        <span className="text-[11px] text-slate-500 flex items-center gap-1">
+                          <Calendar className="w-3 h-3 text-slate-400" />
+                          {formatDate(app.appliedAt)}
+                        </span>
+
+                        <div className="flex items-center gap-1">
+                          <ArrowRightLeft className="w-3 h-3 text-slate-400" />
+                          <select
+                            value={column}
+                            onChange={(e) => handleMoveStatus(app.id, e.target.value)}
+                            className="text-[11px] bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-slate-700 font-medium cursor-pointer hover:bg-slate-100 transition-colors focus:ring-1 focus:ring-indigo-500 max-w-[110px] truncate"
+                          >
+                            {DEFAULT_COLUMNS.map((col) => (
+                              <option key={col} value={col}>
+                                {col}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
+
+                      {column === "Rejected" && (
+                        <div className="pt-2 border-t border-slate-100">
+                          <button
+                            onClick={() => setRetrospectiveApp(app)}
+                            className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-semibold bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 transition-colors cursor-pointer"
+                          >
+                            <AlertTriangle className="w-3.5 h-3.5" />
+                            <span>Log Post-Mortem</span>
+                          </button>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
 
                 {columnApplications.length === 0 && (
                   <div className="h-28 flex flex-col items-center justify-center text-xs text-slate-400 border border-dashed border-slate-200 rounded-xl bg-white/50">
@@ -196,6 +276,14 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
           );
         })}
       </div>
+
+      <RejectionRetrospectiveModal
+        open={!!retrospectiveApp}
+        onClose={() => setRetrospectiveApp(null)}
+        application={retrospectiveApp}
+      />
     </div>
   );
-};
+}
+
+export default KanbanBoard;

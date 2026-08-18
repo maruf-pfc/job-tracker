@@ -23,5 +23,8 @@ public class Company : BaseEntity
     public bool IsFavorite { get; set; }
     public bool IsArchived { get; set; }
 
+    public Guid? UserId { get; set; }
+    public User? User { get; set; }
+
     public ICollection<JobApplication> JobApplications = new List<JobApplication>();
 }

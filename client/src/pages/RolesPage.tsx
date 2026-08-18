@@ -154,7 +154,7 @@ export default function RolesPage() {
 
       {/* Table List */}
       <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-xs">
-        <table className="w-full text-left border-collapse">
+        <table className="w-full min-w-[450px] text-left border-collapse">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50/80 text-xs font-semibold uppercase tracking-wider text-slate-500">
               <th className="px-5 py-3.5">Role Title</th>

@@ -41,8 +41,10 @@ export default function LoginForm() {
       navigate("/");
     },
 
-    onError: () => {
-      toast.error("Invalid email or password");
+    onError: (error: unknown) => {
+      const axiosErr = error as { response?: { data?: { message?: string } } };
+      const message = axiosErr.response?.data?.message || "Invalid email or password";
+      toast.error(message);
     },
   });
 

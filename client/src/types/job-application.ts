@@ -29,6 +29,7 @@ export type PaginatedResponse<T> = {
 export type CreateJobApplicationRequest = {
   companyId: string;
   role: string;
+  jobUrl?: string;
   location?: string;
   salaryRange?: string;
   notes?: string;

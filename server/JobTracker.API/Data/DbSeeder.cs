@@ -1,3 +1,4 @@
+using System.Text.Json;
 using JobTracker.API.Configs;
 using JobTracker.API.Models;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,7 @@ public static class DbSeeder
         await SeedCompanies(context);
         await SeedUsers(context);
         await SeedJobApplications(context);
+        await SeedRejectionRetrospectives(context);
     }
 
     private static async Task SeedJobRoles(AppDbContext context)
@@ -169,6 +171,7 @@ public static class DbSeeder
             new() { Name = "Microsoft", CareerPageUrl = "https://careers.microsoft.com", WebsiteUrl = "https://microsoft.com", Location = "Redmond, WA (Hybrid)" },
             new() { Name = "Bangladesh Bank", CareerPageUrl = "https://erecruiter.bb.org.bd", WebsiteUrl = "https://bb.org.bd", Location = "Motijheel, Dhaka" },
             new() { Name = "BPDB (Power Board)", CareerPageUrl = "http://bpdb.teletalk.com.bd", WebsiteUrl = "http://bpdb.gov.bd", Location = "Dhaka, Bangladesh" },
+            new() { Name = "BPSC (Public Service)", CareerPageUrl = "http://bpsc.teletalk.com.bd", WebsiteUrl = "http://bpsc.gov.bd", Location = "Agargaon, Dhaka" },
             new() { Name = "Vercel", CareerPageUrl = "https://vercel.com/careers", WebsiteUrl = "https://vercel.com", Location = "San Francisco, CA (Remote)" },
             new() { Name = "Stripe", CareerPageUrl = "https://stripe.com/jobs", WebsiteUrl = "https://stripe.com", Location = "San Francisco, CA (Hybrid)" }
         };
@@ -185,10 +188,80 @@ public static class DbSeeder
     {
         var hasher = new Microsoft.AspNetCore.Identity.PasswordHasher<User>();
 
-        var user = await context.Users.FirstOrDefaultAsync(u => u.Email == "demo@jobtracker.dev");
-        if (user is null)
+        // 1. Seed / Sync Admin User from environment variables (e.g. .env)
+        var adminEmail = Environment.GetEnvironmentVariable("ADMIN_EMAIL")?.Trim();
+        var adminPassword = Environment.GetEnvironmentVariable("ADMIN_PASSWORD")?.Trim();
+
+        if (!string.IsNullOrWhiteSpace(adminEmail) && !string.IsNullOrWhiteSpace(adminPassword))
         {
-            user = new User
+            var normalizedEmail = adminEmail.ToLowerInvariant();
+            var adminUser = await context.Users.FirstOrDefaultAsync(u => u.Email == normalizedEmail);
+            if (adminUser is null)
+            {
+                adminUser = new User
+                {
+                    UserName = normalizedEmail,
+                    NormalizedUserName = normalizedEmail.ToUpperInvariant(),
+                    Email = normalizedEmail,
+                    NormalizedEmail = normalizedEmail.ToUpperInvariant(),
+                    Name = "Administrator",
+                    SecurityStamp = Guid.NewGuid().ToString()
+                };
+                adminUser.PasswordHash = hasher.HashPassword(adminUser, adminPassword);
+                await context.Users.AddAsync(adminUser);
+                await context.SaveChangesAsync();
+            }
+            else
+            {
+                // Sync password to ensure login always succeeds with ADMIN_PASSWORD from .env
+                adminUser.PasswordHash = hasher.HashPassword(adminUser, adminPassword);
+                await context.SaveChangesAsync();
+            }
+
+            // Clean and Seed Admin User Profile
+            var adminProfile = await context.UserProfiles.FirstOrDefaultAsync(p => p.UserId == adminUser.Id);
+            if (adminProfile is null)
+            {
+                adminProfile = new UserProfile
+                {
+                    UserId = adminUser.Id,
+                    NameEnglish = adminUser.Name,
+                    Email = normalizedEmail,
+                    Nationality = "Bangladeshi",
+                    Religion = "Islam",
+                    Gender = "Male",
+                    MaritalStatus = "Single",
+                    BioSummary = "Full Stack Engineer & Career Aspirant. Experienced with .NET 10, React, PostgreSQL, and Competitive Govt/Bank ICT Recruitment Exams.",
+                    PresentDivision = "Dhaka",
+                    PresentDistrict = "Dhaka",
+                    PresentArea = "Gulshan",
+                    PresentLocation = "Main Road",
+                    PresentHouse = "HQ",
+                    PresentUpazila = "Gulshan",
+                    PresentPoliceStation = "Gulshan",
+                    PresentPostOffice = "Gulshan",
+                    PresentPostCode = "1212",
+                    PermanentDivision = "Dhaka",
+                    PermanentDistrict = "Dhaka",
+                    PermanentUpazila = "Dhaka North",
+                    PermanentUnion = "Ward 1",
+                    PermanentVillage = "Central",
+                    PermanentPostOffice = "Central",
+                    PermanentPoliceStation = "Central",
+                    PermanentPostCode = "1200",
+                    EducationDetailsJson = "[{\"degree\":\"B.Sc in Computer Science & Engineering\",\"institution\":\"University / Engineering College\",\"year\":\"2022\",\"result\":\"3.85 / 4.00\"}]",
+                    CodingProfilesJson = "[]"
+                };
+                await context.UserProfiles.AddAsync(adminProfile);
+                await context.SaveChangesAsync();
+            }
+        }
+
+        // 2. Seed Demo User
+        var demoUser = await context.Users.FirstOrDefaultAsync(u => u.Email == "demo@jobtracker.dev");
+        if (demoUser is null)
+        {
+            demoUser = new User
             {
                 UserName = "demo@jobtracker.dev",
                 NormalizedUserName = "DEMO@JOBTRACKER.DEV",
@@ -197,18 +270,18 @@ public static class DbSeeder
                 Name = "Demo User",
                 SecurityStamp = Guid.NewGuid().ToString()
             };
-            user.PasswordHash = hasher.HashPassword(user, "Demo@123");
-            await context.Users.AddAsync(user);
+            demoUser.PasswordHash = hasher.HashPassword(demoUser, "Demo@123");
+            await context.Users.AddAsync(demoUser);
             await context.SaveChangesAsync();
         }
 
         // Clean and Seed Demo User Profile
-        var existingProfile = await context.UserProfiles.FirstOrDefaultAsync(p => p.UserId == user.Id);
-        if (existingProfile is null)
+        var demoProfile = await context.UserProfiles.FirstOrDefaultAsync(p => p.UserId == demoUser.Id);
+        if (demoProfile is null)
         {
             var profile = new UserProfile
             {
-                UserId = user.Id,
+                UserId = demoUser.Id,
                 NameEnglish = "Demo User",
                 Email = "demo@jobtracker.dev",
                 Nationality = "Bangladeshi",
@@ -243,11 +316,29 @@ public static class DbSeeder
 
     private static async Task SeedJobApplications(AppDbContext context)
     {
-        var user = await context.Users.FirstOrDefaultAsync(u => u.Email == "demo@jobtracker.dev");
-        if (user is null) return;
+        // Ensure Admin account is clean and has NO dummy applications
+        var adminEmail = Environment.GetEnvironmentVariable("ADMIN_EMAIL")?.Trim();
+        if (!string.IsNullOrWhiteSpace(adminEmail))
+        {
+            var adminUser = await context.Users.FirstOrDefaultAsync(u => u.Email == adminEmail.ToLowerInvariant());
+            if (adminUser != null)
+            {
+                var adminDummyApps = await context.JobApplications.Where(j => j.UserId == adminUser.Id).ToListAsync();
+                if (adminDummyApps.Any())
+                {
+                    var adminRetros = await context.RejectionRetrospectives.Where(r => r.UserId == adminUser.Id).ToListAsync();
+                    context.RejectionRetrospectives.RemoveRange(adminRetros);
+                    context.JobApplications.RemoveRange(adminDummyApps);
+                    await context.SaveChangesAsync();
+                }
+            }
+        }
 
-        var existingApps = await context.JobApplications.Where(j => j.UserId == user.Id).ToListAsync();
-        if (existingApps.Count >= 5) return;
+        var demoUser = await context.Users.FirstOrDefaultAsync(u => u.Email == "demo@jobtracker.dev");
+        if (demoUser is null) return;
+
+        var existingApps = await context.JobApplications.Where(j => j.UserId == demoUser.Id).ToListAsync();
+        if (existingApps.Count >= 6) return;
 
         if (existingApps.Any())
         {
@@ -290,7 +381,7 @@ public static class DbSeeder
         {
             new()
             {
-                UserId = user.Id,
+                UserId = demoUser.Id,
                 CompanyId = GetCompany("Bangladesh Bank").Id,
                 Role = "Assistant Programmer (Govt)",
                 JobUrl = "https://erecruiter.bb.org.bd/job_circular.php",
@@ -298,7 +389,6 @@ public static class DbSeeder
                 SalaryRange = "Grade-9 (22,000 - 53,060 BDT)",
                 Notes = "## Bangladesh Bank Written Exam Details\n- Passed MCQ Preliminary screening (Marks: 72/100)\n- Written Exam Date: Friday, 10:00 AM at BUET Campus\n- Focus: Data Structures, C++, SQL, Networking, and ICT Policy",
                 AppliedAt = DateTime.UtcNow.AddDays(-14),
-                FollowUpDate = DateTime.UtcNow.AddDays(2),
                 PriorityId = GetPriority("High").Id,
                 JobTypeId = GetJobType("Govt / Cadre Service").Id,
                 SourcePlatformId = GetPlatform("Bangladesh Bank eRecruitment").Id,
@@ -307,32 +397,14 @@ public static class DbSeeder
             },
             new()
             {
-                UserId = user.Id,
-                CompanyId = GetCompany("BPDB (Power Board)").Id,
-                Role = "Assistant Engineer (IT)",
-                JobUrl = "http://bpdb.teletalk.com.bd",
-                Location = "Dhaka, Bangladesh",
-                SalaryRange = "Grade-9 (22,000 - 53,060 BDT)",
-                Notes = "## Viva Voce & Document Verification Round\n- Qualified MCQ & Written Subjective Exam!\n- Viva Board: BPDB Headquarters, Abdul Gani Road\n- Documents: All Academic Certificates, NID, Citizenship Certificate",
-                AppliedAt = DateTime.UtcNow.AddDays(-28),
-                FollowUpDate = DateTime.UtcNow.AddDays(5),
-                PriorityId = GetPriority("High").Id,
-                JobTypeId = GetJobType("Govt / Cadre Service").Id,
-                SourcePlatformId = GetPlatform("Teletalk AllJobs").Id,
-                ApplicationStatusId = GetStatus("Viva Voce").Id,
-                WorkTypeId = GetWorkType("Onsite").Id
-            },
-            new()
-            {
-                UserId = user.Id,
+                UserId = demoUser.Id,
                 CompanyId = GetCompany("Google").Id,
-                Role = "Senior Frontend Engineer",
-                JobUrl = "https://careers.google.com/jobs/results/12345",
-                Location = "Remote",
-                SalaryRange = "$140,000 - $175,000",
-                Notes = "## Technical Assessment Round\n- System Design focus: Micro-frontend architecture and Web Vitals LCP/INP optimization",
+                Role = "Senior Backend Engineer",
+                JobUrl = "https://careers.google.com/jobs/results/123456",
+                Location = "Mountain View, CA (Remote)",
+                SalaryRange = "$170,000 - $210,000",
+                Notes = "## Google Interview Notes\n- Recruiter reached out on LinkedIn\n- Passed initial technical screening round (Focus: Distributed Systems & Concurrency)\n- Next Round: Virtual Onsite Interview (3 Coding + 1 System Design + 1 Googliness)",
                 AppliedAt = DateTime.UtcNow.AddDays(-10),
-                FollowUpDate = DateTime.UtcNow.AddDays(2),
                 PriorityId = GetPriority("High").Id,
                 JobTypeId = GetJobType("Full Time").Id,
                 SourcePlatformId = GetPlatform("LinkedIn").Id,
@@ -341,40 +413,165 @@ public static class DbSeeder
             },
             new()
             {
-                UserId = user.Id,
-                CompanyId = GetCompany("Vercel").Id,
-                Role = "Fullstack Engineer (Next.js)",
-                JobUrl = "https://vercel.com/careers/fullstack-eng",
-                Location = "San Francisco, CA (Remote)",
-                SalaryRange = "$150,000 - $185,000",
-                Notes = "## Offer Received! 🎉\n- Base Salary: $165,000\n- Stock Options: 20,000 shares (4-year vest)",
+                UserId = demoUser.Id,
+                CompanyId = GetCompany("Sonali Bank PLC").Id,
+                Role = "Senior Officer (IT)",
+                JobUrl = "https://erecruiter.bb.org.bd",
+                Location = "Dhaka, Bangladesh",
+                SalaryRange = "Grade-8 (23,000 - 55,470 BDT)",
+                Notes = "Passed both MCQ & Written Exams. Viva Voce Board scheduled next week at Bankers Selection Committee Secretariat.",
                 AppliedAt = DateTime.UtcNow.AddDays(-25),
-                FollowUpDate = DateTime.UtcNow.AddDays(5),
                 PriorityId = GetPriority("High").Id,
-                JobTypeId = GetJobType("Full Time").Id,
-                SourcePlatformId = GetPlatform("Company Website").Id,
-                ApplicationStatusId = GetStatus("Offer").Id,
-                WorkTypeId = GetWorkType("Remote").Id
+                JobTypeId = GetJobType("Bank (Govt/Private)").Id,
+                SourcePlatformId = GetPlatform("Bangladesh Bank eRecruitment").Id,
+                ApplicationStatusId = GetStatus("Viva Voce").Id,
+                WorkTypeId = GetWorkType("Onsite").Id
             },
             new()
             {
-                UserId = user.Id,
-                CompanyId = GetCompany("Stripe").Id,
-                Role = "Backend Engineer - Payments Infrastructure",
-                JobUrl = "https://stripe.com/jobs/listing/45678",
-                Location = "Remote",
-                SalaryRange = "$145,000 - $180,000",
-                Notes = "Saved role for upcoming Q3 applications.",
-                AppliedAt = DateTime.UtcNow.AddDays(-2),
+                UserId = demoUser.Id,
+                CompanyId = GetCompany("Brain Station 23").Id,
+                Role = "Lead .NET & Cloud Architect",
+                JobUrl = "https://brainstation-23.com/careers/lead-architect",
+                Location = "Mohakhali DOHS, Dhaka",
+                SalaryRange = "220,000 - 280,000 BDT/month",
+                Notes = "Final negotiation completed. Received official offer letter with stock options.",
+                AppliedAt = DateTime.UtcNow.AddDays(-18),
                 PriorityId = GetPriority("High").Id,
                 JobTypeId = GetJobType("Full Time").Id,
-                SourcePlatformId = GetPlatform("Referral").Id,
-                ApplicationStatusId = GetStatus("Saved").Id,
-                WorkTypeId = GetWorkType("Remote").Id
+                SourcePlatformId = GetPlatform("Bdjobs").Id,
+                ApplicationStatusId = GetStatus("Offer").Id,
+                WorkTypeId = GetWorkType("Hybrid").Id
+            },
+            new()
+            {
+                UserId = demoUser.Id,
+                CompanyId = GetCompany("Microsoft").Id,
+                Role = "Staff Software Engineer",
+                JobUrl = "https://careers.microsoft.com/us/en/job/987654",
+                Location = "Redmond, WA (Hybrid)",
+                SalaryRange = "$180,000 - $220,000",
+                Notes = "Rejected after System Design round on distributed consensus and high-availability partitioning.",
+                AppliedAt = DateTime.UtcNow.AddDays(-30),
+                PriorityId = GetPriority("High").Id,
+                JobTypeId = GetJobType("Full Time").Id,
+                SourcePlatformId = GetPlatform("Company Website").Id,
+                ApplicationStatusId = GetStatus("Rejected").Id,
+                WorkTypeId = GetWorkType("Hybrid").Id
+            },
+            new()
+            {
+                UserId = demoUser.Id,
+                CompanyId = GetCompany("BPSC (Public Service)").Id,
+                Role = "Assistant Network Engineer (Govt)",
+                JobUrl = "http://bpsc.teletalk.com.bd",
+                Location = "Agargaon, Dhaka",
+                SalaryRange = "Grade-9 (22,000 - 53,060 BDT)",
+                Notes = "Failed in preliminary MCQ test due to negative marking on analytical math shortcuts.",
+                AppliedAt = DateTime.UtcNow.AddDays(-35),
+                PriorityId = GetPriority("Medium").Id,
+                JobTypeId = GetJobType("Govt / Cadre Service").Id,
+                SourcePlatformId = GetPlatform("BPSC (bpsc.gov.bd)").Id,
+                ApplicationStatusId = GetStatus("Rejected").Id,
+                WorkTypeId = GetWorkType("Onsite").Id
             }
         };
 
         await context.JobApplications.AddRangeAsync(applications);
         await context.SaveChangesAsync();
+    }
+
+    private static async Task SeedRejectionRetrospectives(AppDbContext context)
+    {
+        var demoUser = await context.Users.FirstOrDefaultAsync(u => u.Email == "demo@jobtracker.dev");
+        if (demoUser is null) return;
+
+        if (await context.RejectionRetrospectives.AnyAsync(r => r.UserId == demoUser.Id))
+        {
+            return;
+        }
+
+        var rejectedApps = await context.JobApplications
+            .Include(j => j.Company)
+            .Include(j => j.ApplicationStatus)
+            .Where(j => j.UserId == demoUser.Id && j.ApplicationStatus.Name == "Rejected")
+            .ToListAsync();
+
+        var retrospectives = new List<RejectionRetrospective>();
+
+        foreach (var app in rejectedApps)
+        {
+            if (app.Company.Name.Contains("Microsoft", StringComparison.OrdinalIgnoreCase))
+            {
+                retrospectives.Add(new RejectionRetrospective
+                {
+                    Id = Guid.NewGuid(),
+                    JobApplicationId = app.Id,
+                    UserId = demoUser.Id,
+                    JobDomain = "Corporate",
+                    FailedStage = "System Design Round",
+                    PrimaryRootCause = "Technical Depth & Core Concepts",
+                    PreparationTime = "1-3 months",
+                    MockCount = "1-3 mocks",
+                    DifficultyRating = 4,
+                    TimePressureRating = 3,
+                    ConfidenceRating = 6,
+                    FeedbackStatus = "Yes detailed feedback",
+                    SpecificWeaknessTagsJson = JsonSerializer.Serialize(new List<string> { "System Design", "Scalability", "Distributed Locking" }),
+                    SurveyDataJson = JsonSerializer.Serialize(new
+                    {
+                        TechnicalTopicGaps = new List<string> { "System Design - Scalability & Partitioning", "Microservices & Distributed Transactions", "Database Query Optimization & Indexing" },
+                        BehavioralFactors = new List<string> { "Weak Explanation of Past Projects" },
+                        ExternalBlockers = new List<string> { "High Competition / Extreme Cutoff" },
+                        StudyMaterialsUsed = new List<string> { "Alex Xu System Design", "LeetCode / NeetCode" }
+                    }),
+                    WhatWentWell = "Cleared coding and behavioral rounds smoothly with strong praise on clean code.",
+                    WhatFailed = "Struggled with deep dive into multi-region database failover and consensus algorithms under high write loads.",
+                    ActionablePlan = "Read Alex Xu System Design Vol 2. Practice diagramming rate limiters and Redis caching layers.",
+                    CreatedAt = DateTime.UtcNow.AddDays(-20),
+                    UpdatedAt = DateTime.UtcNow.AddDays(-20)
+                });
+            }
+            else if (app.Company.Name.Contains("BPSC", StringComparison.OrdinalIgnoreCase) || app.Role.Contains("Network", StringComparison.OrdinalIgnoreCase))
+            {
+                retrospectives.Add(new RejectionRetrospective
+                {
+                    Id = Guid.NewGuid(),
+                    JobApplicationId = app.Id,
+                    UserId = demoUser.Id,
+                    JobDomain = "Govt & Bank",
+                    FailedStage = "MCQ / Preliminary Test",
+                    PrimaryRootCause = "Exam Speed & Time Management",
+                    PreparationTime = "3-6 months",
+                    MockCount = "4-10 mocks",
+                    DifficultyRating = 4,
+                    TimePressureRating = 5,
+                    ConfidenceRating = 5,
+                    EstimatedScore = 64.5,
+                    ExpectedCutoffScore = 72.0,
+                    NegativeMarksLost = 6.0,
+                    FeedbackStatus = "Score published on website",
+                    SpecificWeaknessTagsJson = JsonSerializer.Serialize(new List<string> { "MCQ Speed Drill", "Math Shortcuts", "Negative Marking" }),
+                    SurveyDataJson = JsonSerializer.Serialize(new
+                    {
+                        TechnicalTopicGaps = new List<string> { "Analytical Math & Shortcuts", "Computer Networks & Subnetting" },
+                        BehavioralFactors = new List<string> { "Nervousness / Hesitation" },
+                        ExternalBlockers = new List<string> { "Exam Hall Rush / Traffic" },
+                        StudyMaterialsUsed = new List<string> { "Previous Year Questions", "Online Mock Test Platform" }
+                    }),
+                    WhatWentWell = "Scored 100% on English and General Knowledge sections.",
+                    WhatFailed = "Spent 8 minutes stuck on 3 analytical geometry problems and lost marks to negative penalty.",
+                    ActionablePlan = "Practice 100-question timed mocks with a strict 45-second cap per question. Never guess blindly on negative mark exams.",
+                    CreatedAt = DateTime.UtcNow.AddDays(-28),
+                    UpdatedAt = DateTime.UtcNow.AddDays(-28)
+                });
+            }
+        }
+
+        if (retrospectives.Any())
+        {
+            await context.RejectionRetrospectives.AddRangeAsync(retrospectives);
+            await context.SaveChangesAsync();
+        }
     }
 }

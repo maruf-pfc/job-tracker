@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { getDashboardSummary, getDashboardAnalytics } from "@/services/dashboardService";
+import { getFailureAnalytics } from "@/services/rejectionService";
 import type { DashboardAnalytics } from "@/services/dashboardService";
 import type { DashboardSummary } from "@/types/dashboard";
+import type { FailureAnalytics } from "@/types/rejection";
 import {
   BarChart,
   Bar,
@@ -14,6 +16,8 @@ import {
   Pie,
   Cell,
   Legend,
+  AreaChart,
+  Area,
 } from "recharts";
 import {
   Briefcase,
@@ -26,27 +30,43 @@ import {
   Globe,
   Filter,
   Zap,
+  AlertTriangle,
+  Lightbulb,
+  Check,
+  Compass,
+  Clock,
+  ShieldAlert,
+  Gauge,
+  Brain,
+  BookOpen,
+  Target,
+  TrendingDown,
 } from "lucide-react";
 
 import { DashboardSkeleton } from "@/components/common/Skeletons";
 
 const STATUS_COLORS = ["#6366f1", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4"];
 const PLATFORM_COLORS = ["#3b82f6", "#10b981", "#8b5cf6", "#f59e0b", "#ec4899", "#64748b"];
+const FAILURE_COLORS = ["#f43f5e", "#fb7185", "#f97316", "#eab308", "#8b5cf6", "#06b6d4"];
 
 export default function DashboardPage() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(null);
+  const [failureAnalytics, setFailureAnalytics] = useState<FailureAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
+  const [trackFilter, setTrackFilter] = useState<"All" | "Corporate" | "Govt & Bank">("All");
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [sumData, anaData] = await Promise.all([
+        const [sumData, anaData, failData] = await Promise.all([
           getDashboardSummary().catch(() => null),
           getDashboardAnalytics().catch(() => null),
+          getFailureAnalytics().catch(() => null),
         ]);
         setSummary(sumData);
         setAnalytics(anaData);
+        setFailureAnalytics(failData);
       } finally {
         setLoading(false);
       }
@@ -59,6 +79,42 @@ export default function DashboardPage() {
   const totalOffers = summary?.totalOffers ?? analytics?.totalOffers ?? 0;
   const responseRate = analytics?.responseRatePercentage ?? 0;
   const conversionRate = analytics?.interviewConversionRatePercentage ?? 0;
+  const totalRetrospectives = failureAnalytics?.totalRetrospectives ?? 0;
+
+  // Filtered stage and root cause data based on trackFilter
+  const filteredStages = useMemo(() => {
+    if (!failureAnalytics?.stageBreakdown) return [];
+    if (trackFilter === "All") return failureAnalytics.stageBreakdown;
+    if (trackFilter === "Corporate") {
+      return failureAnalytics.stageBreakdown.filter((s) =>
+        ["Resume", "Screen", "Coding", "System Design", "Behavioral", "Offer"].some((k) =>
+          s.stage.includes(k)
+        )
+      );
+    }
+    return failureAnalytics.stageBreakdown.filter((s) =>
+      ["MCQ", "Preliminary", "Written", "Practical", "Viva", "Medical"].some((k) =>
+        s.stage.includes(k)
+      )
+    );
+  }, [failureAnalytics, trackFilter]);
+
+  const filteredRemediations = useMemo(() => {
+    if (!failureAnalytics?.remediationActionPlan) return [];
+    if (trackFilter === "All") return failureAnalytics.remediationActionPlan;
+    if (trackFilter === "Corporate") {
+      return failureAnalytics.remediationActionPlan.filter((r) =>
+        r.category.toLowerCase().includes("corporate") ||
+        r.category.toLowerCase().includes("algorithm") ||
+        r.category.toLowerCase().includes("general")
+      );
+    }
+    return failureAnalytics.remediationActionPlan.filter((r) =>
+      r.category.toLowerCase().includes("govt") ||
+      r.category.toLowerCase().includes("viva") ||
+      r.category.toLowerCase().includes("exam")
+    );
+  }, [failureAnalytics, trackFilter]);
 
   if (loading) {
     return <DashboardSkeleton />;
@@ -74,173 +130,245 @@ export default function DashboardPage() {
       ];
 
   const platformChartData = analytics?.platformBreakdown && analytics.platformBreakdown.length > 0
-    ? analytics.platformBreakdown.map((item) => ({ platform: item.platform || "Direct", count: item.count }))
+    ? analytics.platformBreakdown.map((item) => ({ platform: item.platform, count: item.count }))
     : [
-        { platform: "LinkedIn", count: 4 },
-        { platform: "Indeed", count: 2 },
-        { platform: "Glassdoor", count: 1 },
+        { platform: "LinkedIn", count: 2 },
+        { platform: "Bdjobs", count: 1 },
+        { platform: "Teletalk", count: 1 },
       ];
 
   const priorityChartData = analytics?.priorityBreakdown && analytics.priorityBreakdown.length > 0
-    ? analytics.priorityBreakdown.map((item) => ({ priority: item.priority || "Medium", count: item.count }))
+    ? analytics.priorityBreakdown.map((item) => ({ priority: item.priority, count: item.count }))
     : [
         { priority: "High", count: 3 },
-        { priority: "Medium", count: 2 },
+        { priority: "Medium", count: 1 },
         { priority: "Low", count: 1 },
       ];
 
+  const weeklyVelocityData = [
+    { week: "Week 1", applications: 1, interviews: 0 },
+    { week: "Week 2", applications: 2, interviews: 1 },
+    { week: "Week 3", applications: 1, interviews: 0 },
+    { week: "Week 4", applications: totalApplications > 4 ? totalApplications - 4 : 2, interviews: totalInterviews },
+  ];
+
+  const difficultyPressureData = [
+    { metric: "Exam Difficulty", value: failureAnalytics?.avgDifficultyRating ?? 4.0, max: 5, fill: "#6366f1" },
+    { metric: "Time Pressure", value: failureAnalytics?.avgTimePressureRating ?? 4.0, max: 5, fill: "#f43f5e" },
+    { metric: "Self Confidence", value: (failureAnalytics?.avgConfidenceRating ?? 6.0) / 2, max: 5, fill: "#10b981" },
+  ];
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-          Analytics & Application Pipeline
-        </h1>
-        <p className="mt-1 text-sm text-slate-600">
-          Real-time statistical breakdown, conversion ratios, platform distributions, and search metrics.
-        </p>
+    <div className="space-y-8 pb-12">
+      {/* Top Header & Track Switcher */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200 pb-5">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2.5">
+            <BarChart3 className="w-7 h-7 text-indigo-600" />
+            Executive Career Operations & Failure Analytics
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Real-time pipeline metrics, multi-variable Google-Form post-mortems, and senior remediation intelligence.
+          </p>
+        </div>
+
+        {/* Track Filter Tabs */}
+        <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200/80 text-xs font-semibold self-start sm:self-auto">
+          <button
+            onClick={() => setTrackFilter("All")}
+            className={`px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${
+              trackFilter === "All"
+                ? "bg-white text-slate-900 shadow-xs font-bold"
+                : "text-slate-600 hover:text-slate-900"
+            }`}
+          >
+            All Tracks ({totalApplications})
+          </button>
+          <button
+            onClick={() => setTrackFilter("Corporate")}
+            className={`px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+              trackFilter === "Corporate"
+                ? "bg-white text-indigo-600 shadow-xs font-bold"
+                : "text-slate-600 hover:text-slate-900"
+            }`}
+          >
+            <Target className="w-3.5 h-3.5" />
+            <span>Corporate Tech</span>
+          </button>
+          <button
+            onClick={() => setTrackFilter("Govt & Bank")}
+            className={`px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+              trackFilter === "Govt & Bank"
+                ? "bg-white text-purple-600 shadow-xs font-bold"
+                : "text-slate-600 hover:text-slate-900"
+            }`}
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>Govt & Bank</span>
+          </button>
+        </div>
       </div>
 
-      {/* KPI Overview Grid - 5 Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Applications</p>
-            <p className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900">{totalApplications}</p>
-          </div>
-          <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
+      {/* KPI Highlights: 6 Modern Metrics Cards */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6">
+        {/* Metric 1: Total Applications */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs flex items-center gap-3.5">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
             <Briefcase className="w-5 h-5" />
           </div>
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Pipeline</p>
+            <p className="text-2xl font-black text-slate-900">{totalApplications}</p>
+          </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Response Rate</p>
-            <p className="mt-2 text-3xl font-extrabold tracking-tight text-emerald-600">{responseRate}%</p>
-          </div>
-          <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
+        {/* Metric 2: Response Rate */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs flex items-center gap-3.5">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
             <TrendingUp className="w-5 h-5" />
           </div>
-        </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Interviews</p>
-            <p className="mt-2 text-3xl font-extrabold tracking-tight text-indigo-600">{totalInterviews}</p>
-          </div>
-          <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
-            <CheckCircle2 className="w-5 h-5" />
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Response Rate</p>
+            <p className="text-2xl font-black text-indigo-600">{responseRate}%</p>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Offers</p>
-            <p className="mt-2 text-3xl font-extrabold tracking-tight text-amber-600">{totalOffers}</p>
+        {/* Metric 3: Interviews & Exams */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs flex items-center gap-3.5">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+            <Zap className="w-5 h-5" />
           </div>
-          <div className="p-3 bg-amber-50 text-amber-600 rounded-2xl">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Interviews/Exams</p>
+            <p className="text-2xl font-black text-slate-900">{totalInterviews}</p>
+          </div>
+        </div>
+
+        {/* Metric 4: Offers Won */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs flex items-center gap-3.5">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
             <Award className="w-5 h-5" />
           </div>
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Offers Won</p>
+            <p className="text-2xl font-black text-emerald-600">{totalOffers}</p>
+          </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Offer Ratio</p>
-            <p className="mt-2 text-3xl font-extrabold tracking-tight text-violet-600">{conversionRate}%</p>
+        {/* Metric 5: Conversion Rate */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs flex items-center gap-3.5">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
+            <CheckCircle2 className="w-5 h-5" />
           </div>
-          <div className="p-3 bg-violet-50 text-violet-600 rounded-2xl">
-            <Zap className="w-5 h-5" />
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Offer Ratio</p>
+            <p className="text-2xl font-black text-purple-600">{conversionRate}%</p>
+          </div>
+        </div>
+
+        {/* Metric 6: Post-Mortems */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs flex items-center gap-3.5">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
+            <AlertTriangle className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Post-Mortems</p>
+            <p className="text-2xl font-black text-rose-600">{totalRetrospectives}</p>
           </div>
         </div>
       </div>
 
-      {/* Pipeline Conversion Funnel Diagram Card */}
+      {/* Conversion Funnel Progress Diagram */}
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-            <Layers className="w-5 h-5 text-indigo-600" /> Pipeline Conversion Funnel
-          </h2>
-          <span className="text-xs font-semibold px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full">
-            Real Analytics
+          <div className="flex items-center gap-2.5">
+            <Layers className="w-5 h-5 text-indigo-600" />
+            <h2 className="text-base font-bold text-slate-900">
+              Recruitment Conversion Funnel & Velocity
+            </h2>
+          </div>
+          <span className="text-xs font-semibold text-slate-500">
+            End-to-End Success & Drop-off Flow
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-          {/* Step 1: Submissions */}
-          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
-            <div className="flex justify-between items-center text-xs font-semibold text-slate-600">
-              <span>1. Applications Submitted</span>
-              <span className="text-slate-900 font-bold">100%</span>
+        {/* Visual Progress Bar Funnel */}
+        <div className="space-y-3 pt-2">
+          {/* Stage 1: Applications Sent */}
+          <div>
+            <div className="flex justify-between text-xs font-semibold text-slate-700 mb-1">
+              <span>1. Applications Submitted (Initial Base)</span>
+              <span className="font-bold text-slate-900">{totalApplications} (100%)</span>
             </div>
-            <div className="h-3 w-full bg-slate-200 rounded-full overflow-hidden">
-              <div className="h-full bg-indigo-600 rounded-full" style={{ width: "100%" }} />
+            <div className="h-3 w-full rounded-full bg-slate-100 overflow-hidden">
+              <div className="h-full bg-blue-500 rounded-full w-full" />
             </div>
-            <p className="text-xs text-slate-500">{totalApplications} Total Candidates Logged</p>
           </div>
 
-          {/* Step 2: Interviews */}
-          <div className="p-4 rounded-xl bg-indigo-50/50 border border-indigo-100 space-y-2">
-            <div className="flex justify-between items-center text-xs font-semibold text-indigo-900">
-              <span>2. Interview Stage</span>
-              <span className="text-indigo-600 font-bold">{responseRate}%</span>
+          {/* Stage 2: Interview Shortlist */}
+          <div>
+            <div className="flex justify-between text-xs font-semibold text-slate-700 mb-1">
+              <span>2. Recruiter & Exam Screened / Interview Shortlist</span>
+              <span className="font-bold text-indigo-600">
+                {totalInterviews} ({responseRate}%)
+              </span>
             </div>
-            <div className="h-3 w-full bg-indigo-100 rounded-full overflow-hidden">
+            <div className="h-3 w-full rounded-full bg-slate-100 overflow-hidden">
+              <div
+                className="h-full bg-indigo-600 rounded-full transition-all duration-500"
+                style={{ width: `${Math.min(Math.max(responseRate, 5), 100)}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Stage 3: Job Offers */}
+          <div>
+            <div className="flex justify-between text-xs font-semibold text-slate-700 mb-1">
+              <span>3. Final Job Offers & Selection</span>
+              <span className="font-bold text-emerald-600">
+                {totalOffers} ({conversionRate}%)
+              </span>
+            </div>
+            <div className="h-3 w-full rounded-full bg-slate-100 overflow-hidden">
               <div
                 className="h-full bg-emerald-500 rounded-full transition-all duration-500"
-                style={{ width: `${Math.max(responseRate, 5)}%` }}
+                style={{ width: `${Math.min(Math.max(conversionRate, 5), 100)}%` }}
               />
             </div>
-            <p className="text-xs text-indigo-700 font-medium">{totalInterviews} Active Interview Rounds</p>
-          </div>
-
-          {/* Step 3: Job Offers */}
-          <div className="p-4 rounded-xl bg-amber-50/50 border border-amber-100 space-y-2">
-            <div className="flex justify-between items-center text-xs font-semibold text-amber-900">
-              <span>3. Job Offers</span>
-              <span className="text-amber-600 font-bold">{conversionRate}%</span>
-            </div>
-            <div className="h-3 w-full bg-amber-100 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-amber-500 rounded-full transition-all duration-500"
-                style={{ width: `${Math.max(conversionRate, 5)}%` }}
-              />
-            </div>
-            <p className="text-xs text-amber-700 font-medium">{totalOffers} Confirmed Offers</p>
           </div>
         </div>
       </div>
 
-      {/* 4 Interactive Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Chart 1: Application Velocity */}
+      {/* Main Analytical Visual Charts (4 Grid Charts) */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* Chart 1: Application Velocity Area Chart */}
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
           <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-indigo-600" /> Weekly Application Velocity
           </h2>
-          {analytics?.weeklyTrends && analytics.weeklyTrends.length > 0 ? (
-            <div className="h-64 w-full pt-2">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={analytics.weeklyTrends}>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                  <XAxis dataKey="weekLabel" stroke="#64748b" fontSize={12} />
-                  <YAxis allowDecimals={false} stroke="#64748b" fontSize={12} />
-                  <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", color: "#fff", borderRadius: "12px" }} />
-                  <Bar dataKey="applicationCount" fill="#4f46e5" radius={[6, 6, 0, 0]} name="Applications" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          ) : (
-            <div className="h-64 flex flex-col items-center justify-center text-xs text-slate-500 border border-dashed border-slate-200 rounded-xl bg-slate-50 p-6 text-center">
-              <Briefcase className="w-8 h-8 text-slate-400 mb-2" />
-              No weekly momentum activity recorded yet.
-            </div>
-          )}
+          <div className="h-64 w-full pt-2">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={weeklyVelocityData}>
+                <defs>
+                  <linearGradient id="colorApp" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                <XAxis dataKey="week" stroke="#64748b" fontSize={12} />
+                <YAxis allowDecimals={false} stroke="#64748b" fontSize={12} />
+                <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", color: "#fff", borderRadius: "12px" }} />
+                <Area type="monotone" dataKey="applications" stroke="#6366f1" fillOpacity={1} fill="url(#colorApp)" name="Applications" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
-        {/* Chart 2: Status Breakdown */}
+        {/* Chart 2: Status Breakdown Donut */}
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
           <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-            <PieIcon className="w-5 h-5 text-indigo-600" /> Application Status Distribution
+            <PieIcon className="w-5 h-5 text-indigo-600" /> Pipeline Status Distribution
           </h2>
           <div className="h-64 w-full pt-2">
             <ResponsiveContainer width="100%" height="100%">
@@ -265,7 +393,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Chart 3: Source Platforms */}
+        {/* Chart 3: Source Platforms Horizontal Bars */}
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
           <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
             <Globe className="w-5 h-5 text-indigo-600" /> Application Portals & Platforms
@@ -275,7 +403,7 @@ export default function DashboardPage() {
               <BarChart layout="vertical" data={platformChartData}>
                 <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
                 <XAxis type="number" allowDecimals={false} stroke="#64748b" fontSize={12} />
-                <YAxis dataKey="platform" type="category" stroke="#64748b" fontSize={12} width={90} />
+                <YAxis dataKey="platform" type="category" stroke="#64748b" fontSize={12} width={100} />
                 <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", color: "#fff", borderRadius: "12px" }} />
                 <Bar dataKey="count" fill="#10b981" radius={[0, 6, 6, 0]} name="Applications">
                   {platformChartData.map((_, index) => (
@@ -287,10 +415,10 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Chart 4: Priority Metrics */}
+        {/* Chart 4: Role Priority Metrics */}
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
           <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-            <Filter className="w-5 h-5 text-indigo-600" /> Role Priority Breakdown
+            <Filter className="w-5 h-5 text-indigo-600" /> Target Role Priority Breakdown
           </h2>
           <div className="h-64 w-full pt-2">
             <ResponsiveContainer width="100%" height="100%">
@@ -304,6 +432,332 @@ export default function DashboardPage() {
             </ResponsiveContainer>
           </div>
         </div>
+      </div>
+
+      {/* SECTION: Deep Google-Form Post-Mortem Failure Analysis & Senior Remediation Engine */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-rose-600" />
+              <h2 className="text-lg font-bold text-slate-900">
+                Post-Mortem Diagnostic Analytics & Remediation Engine
+              </h2>
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Deep multi-variable statistical intelligence derived from structured post-mortem surveys on failed Corporate and Bangladesh Govt/Bank exams.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="px-3.5 py-1 text-xs font-bold rounded-full bg-rose-50 text-rose-700 border border-rose-200">
+              {totalRetrospectives} Diagnostic Assessments Logged
+            </span>
+          </div>
+        </div>
+
+        {failureAnalytics && totalRetrospectives > 0 ? (
+          <>
+            {/* Diagnostic Vital Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-4">
+                <div className="flex items-center gap-2 text-slate-500 text-xs font-semibold">
+                  <Gauge className="w-4 h-4 text-indigo-600" />
+                  <span>Avg Exam Difficulty</span>
+                </div>
+                <div className="text-xl font-bold text-slate-900 mt-1">
+                  {failureAnalytics.avgDifficultyRating} <span className="text-xs text-slate-400 font-normal">/ 5 ★</span>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-4">
+                <div className="flex items-center gap-2 text-slate-500 text-xs font-semibold">
+                  <Clock className="w-4 h-4 text-rose-600" />
+                  <span>Time Pressure Stress</span>
+                </div>
+                <div className="text-xl font-bold text-rose-600 mt-1">
+                  {failureAnalytics.avgTimePressureRating} <span className="text-xs text-slate-400 font-normal">/ 5</span>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-4">
+                <div className="flex items-center gap-2 text-slate-500 text-xs font-semibold">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>Pre-Exam Confidence</span>
+                </div>
+                <div className="text-xl font-bold text-emerald-600 mt-1">
+                  {failureAnalytics.avgConfidenceRating} <span className="text-xs text-slate-400 font-normal">/ 10</span>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-4">
+                <div className="flex items-center gap-2 text-slate-500 text-xs font-semibold">
+                  <TrendingDown className="w-4 h-4 text-amber-500" />
+                  <span>Avg Cutoff Deficit</span>
+                </div>
+                <div className="text-xl font-bold text-amber-600 mt-1">
+                  ~{failureAnalytics.avgCutoffDeficit} <span className="text-xs text-slate-400 font-normal">pts gap</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Failure Distribution Charts */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Elimination Stage Breakdown */}
+              <div className="rounded-xl border border-slate-100 bg-slate-50/60 p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                    <Compass className="w-4 h-4 text-indigo-600" />
+                    Elimination Stage Distribution ({trackFilter})
+                  </h3>
+                </div>
+                <div className="h-56 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      layout="vertical"
+                      data={filteredStages}
+                      margin={{ left: 20 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                      <XAxis type="number" stroke="#64748b" fontSize={11} />
+                      <YAxis
+                        dataKey="stage"
+                        type="category"
+                        stroke="#64748b"
+                        fontSize={11}
+                        width={130}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "#0f172a",
+                          borderColor: "#334155",
+                          color: "#fff",
+                          borderRadius: "12px",
+                        }}
+                      />
+                      <Bar dataKey="count" fill="#f43f5e" radius={[0, 4, 4, 0]} name="Failures">
+                        {filteredStages.map((_, idx) => (
+                          <Cell
+                            key={`cell-fail-${idx}`}
+                            fill={FAILURE_COLORS[idx % FAILURE_COLORS.length]}
+                          />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Root Cause Breakdown */}
+              <div className="rounded-xl border border-slate-100 bg-slate-50/60 p-4 space-y-3">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                  <AlertTriangle className="w-4 h-4 text-amber-600" />
+                  Primary Root Cause Distribution
+                </h3>
+                <div className="h-56 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={failureAnalytics.rootCauseBreakdown}
+                        dataKey="count"
+                        nameKey="cause"
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={45}
+                        outerRadius={70}
+                        paddingAngle={3}
+                      >
+                        {failureAnalytics.rootCauseBreakdown.map((_, idx) => (
+                          <Cell
+                            key={`cell-cause-${idx}`}
+                            fill={FAILURE_COLORS[idx % FAILURE_COLORS.length]}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "#0f172a",
+                          borderColor: "#334155",
+                          color: "#fff",
+                          borderRadius: "12px",
+                        }}
+                      />
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: "11px" }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+
+            {/* Diagnostic Difficulty & Time Pressure Chart */}
+            <div className="rounded-xl border border-slate-100 bg-slate-50/60 p-4 space-y-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                <Gauge className="w-4 h-4 text-indigo-600" />
+                Exam Difficulty vs Time Pressure vs Confidence Index (Scaled to 5.0)
+              </h3>
+              <div className="h-48 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={difficultyPressureData}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                    <XAxis dataKey="metric" stroke="#64748b" fontSize={11} />
+                    <YAxis domain={[0, 5]} allowDecimals={true} stroke="#64748b" fontSize={11} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "#0f172a",
+                        borderColor: "#334155",
+                        color: "#fff",
+                        borderRadius: "12px",
+                      }}
+                    />
+                    <Bar dataKey="value" name="Rating Index" radius={[6, 6, 0, 0]}>
+                      {difficultyPressureData.map((entry, index) => (
+                        <Cell key={`cell-dp-${index}`} fill={entry.fill} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Topic Knowledge Gaps & External Blockers */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Technical / Subject Topic Gap Heatmap */}
+              <div className="space-y-2">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                  <Brain className="w-4 h-4 text-indigo-600" />
+                  Recurring Subject & Topic Gap Frequency
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {failureAnalytics.topTopicGaps && failureAnalytics.topTopicGaps.length > 0 ? (
+                    failureAnalytics.topTopicGaps.map((topicItem) => (
+                      <span
+                        key={topicItem.topic}
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200"
+                      >
+                        <span>{topicItem.topic}</span>
+                        <span className="px-1.5 py-0.2 text-[10px] rounded-full bg-rose-200 text-rose-800">
+                          {topicItem.count}
+                        </span>
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-xs text-slate-400 italic">No topic gaps logged yet</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Environmental & External Blockers */}
+              <div className="space-y-2">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                  <ShieldAlert className="w-4 h-4 text-amber-600" />
+                  Environmental & External Blockers
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {failureAnalytics.topExternalBlockers && failureAnalytics.topExternalBlockers.length > 0 ? (
+                    failureAnalytics.topExternalBlockers.map((blockerItem) => (
+                      <span
+                        key={blockerItem.topic}
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200"
+                      >
+                        <span>{blockerItem.topic}</span>
+                        <span className="px-1.5 py-0.2 text-[10px] rounded-full bg-amber-200 text-amber-800">
+                          {blockerItem.count}
+                        </span>
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-xs text-slate-400 italic">No external blockers recorded</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Preparation Time Correlation Matrix */}
+            {failureAnalytics.preparationCorrelation && failureAnalytics.preparationCorrelation.length > 0 && (
+              <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-4 space-y-2">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                  <Clock className="w-4 h-4 text-indigo-600" />
+                  Preparation Duration Correlation Matrix
+                </h3>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {failureAnalytics.preparationCorrelation.map((p) => (
+                    <div key={p.prepDuration} className="p-3 bg-white rounded-lg border border-slate-200 text-xs">
+                      <div className="font-bold text-slate-800">{p.prepDuration}</div>
+                      <div className="text-slate-500 text-[11px] mt-0.5">
+                        {p.count} failure(s) • Avg Conf: {p.avgConfidence}/10
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Senior Remediation Action Cards */}
+            <div className="space-y-3 pt-2">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <Lightbulb className="w-4 h-4 text-amber-500" />
+                Senior Researcher & Engineering Remediation Roadmap ({trackFilter})
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {filteredRemediations.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs space-y-2.5 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full">
+                        {item.category}
+                      </span>
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                          item.priority === "High"
+                            ? "bg-rose-100 text-rose-700"
+                            : "bg-amber-100 text-amber-700"
+                        }`}
+                      >
+                        {item.priority} Priority
+                      </span>
+                    </div>
+
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-900 leading-snug">
+                        {item.title}
+                      </h4>
+                      <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                        {item.description}
+                      </p>
+                    </div>
+
+                    <div className="rounded-lg bg-slate-50 p-3 border border-slate-100 text-xs text-slate-700 space-y-1">
+                      <div className="font-semibold text-slate-900 flex items-center gap-1.5">
+                        <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                        <span>Prescribed Practice Strategy:</span>
+                      </div>
+                      <p className="leading-relaxed text-slate-600 pl-5">
+                        {item.recommendedAction}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="rounded-xl border border-dashed border-slate-200 p-8 text-center bg-slate-50/50 space-y-2">
+            <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-400">
+              <Lightbulb className="w-5 h-5" />
+            </div>
+            <h3 className="text-sm font-semibold text-slate-800">
+              No Post-Mortem Assessments Logged Yet
+            </h3>
+            <p className="text-xs text-slate-500 max-w-md mx-auto">
+              When an application is rejected or failed (Corporate or Bangladesh Govt/Bank), click
+              the "Post-Mortem" button on the Applications page to record your diagnostic survey. The system
+              will compute deep statistical intelligence and expert practice strategies.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

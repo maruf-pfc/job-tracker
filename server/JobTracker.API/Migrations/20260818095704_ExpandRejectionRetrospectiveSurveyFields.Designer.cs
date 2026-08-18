@@ -3,6 +3,7 @@ using System;
 using JobTracker.API.Configs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace JobTracker.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260818095704_ExpandRejectionRetrospectiveSurveyFields")]
+    partial class ExpandRejectionRetrospectiveSurveyFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,12 +54,7 @@ namespace JobTracker.API.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("ApplicationStatuses");
                 });
@@ -100,9 +98,6 @@ namespace JobTracker.API.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("WebsiteUrl")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
@@ -111,9 +106,6 @@ namespace JobTracker.API.Migrations
 
                     b.HasIndex("Name")
                         .HasDatabaseName("IX_Companies_Name");
-
-                    b.HasIndex("UserId", "Name")
-                        .HasDatabaseName("IX_Companies_UserId_Name");
 
                     b.ToTable("Companies");
                 });
@@ -287,16 +279,10 @@ namespace JobTracker.API.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
 
                     b.HasIndex("Name")
                         .HasDatabaseName("IX_JobRoles_Name");
-
-                    b.HasIndex("UserId", "Name")
-                        .HasDatabaseName("IX_JobRoles_UserId_Name");
 
                     b.ToTable("JobRoles");
                 });
@@ -330,12 +316,7 @@ namespace JobTracker.API.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("JobTypes");
                 });
@@ -369,12 +350,7 @@ namespace JobTracker.API.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Priorities");
                 });
@@ -546,12 +522,7 @@ namespace JobTracker.API.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("SourcePlatforms");
                 });
@@ -833,12 +804,7 @@ namespace JobTracker.API.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("WorkTypes");
                 });
@@ -973,25 +939,6 @@ namespace JobTracker.API.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("JobTracker.API.Models.ApplicationStatus", b =>
-                {
-                    b.HasOne("JobTracker.API.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("JobTracker.API.Models.Company", b =>
-                {
-                    b.HasOne("JobTracker.API.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("JobTracker.API.Models.InterviewRound", b =>
                 {
                     b.HasOne("JobTracker.API.Models.JobApplication", "JobApplication")
@@ -1062,34 +1009,6 @@ namespace JobTracker.API.Migrations
                     b.Navigation("WorkType");
                 });
 
-            modelBuilder.Entity("JobTracker.API.Models.JobRole", b =>
-                {
-                    b.HasOne("JobTracker.API.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("JobTracker.API.Models.JobType", b =>
-                {
-                    b.HasOne("JobTracker.API.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("JobTracker.API.Models.Priority", b =>
-                {
-                    b.HasOne("JobTracker.API.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("JobTracker.API.Models.RefreshToken", b =>
                 {
                     b.HasOne("JobTracker.API.Models.User", "User")
@@ -1120,15 +1039,6 @@ namespace JobTracker.API.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("JobTracker.API.Models.SourcePlatform", b =>
-                {
-                    b.HasOne("JobTracker.API.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("JobTracker.API.Models.UserProfile", b =>
                 {
                     b.HasOne("JobTracker.API.Models.User", "User")
@@ -1136,15 +1046,6 @@ namespace JobTracker.API.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("JobTracker.API.Models.WorkType", b =>
-                {
-                    b.HasOne("JobTracker.API.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
 
                     b.Navigation("User");
                 });

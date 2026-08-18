@@ -26,13 +26,13 @@ public class AuthService : IAuthService
     {
         if (dto.Password != dto.ConfirmPassword)
         {
-            throw new Exception("Passwords do not match");
+            throw new ArgumentException("Passwords do not match.");
         }
 
         var existingUser = await _userManager.FindByEmailAsync(dto.Email.Trim());
         if (existingUser is not null)
         {
-            throw new Exception("Email already exists");
+            throw new InvalidOperationException("An account with this email address already exists. Please sign in instead.");
         }
 
         var user = new User
@@ -46,7 +46,7 @@ public class AuthService : IAuthService
         if (!result.Succeeded)
         {
             var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-            throw new Exception(errors);
+            throw new InvalidOperationException(errors);
         }
 
         var token = JwtHelper.GenerateToken(user, _configuration);
@@ -66,13 +66,13 @@ public class AuthService : IAuthService
         var user = await _userManager.FindByEmailAsync(dto.Email.Trim());
         if (user is null)
         {
-            throw new Exception("Invalid credentials");
+            throw new UnauthorizedAccessException("Invalid email or password.");
         }
 
         var isPasswordValid = await _userManager.CheckPasswordAsync(user, dto.Password);
         if (!isPasswordValid)
         {
-            throw new Exception("Invalid credentials");
+            throw new UnauthorizedAccessException("Invalid email or password.");
         }
 
         var token = JwtHelper.GenerateToken(user, _configuration);
@@ -95,7 +95,7 @@ public class AuthService : IAuthService
 
         if (existingToken is null || existingToken.ExpiresAt <= DateTime.UtcNow || existingToken.User is null)
         {
-            throw new Exception("Invalid or expired refresh token");
+            throw new UnauthorizedAccessException("Invalid or expired refresh token. Please sign in again.");
         }
 
         // Revoke current token (Rotation)

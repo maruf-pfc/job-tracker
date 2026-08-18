@@ -16,6 +16,43 @@ using Serilog;
 // Enable Npgsql legacy timestamp behavior (allows DateTime.Unspecified with timestamptz)
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
+// Automatically load .env file from current or parent directories if present
+LoadDotEnv();
+
+static void LoadDotEnv()
+{
+    var currentDir = Directory.GetCurrentDirectory();
+    var candidates = new[]
+    {
+        Path.Combine(currentDir, ".env"),
+        Path.Combine(currentDir, "..", ".env"),
+        Path.Combine(currentDir, "..", "..", ".env")
+    };
+
+    foreach (var path in candidates)
+    {
+        if (File.Exists(path))
+        {
+            foreach (var line in File.ReadAllLines(path))
+            {
+                var trimmed = line.Trim();
+                if (string.IsNullOrEmpty(trimmed) || trimmed.StartsWith('#')) continue;
+                var eqIdx = trimmed.IndexOf('=');
+                if (eqIdx > 0)
+                {
+                    var key = trimmed[..eqIdx].Trim();
+                    var val = trimmed[(eqIdx + 1)..].Trim();
+                    if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(key)))
+                    {
+                        Environment.SetEnvironmentVariable(key, val);
+                    }
+                }
+            }
+            break;
+        }
+    }
+}
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Serilog Logging
@@ -95,6 +132,7 @@ builder.Services.AddScoped<IInterviewRoundService, InterviewRoundService>();
 builder.Services.AddScoped<IImportExportService, ImportExportService>();
 builder.Services.AddScoped<IJobRoleService, JobRoleService>();
 builder.Services.AddScoped<IUserProfileService, UserProfileService>();
+builder.Services.AddScoped<IRejectionRetrospectiveService, RejectionRetrospectiveService>();
 
 // Current User
 builder.Services.AddHttpContextAccessor();

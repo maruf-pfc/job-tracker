@@ -12,4 +12,7 @@ public abstract class BaseLookupEntity : BaseEntity
     public string Color { get; set; } = "slate";
 
     public bool IsActive { get; set; } = true;
+
+    public Guid? UserId { get; set; }
+    public User? User { get; set; }
 }

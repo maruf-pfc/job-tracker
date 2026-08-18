@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -36,10 +36,13 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors },
   } = useForm<CreateJobApplicationRequest>({
     resolver: zodResolver(createJobApplicationSchema),
   });
+
+  const selectedJobTypeId = useWatch({ control, name: "jobTypeId" });
 
   const { data: companies } = useQuery({
     queryKey: ["companies"],
@@ -76,6 +79,12 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
     queryFn: getJobTypes,
   });
 
+  const selectedJobType = jobTypes?.find((j) => j.id === selectedJobTypeId);
+  const isGovtOrBank =
+    selectedJobType?.name.toLowerCase().includes("govt") ||
+    selectedJobType?.name.toLowerCase().includes("bank") ||
+    selectedJobType?.name.toLowerCase().includes("cadre");
+
   useEffect(() => {
     if (!initialData) {
       return;
@@ -91,6 +100,7 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
     reset({
       companyId: targetCompanyId,
       role: initialData.role || "",
+      jobUrl: initialData.jobUrl || "",
       location: initialData.location || "",
       salaryRange: initialData.salaryRange || "",
       notes: initialData.notes || "",
@@ -105,7 +115,6 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
 
   const mutation = useMutation({
     mutationFn: (data: CreateJobApplicationRequest) => {
-      // Auto-assign first platform ID if not set
       const payload = {
         ...data,
         sourcePlatformId: data.sourcePlatformId || platforms?.[0]?.id || "",
@@ -117,27 +126,24 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
 
       return createApplication(payload);
     },
-
     onSuccess: async () => {
       toast.success(
         initialData
           ? "Application updated successfully"
           : "Application created successfully",
       );
-
-      await queryClient.invalidateQueries({
-        queryKey: ["applications"],
-      });
-
-      reset();
+      await queryClient.invalidateQueries({ queryKey: ["applications"] });
+      await queryClient.invalidateQueries({ queryKey: ["dashboard-summary"] });
+      await queryClient.invalidateQueries({ queryKey: ["dashboard-analytics"] });
       onSuccess();
     },
-
-    onError: () => {
+    onError: (err: unknown) => {
+      const axiosErr = err as { response?: { data?: { message?: string } } };
       toast.error(
-        initialData
+        axiosErr.response?.data?.message ||
+        (initialData
           ? "Failed to update application"
-          : "Failed to create application",
+          : "Failed to create application"),
       );
     },
   });
@@ -148,17 +154,17 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      {/* Section 1: Job Information */}
+      {/* Section 1: Organization & Role Information */}
       <ApplicationFormSection
-        title="Job Information"
-        description="Basic application and role details."
+        title="Organization & Role Information"
+        description="Specify target entity (Ministry, Bank, or Corporate), job title, and location."
       >
         <div className="grid gap-4 md:grid-cols-2">
-          {/* Company Dropdown */}
+          {/* Company / Organization Dropdown */}
           <div className="space-y-1.5">
-            <Label>Company</Label>
+            <Label>{isGovtOrBank ? "Ministry / Govt Entity / Bank" : "Company / Organization"}</Label>
             <Select {...register("companyId")}>
-              <option value="">Select company</option>
+              <option value="">Select organization...</option>
               {companies?.map((company) => (
                 <option key={company.id} value={company.id}>
                   {company.name}
@@ -172,9 +178,9 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
 
           {/* Role Dropdown from Database */}
           <div className="space-y-1.5">
-            <Label>Role</Label>
+            <Label>{isGovtOrBank ? "Designation / Cadre / Post" : "Job Role / Title"}</Label>
             <Select {...register("role")}>
-              <option value="">Select role</option>
+              <option value="">Select designation/role...</option>
               {initialData?.role && !jobRoles?.some((r) => r.name === initialData.role) && (
                 <option value={initialData.role}>{initialData.role}</option>
               )}
@@ -191,35 +197,64 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
 
           {/* Location */}
           <div className="space-y-1.5">
-            <Label>Location</Label>
+            <Label>Location / Posting</Label>
             <Input
-              placeholder="e.g. Dhaka, Bangladesh"
+              placeholder={isGovtOrBank ? "e.g. Agargaon, Dhaka / All Bangladesh" : "e.g. Dhaka, Bangladesh (or Remote)"}
               {...register("location")}
             />
           </div>
 
-          {/* Salary Range */}
+          {/* Salary Range / Pay Scale */}
           <div className="space-y-1.5">
-            <Label>Salary Range</Label>
+            <Label>{isGovtOrBank ? "National Pay Scale / Grade" : "Salary Range"}</Label>
             <Input
-              placeholder="e.g. 50,000 BDT - 80,000 BDT"
+              placeholder={isGovtOrBank ? "e.g. Grade-9 (22,000 - 53,060 BDT)" : "e.g. 60,000 - 90,000 BDT / $120k"}
               {...register("salaryRange")}
             />
           </div>
         </div>
       </ApplicationFormSection>
 
-      {/* Section 2: Application Workflow */}
+      {/* Section 2: Application Portal & Sourcing Channel */}
       <ApplicationFormSection
-        title="Application Workflow"
-        description="Track application status, priority, and job types."
+        title="Application Portal & Workflow"
+        description="Configure sourcing platform (Teletalk, BPSC, LinkedIn, etc.), circular link, and current stage."
       >
         <div className="grid gap-4 md:grid-cols-2">
-          {/* Status */}
+          {/* Job Type (Govt vs Corporate) */}
           <div className="space-y-1.5">
-            <Label>Status</Label>
+            <Label>Job / Service Category</Label>
+            <Select {...register("jobTypeId")}>
+              <option value="">Select category...</option>
+              {jobTypes?.map((jobType) => (
+                <option key={jobType.id} value={jobType.id}>
+                  {jobType.name}
+                </option>
+              ))}
+            </Select>
+            {errors.jobTypeId && (
+              <p className="text-xs text-red-600">{errors.jobTypeId.message}</p>
+            )}
+          </div>
+
+          {/* Sourcing Platform / E-Recruitment Portal */}
+          <div className="space-y-1.5">
+            <Label>Recruitment Platform / Portal</Label>
+            <Select {...register("sourcePlatformId")}>
+              <option value="">Select platform...</option>
+              {platforms?.map((platform) => (
+                <option key={platform.id} value={platform.id}>
+                  {platform.name}
+                </option>
+              ))}
+            </Select>
+          </div>
+
+          {/* Application Status (MCQ/Written/Viva/Interview) */}
+          <div className="space-y-1.5">
+            <Label>Recruitment Stage / Status</Label>
             <Select {...register("applicationStatusId")}>
-              <option value="">Select status</option>
+              <option value="">Select current stage...</option>
               {statuses?.map((status) => (
                 <option key={status.id} value={status.id}>
                   {status.name}
@@ -233,9 +268,9 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
 
           {/* Priority */}
           <div className="space-y-1.5">
-            <Label>Priority</Label>
+            <Label>Target Priority</Label>
             <Select {...register("priorityId")}>
-              <option value="">Select priority</option>
+              <option value="">Select priority...</option>
               {priorities?.map((priority) => (
                 <option key={priority.id} value={priority.id}>
                   {priority.name}
@@ -247,11 +282,11 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
             )}
           </div>
 
-          {/* Work Type */}
+          {/* Work Arrangement */}
           <div className="space-y-1.5">
-            <Label>Work Type</Label>
+            <Label>Work Arrangement</Label>
             <Select {...register("workTypeId")}>
-              <option value="">Select work type</option>
+              <option value="">Select work arrangement...</option>
               {workTypes?.map((workType) => (
                 <option key={workType.id} value={workType.id}>
                   {workType.name}
@@ -263,41 +298,44 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
             )}
           </div>
 
-          {/* Job Type */}
+          {/* Circular Link / Application URL */}
           <div className="space-y-1.5">
-            <Label>Job Type</Label>
-            <Select {...register("jobTypeId")}>
-              <option value="">Select job type</option>
-              {jobTypes?.map((jobType) => (
-                <option key={jobType.id} value={jobType.id}>
-                  {jobType.name}
-                </option>
-              ))}
-            </Select>
-            {errors.jobTypeId && (
-              <p className="text-xs text-red-600">{errors.jobTypeId.message}</p>
-            )}
+            <Label>
+              {isGovtOrBank ? "Govt Circular / Application Portal URL" : "Job Posting / Application URL"}
+            </Label>
+            <Input
+              placeholder={
+                isGovtOrBank
+                  ? "e.g. http://bpsc.teletalk.com.bd or https://alljobs.teletalk.com.bd"
+                  : "https://..."
+              }
+              {...register("jobUrl")}
+            />
           </div>
         </div>
       </ApplicationFormSection>
 
-      {/* Section 3: Notes & Documents */}
+      {/* Section 3: Notes & Exam Documents */}
       <ApplicationFormSection
-        title="Notes & Documents"
-        description="Store markdown notes and supporting links."
+        title="Syllabus, Exam Notes & Documents"
+        description="Track written syllabus, past exam question links, and resume/application form."
       >
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <Label>Notes</Label>
+            <Label>Exam Insights & Preparation Notes (Markdown Supported)</Label>
             <Textarea
-              rows={6}
-              placeholder="Interview insights, company culture notes, follow-up reminders..."
+              rows={5}
+              placeholder={
+                isGovtOrBank
+                  ? "## Written Exam Details\n- Date & Time: Friday, 10:00 AM at BUET\n- Topics: C++, Data Structures, Computer Networks, SQL\n- Marks: 200 (Pass mark: 50%)"
+                  : "Interview rounds, system design notes, follow-up timeline..."
+              }
               {...register("notes")}
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label>Resume Link</Label>
+            <Label>Resume / Applicant Copy Drive Link</Label>
             <Input
               placeholder="https://drive.google.com/..."
               {...register("resumeDriveLink")}

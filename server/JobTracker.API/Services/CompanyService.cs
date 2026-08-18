@@ -9,15 +9,19 @@ namespace JobTracker.API.Services;
 public class CompanyService : ICompanyService
 {
     private readonly AppDbContext _context;
+    private readonly ICurrentUserService _currentUser;
 
-    public CompanyService(AppDbContext context)
+    public CompanyService(AppDbContext context, ICurrentUserService currentUser)
     {
         _context = context;
+        _currentUser = currentUser;
     }
 
     public async Task<List<CompanyDto>> GetAllAsync()
     {
+        var userId = _currentUser.UserId;
         return await _context.Companies
+            .Where(c => c.UserId == userId || c.UserId == null)
             .OrderBy(c => c.Name)
             .Select(c => new CompanyDto
             {
@@ -34,8 +38,9 @@ public class CompanyService : ICompanyService
 
     public async Task<CompanyDto?> GetByIdAsync(Guid id)
     {
+        var userId = _currentUser.UserId;
         return await _context.Companies
-            .Where(c => c.Id == id)
+            .Where(c => c.Id == id && (c.UserId == userId || c.UserId == null))
             .Select(c => new CompanyDto
             {
                 Id = c.Id,
@@ -58,6 +63,7 @@ public class CompanyService : ICompanyService
             WebsiteUrl = dto.WebsiteUrl?.Trim(),
             Location = dto.Location?.Trim(),
             Notes = dto.Notes?.Trim(),
+            UserId = _currentUser.UserId
         };
 
         _context.Companies.Add(company);
@@ -77,7 +83,8 @@ public class CompanyService : ICompanyService
 
     public async Task<CompanyDto?> UpdateAsync(Guid id, CreateCompanyDto dto)
     {
-        var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == id);
+        var userId = _currentUser.UserId;
+        var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
         if (company is null)
         {
             return null;
@@ -106,16 +113,17 @@ public class CompanyService : ICompanyService
 
     public async Task<bool> DeleteAsync(Guid id)
     {
-        var company = await _context.Companies.FindAsync(id);
+        var userId = _currentUser.UserId;
+        var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
 
         if (company is null)
         {
             return false;
         }
 
-        // Delete linked job applications first to avoid FK constraint violation
+        // Delete linked job applications for this user first
         var linkedApps = await _context.JobApplications
-            .Where(j => j.CompanyId == id)
+            .Where(j => j.CompanyId == id && j.UserId == userId)
             .ToListAsync();
 
         if (linkedApps.Any())

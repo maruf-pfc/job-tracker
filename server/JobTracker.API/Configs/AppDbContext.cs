@@ -20,6 +20,7 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<JobRole> JobRoles => Set<JobRole>();
     public DbSet<UserProfile> UserProfiles => Set<UserProfile>();
+    public DbSet<RejectionRetrospective> RejectionRetrospectives => Set<RejectionRetrospective>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -98,6 +99,30 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
             .HasForeignKey(r => r.JobApplicationId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<RejectionRetrospective>()
+            .HasOne(r => r.JobApplication)
+            .WithMany()
+            .HasForeignKey(r => r.JobApplicationId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<RejectionRetrospective>()
+            .HasOne(r => r.User)
+            .WithMany()
+            .HasForeignKey(r => r.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Company>()
+            .HasOne(c => c.User)
+            .WithMany()
+            .HasForeignKey(c => c.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<JobRole>()
+            .HasOne(r => r.User)
+            .WithMany()
+            .HasForeignKey(r => r.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         // Database Indexes for Performance Optimization
         modelBuilder.Entity<JobApplication>()
             .HasIndex(j => new { j.UserId, j.CreatedAt })
@@ -115,13 +140,30 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
             .HasIndex(c => c.Name)
             .HasDatabaseName("IX_Companies_Name");
 
+        modelBuilder.Entity<Company>()
+            .HasIndex(c => new { c.UserId, c.Name })
+            .HasDatabaseName("IX_Companies_UserId_Name");
+
         modelBuilder.Entity<JobRole>()
             .HasIndex(r => r.Name)
             .HasDatabaseName("IX_JobRoles_Name");
+
+        modelBuilder.Entity<JobRole>()
+            .HasIndex(r => new { r.UserId, r.Name })
+            .HasDatabaseName("IX_JobRoles_UserId_Name");
 
         modelBuilder.Entity<UserProfile>()
             .HasIndex(p => p.UserId)
             .IsUnique()
             .HasDatabaseName("IX_UserProfiles_UserId");
+
+        modelBuilder.Entity<RejectionRetrospective>()
+            .HasIndex(r => new { r.UserId, r.CreatedAt })
+            .HasDatabaseName("IX_RejectionRetrospectives_UserId_CreatedAt");
+
+        modelBuilder.Entity<RejectionRetrospective>()
+            .HasIndex(r => r.JobApplicationId)
+            .IsUnique()
+            .HasDatabaseName("IX_RejectionRetrospectives_JobApplicationId");
     }
 }

@@ -9,15 +9,19 @@ namespace JobTracker.API.Services;
 public class JobRoleService : IJobRoleService
 {
     private readonly AppDbContext _context;
+    private readonly ICurrentUserService _currentUser;
 
-    public JobRoleService(AppDbContext context)
+    public JobRoleService(AppDbContext context, ICurrentUserService currentUser)
     {
         _context = context;
+        _currentUser = currentUser;
     }
 
     public async Task<List<JobRoleDto>> GetAllAsync()
     {
+        var userId = _currentUser.UserId;
         return await _context.JobRoles
+            .Where(r => r.UserId == userId || r.UserId == null)
             .OrderBy(r => r.Name)
             .Select(r => new JobRoleDto
             {
@@ -31,7 +35,8 @@ public class JobRoleService : IJobRoleService
     {
         var entity = new JobRole
         {
-            Name = dto.Name.Trim()
+            Name = dto.Name.Trim(),
+            UserId = _currentUser.UserId
         };
 
         _context.JobRoles.Add(entity);
@@ -46,7 +51,8 @@ public class JobRoleService : IJobRoleService
 
     public async Task<JobRoleDto?> UpdateAsync(Guid id, CreateJobRoleDto dto)
     {
-        var entity = await _context.JobRoles.FirstOrDefaultAsync(r => r.Id == id);
+        var userId = _currentUser.UserId;
+        var entity = await _context.JobRoles.FirstOrDefaultAsync(r => r.Id == id && r.UserId == userId);
         if (entity is null) return null;
 
         entity.Name = dto.Name.Trim();
@@ -61,7 +67,8 @@ public class JobRoleService : IJobRoleService
 
     public async Task<bool> DeleteAsync(Guid id)
     {
-        var entity = await _context.JobRoles.FirstOrDefaultAsync(r => r.Id == id);
+        var userId = _currentUser.UserId;
+        var entity = await _context.JobRoles.FirstOrDefaultAsync(r => r.Id == id && r.UserId == userId);
         if (entity is null) return false;
 
         _context.JobRoles.Remove(entity);

@@ -36,8 +36,10 @@ export default function RegisterForm() {
       navigate("/");
     },
 
-    onError: () => {
-      toast.error("Registration failed");
+    onError: (error: unknown) => {
+      const axiosErr = error as { response?: { data?: { message?: string } } };
+      const message = axiosErr.response?.data?.message || "Registration failed. Please check your information.";
+      toast.error(message);
     },
   });
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 import Lenis from "lenis";
@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function AppLayout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     const lenis = new Lenis({
@@ -38,13 +39,14 @@ export default function AppLayout() {
         <Header onMenuToggle={() => setIsMobileMenuOpen((prev) => !prev)} />
 
         <main className="flex-1 overflow-y-auto">
-          <div className="mx-auto w-full max-w-7xl p-4 sm:p-6">
+          <div className="mx-auto w-full max-w-7xl p-4 sm:p-6 lg:p-8">
             <AnimatePresence mode="wait">
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
+                key={location.pathname}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
               >
                 <Outlet />
               </motion.div>

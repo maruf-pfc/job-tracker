@@ -95,8 +95,8 @@ public class AuthServiceTests
             ConfirmPassword = "Password123!"
         };
 
-        var exception = await Assert.ThrowsAsync<Exception>(() => service.RegisterAsync(dto));
-        Assert.Equal("Email already exists", exception.Message);
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => service.RegisterAsync(dto));
+        Assert.Contains("already exists", exception.Message);
     }
 
     [Fact]
@@ -116,8 +116,8 @@ public class AuthServiceTests
             ConfirmPassword = "DifferentPassword123!"
         };
 
-        var exception = await Assert.ThrowsAsync<Exception>(() => service.RegisterAsync(dto));
-        Assert.Equal("Passwords do not match", exception.Message);
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => service.RegisterAsync(dto));
+        Assert.Contains("do not match", exception.Message);
     }
 
     [Fact]
@@ -172,7 +172,7 @@ public class AuthServiceTests
             Password = "WrongPassword"
         };
 
-        var exception = await Assert.ThrowsAsync<Exception>(() => service.LoginAsync(loginDto));
-        Assert.Equal("Invalid credentials", exception.Message);
+        var exception = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.LoginAsync(loginDto));
+        Assert.Contains("Invalid email or password", exception.Message);
     }
 }
