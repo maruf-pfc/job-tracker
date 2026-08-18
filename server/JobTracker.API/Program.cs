@@ -32,6 +32,9 @@ builder.Services.AddSwaggerDocumentation();
 
 var app = builder.Build();
 
+// Middleware Pipeline
+app.UseCors(CorsExtensions.PolicyName);
+
 // Security Headers Middleware
 app.Use(async (context, next) =>
 {
@@ -42,7 +45,6 @@ app.Use(async (context, next) =>
     await next();
 });
 
-// Middleware Pipeline
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseSerilogRequestLogging();
 
@@ -56,7 +58,6 @@ else
     app.UseHttpsRedirection();
 }
 
-app.UseCors(CorsExtensions.PolicyName);
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
