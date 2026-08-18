@@ -1,4 +1,4 @@
-# 💼 JobTracker — Open-Source Career Operations & Failure Analytics OS
+# 💼 JobTracker - Open-Source Career Operations & Failure Analytics OS
 
 [![Build & Server Tests](https://github.com/maruf-pfc/job-tracker/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/maruf-pfc/job-tracker/actions/workflows/backend-ci.yml)
 [![Client CI](https://github.com/maruf-pfc/job-tracker/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/maruf-pfc/job-tracker/actions/workflows/frontend-ci.yml)
@@ -150,14 +150,35 @@ bun run build
 
 ---
 
-## 🐳 Docker & Docker Compose Setup
+## 🐳 Docker & Docker Hub Setup
 
-Run the full production stack with one command:
+### 📦 Pull & Run from Docker Hub
+The unified full-stack image (React Client + .NET 10 Web API) is available on Docker Hub:
+**[hub.docker.com/r/marufsarker/job-tracker](https://hub.docker.com/r/marufsarker/job-tracker)**
+
+```bash
+# Pull the latest v0.1.0 full-stack image
+docker pull marufsarker/job-tracker:v0.1.0
+
+# Run container with your PostgreSQL database
+docker run -d \
+  -p 8080:8080 \
+  --name job-tracker \
+  -e DATABASE_URL="Host=your_postgres_host;Database=jobtracker_db;Username=postgres;Password=your_password;" \
+  -e JWT_KEY="your-secure-32-plus-characters-secret-key" \
+  marufsarker/job-tracker:v0.1.0
+```
+- Access full web app at `http://localhost:8080`
+
+---
+
+### 🐳 Docker Compose (Multi-Container)
+Run the full production stack with local PostgreSQL using Docker Compose:
 ```bash
 docker compose up --build -d
 ```
-- **Frontend Web App**: `http://localhost`
-- **Backend Web API**: `http://localhost:8080`
+- **Frontend Web App**: `http://localhost:3000`
+- **Backend Web API**: `http://localhost:5104`
 - **PostgreSQL Database**: `localhost:5432`
 
 ---

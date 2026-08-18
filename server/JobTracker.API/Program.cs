@@ -62,7 +62,11 @@ app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 app.MapControllers();
+app.MapFallbackToFile("index.html");
 
 // Database Migration & Seeding
 using (var scope = app.Services.CreateScope())
