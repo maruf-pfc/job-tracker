@@ -121,8 +121,8 @@ dotnet run
 ### Step 3: Run the Frontend Client
 ```bash
 cd client
-npm install   # or bun install
-npm run dev   # or bun run dev
+bun install
+bun run dev
 ```
 - Open `http://localhost:5173` in your browser!
 
@@ -139,13 +139,13 @@ dotnet test
 ### Frontend Unit Tests (18 / 18 Passing)
 ```bash
 cd client
-npm run test
+bun run test
 ```
 
 ### Production Build Verification
 ```bash
 cd client
-npm run build
+bun run build
 ```
 
 ---
