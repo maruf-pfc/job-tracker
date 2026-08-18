@@ -16,6 +16,8 @@ export type JobApplication = {
   sourcePlatform: string;
   applicationStatus: string;
   workType: string;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type PaginatedResponse<T> = {

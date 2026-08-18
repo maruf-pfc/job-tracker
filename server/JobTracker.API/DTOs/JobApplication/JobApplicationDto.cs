@@ -19,4 +19,6 @@ public class JobApplicationDto
     public string SourcePlatform { get; set; } = string.Empty;
     public string ApplicationStatus { get; set; } = string.Empty;
     public string WorkType { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
 }

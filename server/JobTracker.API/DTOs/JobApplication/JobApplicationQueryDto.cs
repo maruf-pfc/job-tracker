@@ -14,6 +14,6 @@ public class JobApplicationQueryDto
     public int PageSize { get; set; } = 10;
 
     // Sorting
-    public string SortBy { get; set; } = "AppliedAt";
+    public string SortBy { get; set; } = "CreatedAt";
     public string SortDirection { get; set; } = "desc";
 }

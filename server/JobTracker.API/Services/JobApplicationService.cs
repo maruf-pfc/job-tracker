@@ -72,13 +72,23 @@ public class JobApplicationService : IJobApplicationService
                 );
         }
 
-        // Sorting
-        applicationsQuery =
-            query.SortDirection.ToLower() == "asc"
-                ? applicationsQuery.OrderBy(j => j.AppliedAt)
-                : applicationsQuery.OrderByDescending(
-                    j => j.AppliedAt
-                );
+        // Sorting (default: new to old based on creation time)
+        var isAsc = query.SortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase);
+        applicationsQuery = query.SortBy?.ToLowerInvariant() switch
+        {
+            "appliedat" => isAsc
+                ? applicationsQuery.OrderBy(j => j.AppliedAt).ThenBy(j => j.CreatedAt)
+                : applicationsQuery.OrderByDescending(j => j.AppliedAt).ThenByDescending(j => j.CreatedAt),
+            "company" => isAsc
+                ? applicationsQuery.OrderBy(j => j.Company.Name)
+                : applicationsQuery.OrderByDescending(j => j.Company.Name),
+            "role" => isAsc
+                ? applicationsQuery.OrderBy(j => j.Role)
+                : applicationsQuery.OrderByDescending(j => j.Role),
+            "createdat" or _ => isAsc
+                ? applicationsQuery.OrderBy(j => j.CreatedAt)
+                : applicationsQuery.OrderByDescending(j => j.CreatedAt)
+        };
 
         // Pagination
         var totalCount = await applicationsQuery.CountAsync();
@@ -105,6 +115,8 @@ public class JobApplicationService : IJobApplicationService
                 ResumeDriveLink = j.ResumeDriveLink,
                 FollowUpDate = j.FollowUpDate,
                 IsArchived = j.IsArchived,
+                CreatedAt = j.CreatedAt,
+                UpdatedAt = j.UpdatedAt,
             })
             .ToListAsync();
 
