@@ -19,6 +19,7 @@ import {
   createApplication,
   updateApplication,
 } from "@/services/jobApplicationService";
+import { triggerWebhooks } from "@/services/webhookService";
 import { createJobApplicationSchema } from "@/schemas/jobApplicationSchema";
 import type { CreateJobApplicationRequest } from "@/types/job-application";
 import ApplicationFormSection from "./ApplicationFormSection";
@@ -181,7 +182,7 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
 
       return createApplication(payload);
     },
-    onSuccess: async () => {
+    onSuccess: async (createdOrUpdatedApp) => {
       toast.success(
         initialData
           ? "Application updated successfully"
@@ -190,6 +191,19 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
       await queryClient.invalidateQueries({ queryKey: ["applications"] });
       await queryClient.invalidateQueries({ queryKey: ["dashboard-summary"] });
       await queryClient.invalidateQueries({ queryKey: ["dashboard-analytics"] });
+
+      if (createdOrUpdatedApp) {
+        if (!initialData) {
+          triggerWebhooks("application_created", createdOrUpdatedApp).catch((err) =>
+            console.warn("Discord webhook error:", err)
+          );
+        } else {
+          triggerWebhooks("application_updated", createdOrUpdatedApp).catch((err) =>
+            console.warn("Discord webhook error:", err)
+          );
+        }
+      }
+
       onSuccess();
     },
     onError: (err: unknown) => {
