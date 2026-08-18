@@ -120,43 +120,47 @@ export default function DashboardPage() {
     return <DashboardSkeleton />;
   }
 
-  // Chart data formatting
-  const statusChartData = analytics?.statusBreakdown && analytics.statusBreakdown.length > 0
-    ? analytics.statusBreakdown.map((item) => ({ name: item.status || "Other", value: item.count }))
-    : [
-        { name: "Applied", value: totalApplications > 0 ? totalApplications : 3 },
-        { name: "Interview", value: totalInterviews > 0 ? totalInterviews : 1 },
-        { name: "Offer", value: totalOffers > 0 ? totalOffers : 1 },
-      ];
+  // Chart data formatting from real analytics
+  const statusChartData = useMemo(() => {
+    if (!analytics?.statusBreakdown || analytics.statusBreakdown.length === 0) return [];
+    return analytics.statusBreakdown.map((item) => ({
+      name: item.status || "Other",
+      value: item.count,
+    }));
+  }, [analytics]);
 
-  const platformChartData = analytics?.platformBreakdown && analytics.platformBreakdown.length > 0
-    ? analytics.platformBreakdown.map((item) => ({ platform: item.platform, count: item.count }))
-    : [
-        { platform: "LinkedIn", count: 2 },
-        { platform: "Bdjobs", count: 1 },
-        { platform: "Teletalk", count: 1 },
-      ];
+  const platformChartData = useMemo(() => {
+    if (!analytics?.platformBreakdown || analytics.platformBreakdown.length === 0) return [];
+    return analytics.platformBreakdown.map((item) => ({
+      platform: item.platform,
+      count: item.count,
+    }));
+  }, [analytics]);
 
-  const priorityChartData = analytics?.priorityBreakdown && analytics.priorityBreakdown.length > 0
-    ? analytics.priorityBreakdown.map((item) => ({ priority: item.priority, count: item.count }))
-    : [
-        { priority: "High", count: 3 },
-        { priority: "Medium", count: 1 },
-        { priority: "Low", count: 1 },
-      ];
+  const priorityChartData = useMemo(() => {
+    if (!analytics?.priorityBreakdown || analytics.priorityBreakdown.length === 0) return [];
+    return analytics.priorityBreakdown.map((item) => ({
+      priority: item.priority,
+      count: item.count,
+    }));
+  }, [analytics]);
 
-  const weeklyVelocityData = [
-    { week: "Week 1", applications: 1, interviews: 0 },
-    { week: "Week 2", applications: 2, interviews: 1 },
-    { week: "Week 3", applications: 1, interviews: 0 },
-    { week: "Week 4", applications: totalApplications > 4 ? totalApplications - 4 : 2, interviews: totalInterviews },
-  ];
+  const weeklyVelocityData = useMemo(() => {
+    if (!analytics?.weeklyTrends || analytics.weeklyTrends.length === 0) return [];
+    return analytics.weeklyTrends.map((t) => ({
+      week: t.weekLabel,
+      applications: t.applicationCount,
+    }));
+  }, [analytics]);
 
-  const difficultyPressureData = [
-    { metric: "Exam Difficulty", value: failureAnalytics?.avgDifficultyRating ?? 4.0, max: 5, fill: "#6366f1" },
-    { metric: "Time Pressure", value: failureAnalytics?.avgTimePressureRating ?? 4.0, max: 5, fill: "#f43f5e" },
-    { metric: "Self Confidence", value: (failureAnalytics?.avgConfidenceRating ?? 6.0) / 2, max: 5, fill: "#10b981" },
-  ];
+  const difficultyPressureData = useMemo(() => {
+    if (!failureAnalytics || totalRetrospectives === 0) return [];
+    return [
+      { metric: "Exam Difficulty", value: failureAnalytics.avgDifficultyRating, max: 5, fill: "#6366f1" },
+      { metric: "Time Pressure", value: failureAnalytics.avgTimePressureRating, max: 5, fill: "#f43f5e" },
+      { metric: "Self Confidence", value: failureAnalytics.avgConfidenceRating / 2, max: 5, fill: "#10b981" },
+    ];
+  }, [failureAnalytics, totalRetrospectives]);
 
   return (
     <div className="space-y-8 pb-12">
@@ -298,10 +302,13 @@ export default function DashboardPage() {
           <div>
             <div className="flex justify-between text-xs font-semibold text-slate-700 mb-1">
               <span>1. Applications Submitted (Initial Base)</span>
-              <span className="font-bold text-slate-900">{totalApplications} (100%)</span>
+              <span className="font-bold text-slate-900">{totalApplications} ({totalApplications > 0 ? "100%" : "0%"})</span>
             </div>
             <div className="h-3 w-full rounded-full bg-slate-100 overflow-hidden">
-              <div className="h-full bg-blue-500 rounded-full w-full" />
+              <div
+                className="h-full bg-blue-500 rounded-full transition-all duration-500"
+                style={{ width: totalApplications > 0 ? "100%" : "0%" }}
+              />
             </div>
           </div>
 
@@ -316,7 +323,7 @@ export default function DashboardPage() {
             <div className="h-3 w-full rounded-full bg-slate-100 overflow-hidden">
               <div
                 className="h-full bg-indigo-600 rounded-full transition-all duration-500"
-                style={{ width: `${Math.min(Math.max(responseRate, 5), 100)}%` }}
+                style={{ width: `${Math.min(responseRate, 100)}%` }}
               />
             </div>
           </div>
@@ -332,7 +339,7 @@ export default function DashboardPage() {
             <div className="h-3 w-full rounded-full bg-slate-100 overflow-hidden">
               <div
                 className="h-full bg-emerald-500 rounded-full transition-all duration-500"
-                style={{ width: `${Math.min(Math.max(conversionRate, 5), 100)}%` }}
+                style={{ width: `${Math.min(conversionRate, 100)}%` }}
               />
             </div>
           </div>
@@ -347,21 +354,31 @@ export default function DashboardPage() {
             <BarChart3 className="w-5 h-5 text-indigo-600" /> Weekly Application Velocity
           </h2>
           <div className="h-64 w-full pt-2">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={weeklyVelocityData}>
-                <defs>
-                  <linearGradient id="colorApp" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                <XAxis dataKey="week" stroke="#64748b" fontSize={12} />
-                <YAxis allowDecimals={false} stroke="#64748b" fontSize={12} />
-                <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", color: "#fff", borderRadius: "12px" }} />
-                <Area type="monotone" dataKey="applications" stroke="#6366f1" fillOpacity={1} fill="url(#colorApp)" name="Applications" />
-              </AreaChart>
-            </ResponsiveContainer>
+            {weeklyVelocityData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={weeklyVelocityData}>
+                  <defs>
+                    <linearGradient id="colorApp" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                  <XAxis dataKey="week" stroke="#64748b" fontSize={12} />
+                  <YAxis allowDecimals={false} stroke="#64748b" fontSize={12} />
+                  <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", color: "#fff", borderRadius: "12px" }} />
+                  <Area type="monotone" dataKey="applications" stroke="#6366f1" fillOpacity={1} fill="url(#colorApp)" name="Applications" />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full w-full flex flex-col items-center justify-center text-center p-6 border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
+                <BarChart3 className="w-8 h-8 text-slate-300 mb-2" />
+                <p className="text-sm font-semibold text-slate-700">No application velocity data yet</p>
+                <p className="text-xs text-slate-400 mt-1 max-w-xs">
+                  Submit applications to view weekly momentum and pace trends over time.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -371,25 +388,35 @@ export default function DashboardPage() {
             <PieIcon className="w-5 h-5 text-indigo-600" /> Pipeline Status Distribution
           </h2>
           <div className="h-64 w-full pt-2">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={statusChartData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={55}
-                  outerRadius={80}
-                  paddingAngle={4}
-                  dataKey="value"
-                >
-                  {statusChartData.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={STATUS_COLORS[index % STATUS_COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderRadius: "12px", color: "#fff" }} />
-                <Legend iconType="circle" wrapperStyle={{ fontSize: "12px" }} />
-              </PieChart>
-            </ResponsiveContainer>
+            {statusChartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={statusChartData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={55}
+                    outerRadius={80}
+                    paddingAngle={4}
+                    dataKey="value"
+                  >
+                    {statusChartData.map((_, index) => (
+                      <Cell key={`cell-${index}`} fill={STATUS_COLORS[index % STATUS_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderRadius: "12px", color: "#fff" }} />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: "12px" }} />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full w-full flex flex-col items-center justify-center text-center p-6 border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
+                <PieIcon className="w-8 h-8 text-slate-300 mb-2" />
+                <p className="text-sm font-semibold text-slate-700">No status distribution yet</p>
+                <p className="text-xs text-slate-400 mt-1 max-w-xs">
+                  Saved, Applied, Interviewing, and Offer stages will show your pipeline breakdown here.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -399,19 +426,29 @@ export default function DashboardPage() {
             <Globe className="w-5 h-5 text-indigo-600" /> Application Portals & Platforms
           </h2>
           <div className="h-64 w-full pt-2">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart layout="vertical" data={platformChartData}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                <XAxis type="number" allowDecimals={false} stroke="#64748b" fontSize={12} />
-                <YAxis dataKey="platform" type="category" stroke="#64748b" fontSize={12} width={100} />
-                <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", color: "#fff", borderRadius: "12px" }} />
-                <Bar dataKey="count" fill="#10b981" radius={[0, 6, 6, 0]} name="Applications">
-                  {platformChartData.map((_, index) => (
-                    <Cell key={`cell-plat-${index}`} fill={PLATFORM_COLORS[index % PLATFORM_COLORS.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            {platformChartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart layout="vertical" data={platformChartData}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                  <XAxis type="number" allowDecimals={false} stroke="#64748b" fontSize={12} />
+                  <YAxis dataKey="platform" type="category" stroke="#64748b" fontSize={12} width={100} />
+                  <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", color: "#fff", borderRadius: "12px" }} />
+                  <Bar dataKey="count" fill="#10b981" radius={[0, 6, 6, 0]} name="Applications">
+                    {platformChartData.map((_, index) => (
+                      <Cell key={`cell-plat-${index}`} fill={PLATFORM_COLORS[index % PLATFORM_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full w-full flex flex-col items-center justify-center text-center p-6 border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
+                <Globe className="w-8 h-8 text-slate-300 mb-2" />
+                <p className="text-sm font-semibold text-slate-700">No portal metrics yet</p>
+                <p className="text-xs text-slate-400 mt-1 max-w-xs">
+                  Discover where you yield the highest response rate across platforms like LinkedIn, Bdjobs, and Teletalk.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -421,15 +458,25 @@ export default function DashboardPage() {
             <Filter className="w-5 h-5 text-indigo-600" /> Target Role Priority Breakdown
           </h2>
           <div className="h-64 w-full pt-2">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={priorityChartData}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                <XAxis dataKey="priority" stroke="#64748b" fontSize={12} />
-                <YAxis allowDecimals={false} stroke="#64748b" fontSize={12} />
-                <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", color: "#fff", borderRadius: "12px" }} />
-                <Bar dataKey="count" fill="#8b5cf6" radius={[6, 6, 0, 0]} name="Applications" />
-              </BarChart>
-            </ResponsiveContainer>
+            {priorityChartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={priorityChartData}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                  <XAxis dataKey="priority" stroke="#64748b" fontSize={12} />
+                  <YAxis allowDecimals={false} stroke="#64748b" fontSize={12} />
+                  <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", color: "#fff", borderRadius: "12px" }} />
+                  <Bar dataKey="count" fill="#8b5cf6" radius={[6, 6, 0, 0]} name="Applications" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full w-full flex flex-col items-center justify-center text-center p-6 border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
+                <Filter className="w-8 h-8 text-slate-300 mb-2" />
+                <p className="text-sm font-semibold text-slate-700">No priority metrics yet</p>
+                <p className="text-xs text-slate-400 mt-1 max-w-xs">
+                  Analyze distribution across High, Medium, and Low target opportunities.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
