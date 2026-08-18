@@ -13,7 +13,7 @@ import Label from "@/components/ui/Label";
 import Button from "@/components/ui/Button";
 import ApplicationModal from "@/components/applications/ApplicationModal";
 import ApplicationActions from "@/components/applications/ApplicationActions";
-import { TableRowSkeleton } from "@/components/ui/Skeleton";
+import { RolesSkeleton } from "@/components/common/Skeletons";
 import { UserCheck, Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
 
 const ITEMS_PER_PAGE = 8;
@@ -54,7 +54,8 @@ export default function RolesPage() {
       queryClient.refetchQueries({ queryKey: ["job-roles"] });
       setIsModalOpen(false);
     },
-    onError: (err: any) => toast.error(err.response?.data?.message || "Failed to create job role"),
+    onError: (err: { response?: { data?: { message?: string } } }) =>
+      toast.error(err.response?.data?.message || "Failed to create job role"),
   });
 
   const updateMutation = useMutation({
@@ -67,7 +68,8 @@ export default function RolesPage() {
       queryClient.refetchQueries({ queryKey: ["job-roles"] });
       setIsModalOpen(false);
     },
-    onError: (err: any) => toast.error(err.response?.data?.message || "Failed to update job role"),
+    onError: (err: { response?: { data?: { message?: string } } }) =>
+      toast.error(err.response?.data?.message || "Failed to update job role"),
   });
 
   const deleteMutation = useMutation({
@@ -79,7 +81,8 @@ export default function RolesPage() {
       );
       queryClient.refetchQueries({ queryKey: ["job-roles"] });
     },
-    onError: (err: any) => toast.error(err.response?.data?.message || "Failed to delete job role"),
+    onError: (err: { response?: { data?: { message?: string } } }) =>
+      toast.error(err.response?.data?.message || "Failed to delete job role"),
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -109,6 +112,10 @@ export default function RolesPage() {
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
+
+  if (isPending) {
+    return <RolesSkeleton />;
+  }
 
   return (
     <div className="space-y-6">
@@ -155,13 +162,7 @@ export default function RolesPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 bg-white text-sm">
-            {isPending && !roles ? (
-              <>
-                <TableRowSkeleton />
-                <TableRowSkeleton />
-                <TableRowSkeleton />
-              </>
-            ) : !filteredRoles.length ? (
+            {!filteredRoles.length ? (
               <tr>
                 <td colSpan={2} className="p-12 text-center">
                   <UserCheck className="mx-auto h-8 w-8 text-slate-400 mb-2" />
@@ -200,29 +201,32 @@ export default function RolesPage() {
         </table>
 
         {/* Pagination Controls */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between px-5 py-3 border-t border-slate-100 bg-slate-50/50 text-xs text-slate-600">
-            <span>
-              Showing Page {currentPage} of {totalPages} ({filteredRoles.length} total roles)
+        <div className="flex flex-col sm:flex-row items-center justify-between px-5 py-3 border-t border-slate-100 bg-slate-50/50 text-xs text-slate-600 gap-2">
+          <span>
+            Showing <span className="font-bold text-slate-900">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> to{" "}
+            <span className="font-bold text-slate-900">{Math.min(currentPage * ITEMS_PER_PAGE, filteredRoles.length)}</span> of{" "}
+            <span className="font-bold text-slate-900">{filteredRoles.length}</span> roles
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              className="px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-slate-700 disabled:opacity-40 hover:bg-slate-50 transition-colors cursor-pointer flex items-center gap-1 font-medium"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" /> Previous
+            </button>
+            <span className="px-2 font-semibold text-slate-700">
+              Page {currentPage} of {totalPages}
             </span>
-            <div className="flex items-center gap-2">
-              <button
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 disabled:opacity-40 hover:bg-slate-50 transition-colors cursor-pointer"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 disabled:opacity-40 hover:bg-slate-50 transition-colors cursor-pointer"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              className="px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-slate-700 disabled:opacity-40 hover:bg-slate-50 transition-colors cursor-pointer flex items-center gap-1 font-medium"
+            >
+              Next <ChevronRight className="w-3.5 h-3.5" />
+            </button>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Create / Edit Role Modal */}

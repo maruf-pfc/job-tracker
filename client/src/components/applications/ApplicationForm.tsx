@@ -90,7 +90,7 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
 
     reset({
       companyId: targetCompanyId,
-      role: initialData.role,
+      role: initialData.role || "",
       location: initialData.location || "",
       salaryRange: initialData.salaryRange || "",
       notes: initialData.notes || "",
@@ -101,7 +101,7 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
       workTypeId: targetWorkTypeId,
       jobTypeId: targetJobTypeId,
     });
-  }, [initialData, reset, companies, priorities, statuses, workTypes, jobTypes, platforms]);
+  }, [initialData, reset, companies, jobRoles, priorities, statuses, workTypes, jobTypes, platforms]);
 
   const mutation = useMutation({
     mutationFn: (data: CreateJobApplicationRequest) => {
@@ -175,6 +175,9 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
             <Label>Role</Label>
             <Select {...register("role")}>
               <option value="">Select role</option>
+              {initialData?.role && !jobRoles?.some((r) => r.name === initialData.role) && (
+                <option value={initialData.role}>{initialData.role}</option>
+              )}
               {jobRoles?.map((r) => (
                 <option key={r.id} value={r.name}>
                   {r.name}

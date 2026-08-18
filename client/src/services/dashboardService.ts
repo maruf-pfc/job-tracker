@@ -7,6 +7,14 @@ export type WeeklyTrend = {
   applicationCount: number;
 };
 
+export type NameCountItem = {
+  status?: string;
+  platform?: string;
+  priority?: string;
+  workType?: string;
+  count: number;
+};
+
 export type DashboardAnalytics = {
   responseRatePercentage: number;
   interviewConversionRatePercentage: number;
@@ -14,7 +22,10 @@ export type DashboardAnalytics = {
   totalInterviews: number;
   totalOffers: number;
   weeklyTrends: WeeklyTrend[];
-  statusBreakdown?: Record<string, number>;
+  statusBreakdown?: NameCountItem[];
+  platformBreakdown?: NameCountItem[];
+  priorityBreakdown?: NameCountItem[];
+  workTypeBreakdown?: NameCountItem[];
 };
 
 export async function getDashboardSummary(): Promise<DashboardSummary> {

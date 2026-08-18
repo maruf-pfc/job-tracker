@@ -19,7 +19,7 @@ vi.mock("../api", () => ({
 describe("jobRoleService", () => {
   it("getJobRoles should return job role list", async () => {
     const mockRoles = [{ id: "1", name: "Frontend Engineer" }];
-    (api.get as any).mockResolvedValueOnce({ data: { data: mockRoles } });
+    vi.mocked(api.get).mockResolvedValueOnce({ data: { data: mockRoles } });
 
     const result = await getJobRoles();
     expect(result).toEqual(mockRoles);
@@ -28,7 +28,7 @@ describe("jobRoleService", () => {
 
   it("createJobRole should POST new job role payload", async () => {
     const newRole = { name: "Backend Developer" };
-    (api.post as any).mockResolvedValueOnce({ data: { data: { id: "2", ...newRole } } });
+    vi.mocked(api.post).mockResolvedValueOnce({ data: { data: { id: "2", ...newRole } } });
 
     const result = await createJobRole(newRole);
     expect(result.name).toBe("Backend Developer");
@@ -37,7 +37,7 @@ describe("jobRoleService", () => {
 
   it("updateJobRole should PUT updated job role payload", async () => {
     const updatedRole = { name: "Senior Fullstack Engineer" };
-    (api.put as any).mockResolvedValueOnce({ data: { data: { id: "1", ...updatedRole } } });
+    vi.mocked(api.put).mockResolvedValueOnce({ data: { data: { id: "1", ...updatedRole } } });
 
     const result = await updateJobRole("1", updatedRole);
     expect(result.name).toBe("Senior Fullstack Engineer");
@@ -45,7 +45,7 @@ describe("jobRoleService", () => {
   });
 
   it("deleteJobRole should send DELETE request", async () => {
-    (api.delete as any).mockResolvedValueOnce({});
+    vi.mocked(api.delete).mockResolvedValueOnce({});
 
     await deleteJobRole("1");
     expect(api.delete).toHaveBeenCalledWith("/job-roles/1");

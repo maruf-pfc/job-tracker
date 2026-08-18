@@ -10,6 +10,8 @@ import Button from "@/components/ui/Button";
 import { getApplications } from "@/services/jobApplicationService";
 import { LayoutGrid, List, Plus } from "lucide-react";
 
+import { ApplicationsSkeleton } from "@/components/common/Skeletons";
+
 export default function ApplicationsPage() {
   const [open, setOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
@@ -25,10 +27,12 @@ export default function ApplicationsPage() {
     queryFn: getApplications,
   });
 
-  const filteredApplications = useMemo(() => {
-    if (!data?.items) return [];
+  const items = data?.items;
 
-    return data.items.filter((app) => {
+  const filteredApplications = useMemo(() => {
+    if (!items) return [];
+
+    return items.filter((app) => {
       const matchesSearch =
         !searchQuery ||
         app.company?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -49,7 +53,7 @@ export default function ApplicationsPage() {
 
       return matchesSearch && matchesStatus && matchesPriority && matchesWorkType;
     });
-  }, [data?.items, searchQuery, statusFilter, priorityFilter, workTypeFilter]);
+  }, [items, searchQuery, statusFilter, priorityFilter, workTypeFilter]);
 
   const handleResetFilters = () => {
     setSearchQuery("");
@@ -57,6 +61,10 @@ export default function ApplicationsPage() {
     setPriorityFilter("");
     setWorkTypeFilter("");
   };
+
+  if (isLoading) {
+    return <ApplicationsSkeleton viewMode={viewMode} />;
+  }
 
   return (
     <div className="space-y-6">

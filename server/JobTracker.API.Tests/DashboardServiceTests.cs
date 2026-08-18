@@ -24,18 +24,30 @@ public class DashboardServiceTests
         var db = GetInMemoryDbContext();
         var userId = Guid.NewGuid();
 
+        var company = new Company { Id = Guid.NewGuid(), Name = "Test Inc" };
+        var priority = new Priority { Id = Guid.NewGuid(), Name = "High" };
+        var jobType = new JobType { Id = Guid.NewGuid(), Name = "Full-time" };
+        var platform = new SourcePlatform { Id = Guid.NewGuid(), Name = "LinkedIn" };
+        var workType = new WorkType { Id = Guid.NewGuid(), Name = "Remote" };
+
         var appliedStatus = new ApplicationStatus { Id = Guid.NewGuid(), Name = "Applied" };
         var interviewStatus = new ApplicationStatus { Id = Guid.NewGuid(), Name = "Interviewing" };
         var offerStatus = new ApplicationStatus { Id = Guid.NewGuid(), Name = "Offer" };
         var rejectedStatus = new ApplicationStatus { Id = Guid.NewGuid(), Name = "Rejected" };
 
+        db.Companies.Add(company);
+        db.Priorities.Add(priority);
+        db.JobTypes.Add(jobType);
+        db.SourcePlatforms.Add(platform);
+        db.WorkTypes.Add(workType);
         db.ApplicationStatuses.AddRange(appliedStatus, interviewStatus, offerStatus, rejectedStatus);
+        await db.SaveChangesAsync();
 
         db.JobApplications.AddRange(
-            new JobApplication { Id = Guid.NewGuid(), UserId = userId, ApplicationStatusId = appliedStatus.Id, ApplicationStatus = appliedStatus, AppliedAt = DateTime.UtcNow },
-            new JobApplication { Id = Guid.NewGuid(), UserId = userId, ApplicationStatusId = interviewStatus.Id, ApplicationStatus = interviewStatus, AppliedAt = DateTime.UtcNow },
-            new JobApplication { Id = Guid.NewGuid(), UserId = userId, ApplicationStatusId = offerStatus.Id, ApplicationStatus = offerStatus, AppliedAt = DateTime.UtcNow },
-            new JobApplication { Id = Guid.NewGuid(), UserId = userId, ApplicationStatusId = rejectedStatus.Id, ApplicationStatus = rejectedStatus, AppliedAt = DateTime.UtcNow }
+            new JobApplication { Id = Guid.NewGuid(), UserId = userId, CompanyId = company.Id, PriorityId = priority.Id, JobTypeId = jobType.Id, SourcePlatformId = platform.Id, WorkTypeId = workType.Id, ApplicationStatusId = appliedStatus.Id, ApplicationStatus = appliedStatus, AppliedAt = DateTime.UtcNow },
+            new JobApplication { Id = Guid.NewGuid(), UserId = userId, CompanyId = company.Id, PriorityId = priority.Id, JobTypeId = jobType.Id, SourcePlatformId = platform.Id, WorkTypeId = workType.Id, ApplicationStatusId = interviewStatus.Id, ApplicationStatus = interviewStatus, AppliedAt = DateTime.UtcNow },
+            new JobApplication { Id = Guid.NewGuid(), UserId = userId, CompanyId = company.Id, PriorityId = priority.Id, JobTypeId = jobType.Id, SourcePlatformId = platform.Id, WorkTypeId = workType.Id, ApplicationStatusId = offerStatus.Id, ApplicationStatus = offerStatus, AppliedAt = DateTime.UtcNow },
+            new JobApplication { Id = Guid.NewGuid(), UserId = userId, CompanyId = company.Id, PriorityId = priority.Id, JobTypeId = jobType.Id, SourcePlatformId = platform.Id, WorkTypeId = workType.Id, ApplicationStatusId = rejectedStatus.Id, ApplicationStatus = rejectedStatus, AppliedAt = DateTime.UtcNow }
         );
 
         await db.SaveChangesAsync();
@@ -43,7 +55,7 @@ public class DashboardServiceTests
         var mockUser = new Mock<ICurrentUserService>();
         mockUser.Setup(u => u.UserId).Returns(userId);
 
-        var service = new DashboardService(db, mockUser.Object);
+        var service = new JobTracker.API.Services.DashboardService(db, mockUser.Object);
 
         var analytics = await service.GetAnalyticsAsync();
 

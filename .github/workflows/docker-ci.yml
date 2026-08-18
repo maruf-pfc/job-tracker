@@ -1,4 +1,4 @@
-name: Docker Compose CI
+name: Docker CI
 
 on:
   push:
@@ -24,5 +24,19 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker Compose Services
+      - name: Build API Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./server
+          file: ./server/JobTracker.API/Dockerfile
+          push: false
+
+      - name: Build Client Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./client
+          file: ./client/Dockerfile
+          push: false
+
+      - name: Test Docker Compose Build
         run: docker compose build

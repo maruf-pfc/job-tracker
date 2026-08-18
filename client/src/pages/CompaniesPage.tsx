@@ -14,7 +14,7 @@ import Button from "@/components/ui/Button";
 import Textarea from "@/components/ui/Textarea";
 import ApplicationModal from "@/components/applications/ApplicationModal";
 import ApplicationActions from "@/components/applications/ApplicationActions";
-import { TableRowSkeleton } from "@/components/ui/Skeleton";
+import { CompaniesSkeleton } from "@/components/common/Skeletons";
 import { Building2, ChevronLeft, ChevronRight, ExternalLink, Globe, MapPin, Plus, Search } from "lucide-react";
 
 const ITEMS_PER_PAGE = 8;
@@ -67,7 +67,8 @@ export default function CompaniesPage() {
       queryClient.refetchQueries({ queryKey: ["companies"] });
       setIsModalOpen(false);
     },
-    onError: (err: any) => toast.error(err.response?.data?.message || "Failed to create company"),
+    onError: (err: { response?: { data?: { message?: string } } }) =>
+      toast.error(err.response?.data?.message || "Failed to create company"),
   });
 
   const updateMutation = useMutation({
@@ -80,7 +81,8 @@ export default function CompaniesPage() {
       queryClient.refetchQueries({ queryKey: ["companies"] });
       setIsModalOpen(false);
     },
-    onError: (err: any) => toast.error(err.response?.data?.message || "Failed to update company"),
+    onError: (err: { response?: { data?: { message?: string } } }) =>
+      toast.error(err.response?.data?.message || "Failed to update company"),
   });
 
   const deleteMutation = useMutation({
@@ -92,7 +94,8 @@ export default function CompaniesPage() {
       );
       queryClient.refetchQueries({ queryKey: ["companies"] });
     },
-    onError: (err: any) => toast.error(err.response?.data?.message || "Failed to delete company"),
+    onError: (err: { response?: { data?: { message?: string } } }) =>
+      toast.error(err.response?.data?.message || "Failed to delete company"),
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -128,6 +131,10 @@ export default function CompaniesPage() {
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
+
+  if (isPending) {
+    return <CompaniesSkeleton />;
+  }
 
   return (
     <div className="space-y-6">
@@ -177,13 +184,7 @@ export default function CompaniesPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 bg-white text-sm">
-            {isPending && !companies ? (
-              <>
-                <TableRowSkeleton />
-                <TableRowSkeleton />
-                <TableRowSkeleton />
-              </>
-            ) : !filteredCompanies.length ? (
+            {!filteredCompanies.length ? (
               <tr>
                 <td colSpan={5} className="p-12 text-center">
                   <Building2 className="mx-auto h-8 w-8 text-slate-400 mb-2" />
@@ -266,29 +267,32 @@ export default function CompaniesPage() {
         </table>
 
         {/* Pagination Controls */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between px-5 py-3 border-t border-slate-100 bg-slate-50/50 text-xs text-slate-600">
-            <span>
-              Showing Page {currentPage} of {totalPages} ({filteredCompanies.length} total companies)
+        <div className="flex flex-col sm:flex-row items-center justify-between px-5 py-3 border-t border-slate-100 bg-slate-50/50 text-xs text-slate-600 gap-2">
+          <span>
+            Showing <span className="font-bold text-slate-900">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> to{" "}
+            <span className="font-bold text-slate-900">{Math.min(currentPage * ITEMS_PER_PAGE, filteredCompanies.length)}</span> of{" "}
+            <span className="font-bold text-slate-900">{filteredCompanies.length}</span> companies
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              className="px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-slate-700 disabled:opacity-40 hover:bg-slate-50 transition-colors cursor-pointer flex items-center gap-1 font-medium"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" /> Previous
+            </button>
+            <span className="px-2 font-semibold text-slate-700">
+              Page {currentPage} of {totalPages}
             </span>
-            <div className="flex items-center gap-2">
-              <button
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 disabled:opacity-40 hover:bg-slate-50 transition-colors cursor-pointer"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 disabled:opacity-40 hover:bg-slate-50 transition-colors cursor-pointer"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              className="px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-slate-700 disabled:opacity-40 hover:bg-slate-50 transition-colors cursor-pointer flex items-center gap-1 font-medium"
+            >
+              Next <ChevronRight className="w-3.5 h-3.5" />
+            </button>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Create / Edit Company Modal */}

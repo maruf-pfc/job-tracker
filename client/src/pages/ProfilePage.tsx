@@ -7,7 +7,7 @@ import Input from "@/components/ui/Input";
 import Label from "@/components/ui/Label";
 import Button from "@/components/ui/Button";
 import ApplicationModal from "@/components/applications/ApplicationModal";
-import { ProfileSkeleton } from "@/components/ui/Skeleton";
+import { ProfileSkeleton } from "@/components/common/Skeletons";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   User,

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import type { JobApplication } from "@/types/job-application";
 import { Building2, MapPin, DollarSign, Calendar, ArrowRightLeft } from "lucide-react";
 import { formatDate } from "@/utils/date";
@@ -8,11 +8,26 @@ interface KanbanBoardProps {
   onStatusChange?: (updatedApp: JobApplication) => void;
 }
 
-const DEFAULT_COLUMNS = ["Saved", "Applied", "Interview", "Offer", "Rejected", "Ghosted"];
+const DEFAULT_COLUMNS = [
+  "Saved",
+  "Applied",
+  "MCQ / Preliminary",
+  "Written Exam",
+  "Practical / Skill Test",
+  "Viva Voce",
+  "Interview",
+  "Offer",
+  "Rejected",
+  "Ghosted",
+];
 
 const STATUS_COLOR_MAP: Record<string, { bg: string; text: string; border: string }> = {
   Saved: { bg: "bg-slate-100", text: "text-slate-700", border: "border-slate-300" },
   Applied: { bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-200" },
+  "MCQ / Preliminary": { bg: "bg-violet-50", text: "text-violet-700", border: "border-violet-200" },
+  "Written Exam": { bg: "bg-sky-50", text: "text-sky-700", border: "border-sky-200" },
+  "Practical / Skill Test": { bg: "bg-cyan-50", text: "text-cyan-700", border: "border-cyan-200" },
+  "Viva Voce": { bg: "bg-purple-50", text: "text-purple-700", border: "border-purple-200" },
   Interview: { bg: "bg-indigo-50", text: "text-indigo-700", border: "border-indigo-200" },
   Offer: { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200" },
   Rejected: { bg: "bg-rose-50", text: "text-rose-700", border: "border-rose-200" },
@@ -23,12 +38,14 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
   applications: initialApps,
   onStatusChange,
 }) => {
+  const [prevInitialApps, setPrevInitialApps] = useState<JobApplication[]>(initialApps);
   const [apps, setApps] = useState<JobApplication[]>(initialApps);
   const [activeMobileColumn, setActiveMobileColumn] = useState<string>("Applied");
 
-  useEffect(() => {
+  if (prevInitialApps !== initialApps) {
+    setPrevInitialApps(initialApps);
     setApps(initialApps);
-  }, [initialApps]);
+  }
 
   const handleMoveStatus = async (appId: string, newStatusName: string) => {
     const appToUpdate = apps.find((a) => a.id === appId);
@@ -94,7 +111,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
           return (
             <div
               key={column}
-              className={`w-full min-w-[280px] sm:min-w-[310px] max-w-[340px] flex-1 bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/90 flex flex-col min-h-[460px] snap-start transition-all ${
+              className={`w-72 shrink-0 min-w-[285px] bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/90 flex flex-col min-h-[460px] snap-start transition-all ${
                 isMobileHidden ? "hidden md:flex" : "flex"
               }`}
             >
@@ -102,7 +119,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
               <div className="flex items-center justify-between mb-3.5 px-1">
                 <div className="flex items-center gap-2">
                   <span className={`w-2.5 h-2.5 rounded-full ${colors.bg} border ${colors.border}`} />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 truncate">
                     {column}
                   </h3>
                 </div>
@@ -156,7 +173,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                         <select
                           value={column}
                           onChange={(e) => handleMoveStatus(app.id, e.target.value)}
-                          className="text-[11px] bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-slate-700 font-medium cursor-pointer hover:bg-slate-100 transition-colors focus:ring-1 focus:ring-indigo-500"
+                          className="text-[11px] bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-slate-700 font-medium cursor-pointer hover:bg-slate-100 transition-colors focus:ring-1 focus:ring-indigo-500 max-w-[110px] truncate"
                         >
                           {DEFAULT_COLUMNS.map((col) => (
                             <option key={col} value={col}>

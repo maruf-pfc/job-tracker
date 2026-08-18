@@ -17,7 +17,7 @@ describe("profileService", () => {
       presentPostCode: "1219",
     };
 
-    (api.get as any).mockResolvedValueOnce({
+    vi.mocked(api.get).mockResolvedValueOnce({
       data: { data: mockProfile },
     });
 
@@ -33,7 +33,7 @@ describe("profileService", () => {
       presentDivision: "Dhaka",
     };
 
-    (api.put as any).mockResolvedValueOnce({
+    vi.mocked(api.put).mockResolvedValueOnce({
       data: { data: updatedProfile },
     });
 

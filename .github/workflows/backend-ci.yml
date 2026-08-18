@@ -33,8 +33,11 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore JobTracker.API/JobTracker.API.csproj
 
+      - name: Security Vulnerability Audit
+        run: dotnet list JobTracker.API/JobTracker.API.csproj package --vulnerable || true
+
       - name: Build project
         run: dotnet build JobTracker.API/JobTracker.API.csproj --no-restore
 
-      - name: Run tests
+      - name: Run xUnit tests
         run: dotnet test JobTracker.API.Tests/JobTracker.API.Tests.csproj

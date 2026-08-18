@@ -23,9 +23,9 @@ Designed as a high-performance **personal career operating system** — not just
 When you clone and run this project for the first time, **you don't need to manually create companies, job applications, or target roles!**
 
 The backend automatically seeds the database on initial startup with:
-- 🏢 **12 Top Tech Companies**: Google, Microsoft, Shopify, Vercel, Stripe, Meta, Amazon, Netflix, Datadog, Uber, Airbnb, Figma.
-- 📋 **12 Realistic Showcase Job Applications**: Pre-populated with salary ranges, locations, statuses (Saved, Applied, Interview, Offer, Rejected), follow-up reminders, and Markdown interview prep notes.
-- 🎯 **15 Modern Target Tech Roles**: Senior Frontend Developer, Backend Engineer (.NET / Go), Fullstack Architect, Site Reliability Engineer, AI/ML Engineer, etc.
+- 🏢 **5 Top Tech Companies**: Google, Microsoft, Shopify, Vercel, Stripe.
+- 📋 **5 Showcase Job Applications**: Pre-populated with salary ranges, locations, statuses (Saved, Applied, Interview, Offer, Rejected), follow-up reminders, and Markdown interview prep notes.
+- 🎯 **5 Target Tech Roles**: Senior Frontend Developer, Backend Engineer (.NET / Go), Fullstack Engineer, DevOps & Cloud Engineer, AI/ML Engineer.
 - 👤 **Clean Demo Profile**: Accessible instantly via `demo@jobtracker.dev`.
 
 ---
@@ -230,6 +230,7 @@ Comprehensive architecture guides, database ER diagrams, REST API contracts, and
 - 🔌 **[REST API Specifications](docs/api_documentation.md)**: Endpoints reference, request/response DTO schemas, JWT auth requirements.
 - 🛠 **[Troubleshooting & Bug Fixes](docs/troubleshooting_and_bugfixes.md)**: Empirical root cause analysis and resolution log (FK 23503, UTC timestamps, JWT lifetime, seeding, query caching).
 - 🚀 **[Deployment & Webhooks Guide](docs/deployment_and_webhooks.md)**: Docker Compose orchestration, Vercel monorepo settings, n8n / Discord / Telegram integrations.
+- ⚡ **[Coolify Deployment Guide](docs/coolify_deployment.md)**: 1-click self-hosting setup on Coolify v4 with Docker Compose & custom domain routing.
 
 ---
 

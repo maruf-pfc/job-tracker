@@ -17,32 +17,25 @@ public class DashboardService : IDashboardService
     }
 
 
-    public async Task<DashboardSummaryDto>GetSummaryAsync()
+    public async Task<DashboardSummaryDto> GetSummaryAsync()
     {
         var userId = _currentUser.UserId;
-        var applications = _context.JobApplications
-            .Include(j => j.ApplicationStatus)
-            .Where(j => j.UserId == userId);
+        var statusCounts = await _context.JobApplications
+            .AsNoTracking()
+            .Where(j => j.UserId == userId)
+            .GroupBy(j => j.ApplicationStatus.Name)
+            .Select(g => new { Status = g.Key, Count = g.Count() })
+            .ToListAsync();
+
+        int GetCount(string name) => statusCounts.FirstOrDefault(s => string.Equals(s.Status, name, StringComparison.OrdinalIgnoreCase))?.Count ?? 0;
 
         return new DashboardSummaryDto
         {
-            TotalApplications = await applications.CountAsync(),
-
-            TotalInterviews = await applications.CountAsync(j =>
-                    j.ApplicationStatus.Name == "Interview"
-                ),
-
-            TotalOffers = await applications.CountAsync(j =>
-                    j.ApplicationStatus.Name == "Offer"
-                ),
-
-            TotalRejected = await applications.CountAsync(j =>
-                    j.ApplicationStatus.Name == "Rejected"
-                ),
-
-            TotalSaved = await applications.CountAsync(j =>
-                    j.ApplicationStatus.Name == "Saved"
-                )
+            TotalApplications = statusCounts.Sum(s => s.Count),
+            TotalInterviews = GetCount("Interview") + GetCount("Interviewing"),
+            TotalOffers = GetCount("Offer"),
+            TotalRejected = GetCount("Rejected"),
+            TotalSaved = GetCount("Saved")
         };
     }
 
@@ -51,6 +44,7 @@ public class DashboardService : IDashboardService
         var userId = _currentUser.UserId;
 
         return await _context.JobApplications
+            .AsNoTracking()
             .Where(j => j.UserId == userId)
             .GroupBy(j => j.ApplicationStatus.Name)
             .Select(group =>
@@ -69,6 +63,7 @@ public class DashboardService : IDashboardService
         var userId = _currentUser.UserId;
 
         return await _context.JobApplications
+            .AsNoTracking()
             .Where(j => j.UserId == userId)
             .GroupBy(j => j.SourcePlatform.Name)
             .Select(group =>
@@ -86,23 +81,34 @@ public class DashboardService : IDashboardService
     {
         var userId = _currentUser.UserId;
         var applications = await _context.JobApplications
-            .Include(j => j.ApplicationStatus)
+            .AsNoTracking()
             .Where(j => j.UserId == userId)
+            .Select(j => new
+            {
+                j.AppliedAt,
+                Status = j.ApplicationStatus.Name,
+                Platform = j.SourcePlatform != null ? j.SourcePlatform.Name : "Direct / Other",
+                Priority = j.Priority != null ? j.Priority.Name : "Medium",
+                WorkType = j.WorkType != null ? j.WorkType.Name : "Hybrid"
+            })
             .ToListAsync();
 
         var totalCount = applications.Count;
         var interviewCount = applications.Count(j => 
-            j.ApplicationStatus.Name.Equals("Interview", StringComparison.OrdinalIgnoreCase) || 
-            j.ApplicationStatus.Name.Equals("Interviewing", StringComparison.OrdinalIgnoreCase));
+            j.Status != null && (
+            j.Status.Equals("Interview", StringComparison.OrdinalIgnoreCase) || 
+            j.Status.Equals("Interviewing", StringComparison.OrdinalIgnoreCase)));
         
         var offerCount = applications.Count(j => 
-            j.ApplicationStatus.Name.Equals("Offer", StringComparison.OrdinalIgnoreCase));
+            j.Status != null &&
+            j.Status.Equals("Offer", StringComparison.OrdinalIgnoreCase));
 
         var respondedCount = applications.Count(j => 
-            j.ApplicationStatus.Name.Equals("Interview", StringComparison.OrdinalIgnoreCase) ||
-            j.ApplicationStatus.Name.Equals("Interviewing", StringComparison.OrdinalIgnoreCase) ||
-            j.ApplicationStatus.Name.Equals("Offer", StringComparison.OrdinalIgnoreCase) ||
-            j.ApplicationStatus.Name.Equals("Rejected", StringComparison.OrdinalIgnoreCase));
+            j.Status != null && (
+            j.Status.Equals("Interview", StringComparison.OrdinalIgnoreCase) ||
+            j.Status.Equals("Interviewing", StringComparison.OrdinalIgnoreCase) ||
+            j.Status.Equals("Offer", StringComparison.OrdinalIgnoreCase) ||
+            j.Status.Equals("Rejected", StringComparison.OrdinalIgnoreCase)));
 
         var responseRate = totalCount > 0 ? Math.Round((double)respondedCount / totalCount * 100, 1) : 0;
         var conversionRate = interviewCount > 0 ? Math.Round((double)offerCount / interviewCount * 100, 1) : 0;
@@ -117,6 +123,30 @@ public class DashboardService : IDashboardService
             })
             .ToList();
 
+        var statusBreakdown = applications
+            .GroupBy(j => j.Status ?? "Unknown")
+            .Select(g => new ApplicationStatusChartDto { Status = g.Key, Count = g.Count() })
+            .OrderByDescending(g => g.Count)
+            .ToList();
+
+        var platformBreakdown = applications
+            .GroupBy(j => j.Platform ?? "Direct / Other")
+            .Select(g => new PlatformAnalyticsDto { Platform = g.Key, Count = g.Count() })
+            .OrderByDescending(g => g.Count)
+            .ToList();
+
+        var priorityBreakdown = applications
+            .GroupBy(j => j.Priority ?? "Medium")
+            .Select(g => new PriorityAnalyticsDto { Priority = g.Key, Count = g.Count() })
+            .OrderByDescending(g => g.Count)
+            .ToList();
+
+        var workTypeBreakdown = applications
+            .GroupBy(j => j.WorkType ?? "Hybrid")
+            .Select(g => new WorkTypeAnalyticsDto { WorkType = g.Key, Count = g.Count() })
+            .OrderByDescending(g => g.Count)
+            .ToList();
+
         return new DashboardAnalyticsDto
         {
             TotalApplications = totalCount,
@@ -124,7 +154,11 @@ public class DashboardService : IDashboardService
             TotalOffers = offerCount,
             ResponseRatePercentage = responseRate,
             InterviewConversionRatePercentage = conversionRate,
-            WeeklyTrends = weeklyTrends
+            WeeklyTrends = weeklyTrends,
+            StatusBreakdown = statusBreakdown,
+            PlatformBreakdown = platformBreakdown,
+            PriorityBreakdown = priorityBreakdown,
+            WorkTypeBreakdown = workTypeBreakdown
         };
     }
 

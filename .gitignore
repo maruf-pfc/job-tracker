@@ -5,5 +5,9 @@ obj/
 .idea/
 node_modules/
 appsettings.Development.json
+appsettings.Production.json
 Database Design.md
 .env
+.env.*
+!.env.example
+

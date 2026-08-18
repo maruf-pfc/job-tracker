@@ -8,12 +8,14 @@ import ApplicationActions from "./ApplicationActions";
 import DeleteApplicationDialog from "./DeleteApplicationDialog";
 import EditApplicationModal from "./EditApplicationModal";
 import { formatDate } from "@/utils/date";
-import { Building2, MapPin, Calendar, DollarSign, Briefcase } from "lucide-react";
+import { Building2, MapPin, Calendar, DollarSign, Briefcase, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface ApplicationsTableProps {
   applications: JobApplication[];
   isLoading?: boolean;
 }
+
+const ITEMS_PER_PAGE = 8;
 
 const PRIORITY_STYLE_MAP: Record<string, string> = {
   High: "bg-rose-50 text-rose-700 border-rose-200",
@@ -29,6 +31,7 @@ export default function ApplicationsTable({
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editingApplication, setEditingApplication] = useState<JobApplication | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const deleteMutation = useMutation({
     mutationFn: deleteApplication,
@@ -52,6 +55,13 @@ export default function ApplicationsTable({
     if (!selectedId) return;
     deleteMutation.mutate(selectedId);
   };
+
+  const totalCount = applications?.length || 0;
+  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE) || 1;
+  const paginatedApplications = (applications || []).slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   if (isLoading) {
     return (
@@ -92,7 +102,7 @@ export default function ApplicationsTable({
           </thead>
 
           <tbody className="divide-y divide-slate-100 bg-white text-sm">
-            {applications.map((app) => {
+            {paginatedApplications.map((app) => {
               const priorityClass = PRIORITY_STYLE_MAP[app.priority] || PRIORITY_STYLE_MAP.Low;
 
               return (
@@ -161,6 +171,35 @@ export default function ApplicationsTable({
             })}
           </tbody>
         </table>
+
+        {/* Pagination Footer Controls */}
+        <div className="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+          <div>
+            Showing <span className="font-bold text-slate-900">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> to{" "}
+            <span className="font-bold text-slate-900">{Math.min(currentPage * ITEMS_PER_PAGE, totalCount)}</span> of{" "}
+            <span className="font-bold text-slate-900">{totalCount}</span> applications
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-medium transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" /> Previous
+            </button>
+            <span className="px-2 font-semibold text-slate-700">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-medium transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              Next <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
       </div>
 
       <DeleteApplicationDialog

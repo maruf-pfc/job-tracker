@@ -1,8 +1,7 @@
 import { useState } from "react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
-import Textarea from "@/components/ui/Textarea";
-import { Download, Upload, Database, Bot, Sparkles, Send, Bell } from "lucide-react";
+import { Download, Upload, Database, Bot, Send, Bell } from "lucide-react";
 import { api } from "@/services/api";
 import { toast } from "sonner";
 
@@ -23,23 +22,12 @@ export default function SettingsPage() {
     localStorage.getItem("discord_webhook_url") || ""
   );
 
-  // Custom Prompt Template State
-  const [customAiPrompt, setCustomAiPrompt] = useState(
-    localStorage.getItem("custom_ai_prompt") ||
-      "Generate a professional cold email and cover letter customized for this job application using my profile details."
-  );
-
   const handleSaveIntegrations = () => {
     localStorage.setItem("n8n_webhook_url", n8nWebhookUrl);
     localStorage.setItem("telegram_token", telegramToken);
     localStorage.setItem("telegram_chat_id", telegramChatId);
     localStorage.setItem("discord_webhook_url", discordWebhookUrl);
     toast.success("Automation & Webhook settings saved!");
-  };
-
-  const handleSaveAiConfig = () => {
-    localStorage.setItem("custom_ai_prompt", customAiPrompt);
-    toast.success("Template settings saved!");
   };
 
   const handleExportCsv = async () => {
@@ -86,37 +74,8 @@ export default function SettingsPage() {
           Settings & Integrations
         </h1>
         <p className="mt-1 text-sm text-slate-600">
-          Manage automation webhooks (n8n, Telegram, Discord, Excel sync), AI key configs, and data backups.
+          Manage automation webhooks (n8n, Telegram, Discord, Excel sync) and data backups.
         </p>
-      </div>
-
-      {/* Custom Email & Cover Letter Templates */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 space-y-4 shadow-xs">
-        <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
-          <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
-            <Sparkles className="w-6 h-6" />
-          </div>
-          <div>
-            <h3 className="text-base font-bold text-slate-900">Custom Email & Cover Letter Template</h3>
-            <p className="text-xs text-slate-500">Define reusable application templates and custom prompts for quick recruiter responses.</p>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 block">Default Recruiter Outreach Template</label>
-            <Textarea
-              rows={3}
-              value={customAiPrompt}
-              onChange={(e) => setCustomAiPrompt(e.target.value)}
-              placeholder="Instructions or template for generating tailored emails based on job roles..."
-            />
-          </div>
-
-          <Button onClick={handleSaveAiConfig} className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4" /> Save Template Configuration
-          </Button>
-        </div>
       </div>
 
       {/* Automation Webhooks & Integrations */}

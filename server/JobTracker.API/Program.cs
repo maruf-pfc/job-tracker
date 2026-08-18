@@ -26,10 +26,30 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
-// Database
+// Database connection string (supports Neon DB, DATABASE_URL env var, or DefaultConnection)
+var rawConnStr = Environment.GetEnvironmentVariable("DATABASE_URL") 
+    ?? builder.Configuration.GetConnectionString("DefaultConnection");
+
+string dbConnStr = rawConnStr ?? "";
+if (!string.IsNullOrEmpty(rawConnStr) && (rawConnStr.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) || rawConnStr.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase)))
+{
+    var uri = new Uri(rawConnStr);
+    var userInfo = uri.UserInfo.Split(':');
+    var npgsqlBuilder = new Npgsql.NpgsqlConnectionStringBuilder
+    {
+        Host = uri.Host,
+        Port = uri.Port > 0 ? uri.Port : 5432,
+        Username = userInfo.Length > 0 ? userInfo[0] : "",
+        Password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "",
+        Database = uri.LocalPath.TrimStart('/'),
+        SslMode = Npgsql.SslMode.Require
+    };
+    dbConnStr = npgsqlBuilder.ConnectionString;
+}
+
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.UseNpgsql(dbConnStr);
 });
 
 // Identity
