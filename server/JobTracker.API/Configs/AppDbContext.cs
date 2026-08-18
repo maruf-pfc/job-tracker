@@ -21,6 +21,7 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
     public DbSet<JobRole> JobRoles => Set<JobRole>();
     public DbSet<UserProfile> UserProfiles => Set<UserProfile>();
     public DbSet<RejectionRetrospective> RejectionRetrospectives => Set<RejectionRetrospective>();
+    public DbSet<UserAiInsight> UserAiInsights => Set<UserAiInsight>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -165,5 +166,15 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
             .HasIndex(r => r.JobApplicationId)
             .IsUnique()
             .HasDatabaseName("IX_RejectionRetrospectives_JobApplicationId");
+
+        modelBuilder.Entity<UserAiInsight>()
+            .HasOne(a => a.User)
+            .WithMany()
+            .HasForeignKey(a => a.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<UserAiInsight>()
+            .HasIndex(a => new { a.UserId, a.DataHash })
+            .HasDatabaseName("IX_UserAiInsights_UserId_DataHash");
     }
 }

@@ -133,6 +133,8 @@ builder.Services.AddScoped<IImportExportService, ImportExportService>();
 builder.Services.AddScoped<IJobRoleService, JobRoleService>();
 builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 builder.Services.AddScoped<IRejectionRetrospectiveService, RejectionRetrospectiveService>();
+builder.Services.AddScoped<IAiAdvisorService, AiAdvisorService>();
+builder.Services.AddHttpClient();
 
 // Current User
 builder.Services.AddHttpContextAccessor();

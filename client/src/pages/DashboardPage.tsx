@@ -1,9 +1,12 @@
 import { useEffect, useState, useMemo } from "react";
 import { getDashboardSummary, getDashboardAnalytics } from "@/services/dashboardService";
 import { getFailureAnalytics } from "@/services/rejectionService";
+import { aiAdvisorService } from "@/services/aiAdvisorService";
 import type { DashboardAnalytics } from "@/services/dashboardService";
 import type { DashboardSummary } from "@/types/dashboard";
 import type { FailureAnalytics } from "@/types/rejection";
+import type { AiCareerInsight } from "@/types/ai-advisor";
+import { AiCareerAdvisorCard } from "@/components/dashboard/AiCareerAdvisorCard";
 import {
   BarChart,
   Bar,
@@ -53,26 +56,44 @@ export default function DashboardPage() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(null);
   const [failureAnalytics, setFailureAnalytics] = useState<FailureAnalytics | null>(null);
+  const [aiInsights, setAiInsights] = useState<AiCareerInsight | null>(null);
   const [loading, setLoading] = useState(true);
+  const [aiLoading, setAiLoading] = useState(true);
+  const [aiRefreshing, setAiRefreshing] = useState(false);
   const [trackFilter, setTrackFilter] = useState<"All" | "Corporate" | "Govt & Bank">("All");
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [sumData, anaData, failData] = await Promise.all([
+        const [sumData, anaData, failData, aiData] = await Promise.all([
           getDashboardSummary().catch(() => null),
           getDashboardAnalytics().catch(() => null),
           getFailureAnalytics().catch(() => null),
+          aiAdvisorService.getCareerInsights().catch(() => null),
         ]);
         setSummary(sumData);
         setAnalytics(anaData);
         setFailureAnalytics(failData);
+        setAiInsights(aiData);
       } finally {
         setLoading(false);
+        setAiLoading(false);
       }
     }
     loadData();
   }, []);
+
+  const handleRefreshAiInsights = async () => {
+    setAiRefreshing(true);
+    try {
+      const refreshed = await aiAdvisorService.refreshCareerInsights();
+      setAiInsights(refreshed);
+    } catch (err) {
+      console.error("Failed to refresh AI insights", err);
+    } finally {
+      setAiRefreshing(false);
+    }
+  };
 
   const totalApplications = summary?.totalApplications ?? analytics?.totalApplications ?? 0;
   const totalInterviews = summary?.totalInterviews ?? analytics?.totalInterviews ?? 0;
@@ -281,6 +302,14 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* AI Strategic Career Advisor Insights */}
+      <AiCareerAdvisorCard
+        insights={aiInsights}
+        loading={aiLoading}
+        refreshing={aiRefreshing}
+        onRefresh={handleRefreshAiInsights}
+      />
 
       {/* Conversion Funnel Progress Diagram */}
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
