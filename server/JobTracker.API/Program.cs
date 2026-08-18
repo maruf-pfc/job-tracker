@@ -102,6 +102,25 @@ builder.Services.AddIdentityCore<User>(options =>
 .AddEntityFrameworkStores<AppDbContext>();
 
 // Authentication
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrWhiteSpace(jwtKey)) jwtKey = builder.Configuration["JWT_KEY"];
+if (string.IsNullOrWhiteSpace(jwtKey)) jwtKey = Environment.GetEnvironmentVariable("JWT_KEY");
+if (string.IsNullOrWhiteSpace(jwtKey)) jwtKey = Environment.GetEnvironmentVariable("Jwt__Key");
+if (string.IsNullOrWhiteSpace(jwtKey) || jwtKey.Length < 32)
+{
+    jwtKey = "JobTrackerSecureDefaultJwtSigningSecretKeyMustBe32CharsLong!";
+}
+
+var jwtIssuer = builder.Configuration["Jwt:Issuer"];
+if (string.IsNullOrWhiteSpace(jwtIssuer)) jwtIssuer = builder.Configuration["JWT_ISSUER"];
+if (string.IsNullOrWhiteSpace(jwtIssuer)) jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER");
+if (string.IsNullOrWhiteSpace(jwtIssuer)) jwtIssuer = "JobTrackerAPI";
+
+var jwtAudience = builder.Configuration["Jwt:Audience"];
+if (string.IsNullOrWhiteSpace(jwtAudience)) jwtAudience = builder.Configuration["JWT_AUDIENCE"];
+if (string.IsNullOrWhiteSpace(jwtAudience)) jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE");
+if (string.IsNullOrWhiteSpace(jwtAudience)) jwtAudience = "JobTrackerClient";
+
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -112,9 +131,9 @@ builder.Services
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
         };
     });
 

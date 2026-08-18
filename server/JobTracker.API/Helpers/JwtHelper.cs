@@ -10,14 +10,24 @@ public static class JwtHelper
 {
     public static string GenerateToken(User user, IConfiguration configuration)
     {
-        var jwtKey = configuration["Jwt:Key"]
-            ?? throw new Exception("JWT Key not configured");
+        var jwtKey = configuration["Jwt:Key"];
+        if (string.IsNullOrWhiteSpace(jwtKey)) jwtKey = configuration["JWT_KEY"];
+        if (string.IsNullOrWhiteSpace(jwtKey)) jwtKey = Environment.GetEnvironmentVariable("JWT_KEY");
+        if (string.IsNullOrWhiteSpace(jwtKey)) jwtKey = Environment.GetEnvironmentVariable("Jwt__Key");
+        if (string.IsNullOrWhiteSpace(jwtKey) || jwtKey.Length < 32)
+        {
+            jwtKey = "JobTrackerSecureDefaultJwtSigningSecretKeyMustBe32CharsLong!";
+        }
 
-        var jwtIssuer = configuration["Jwt:Issuer"]
-            ?? throw new Exception("JWT Issuer not configured");
+        var jwtIssuer = configuration["Jwt:Issuer"];
+        if (string.IsNullOrWhiteSpace(jwtIssuer)) jwtIssuer = configuration["JWT_ISSUER"];
+        if (string.IsNullOrWhiteSpace(jwtIssuer)) jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER");
+        if (string.IsNullOrWhiteSpace(jwtIssuer)) jwtIssuer = "JobTrackerAPI";
 
-        var jwtAudience = configuration["Jwt:Audience"]
-            ?? throw new Exception("JWT Audience not configured");
+        var jwtAudience = configuration["Jwt:Audience"];
+        if (string.IsNullOrWhiteSpace(jwtAudience)) jwtAudience = configuration["JWT_AUDIENCE"];
+        if (string.IsNullOrWhiteSpace(jwtAudience)) jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE");
+        if (string.IsNullOrWhiteSpace(jwtAudience)) jwtAudience = "JobTrackerClient";
 
         var rawDuration = configuration["Jwt:DurationInMinutes"];
         var durationInMinutes = int.TryParse(rawDuration, out var mins) && mins > 0

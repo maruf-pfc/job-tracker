@@ -27,7 +27,7 @@ jobs:
       - name: Build API Docker Image
         uses: docker/build-push-action@v5
         with:
-          context: ./server
+          context: ./server/JobTracker.API
           file: ./server/JobTracker.API/Dockerfile
           push: false
 
