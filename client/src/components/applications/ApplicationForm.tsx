@@ -193,14 +193,14 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
       await queryClient.invalidateQueries({ queryKey: ["dashboard-analytics"] });
 
       if (createdOrUpdatedApp) {
-        if (!initialData) {
-          triggerWebhooks("application_created", createdOrUpdatedApp).catch((err) =>
-            console.warn("Discord webhook error:", err)
-          );
-        } else {
-          triggerWebhooks("application_updated", createdOrUpdatedApp).catch((err) =>
-            console.warn("Discord webhook error:", err)
-          );
+        try {
+          if (!initialData) {
+            await triggerWebhooks("application_created", createdOrUpdatedApp);
+          } else {
+            await triggerWebhooks("application_updated", createdOrUpdatedApp);
+          }
+        } catch (err) {
+          console.warn("Discord webhook error:", err);
         }
       }
 

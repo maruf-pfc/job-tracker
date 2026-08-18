@@ -1,4 +1,5 @@
 import { api } from "./api";
+import { toast } from "sonner";
 import type { JobApplication } from "@/types/job-application";
 
 export interface WebhookConfig {
@@ -16,10 +17,10 @@ export interface WebhookResult {
 
 export function getWebhookConfig(): WebhookConfig {
   return {
-    n8nWebhookUrl: localStorage.getItem("n8n_webhook_url") || "",
-    discordWebhookUrl: localStorage.getItem("discord_webhook_url") || "",
-    telegramToken: localStorage.getItem("telegram_token") || "",
-    telegramChatId: localStorage.getItem("telegram_chat_id") || "",
+    n8nWebhookUrl: (localStorage.getItem("n8n_webhook_url") || "").trim(),
+    discordWebhookUrl: (localStorage.getItem("discord_webhook_url") || "").trim(),
+    telegramToken: (localStorage.getItem("telegram_token") || "").trim(),
+    telegramChatId: (localStorage.getItem("telegram_chat_id") || "").trim(),
   };
 }
 
@@ -32,12 +33,15 @@ export async function triggerWebhooks(
 ): Promise<WebhookResult[]> {
   const config = getWebhookConfig();
 
-  // If no webhooks are configured, return empty
+  // If no webhooks are configured, log and return empty
   if (
     !config.discordWebhookUrl &&
     !config.n8nWebhookUrl &&
     (!config.telegramToken || !config.telegramChatId)
   ) {
+    console.info(
+      "JobTracker Webhooks: No webhook URL configured in Settings (localStorage). Skipping webhook dispatch."
+    );
     return [];
   }
 
@@ -76,7 +80,21 @@ export async function triggerWebhooks(
     };
 
     const response = await api.post<{ data: WebhookResult[] }>("/webhooks/dispatch", payload);
-    return response.data?.data || [];
+    const results = response.data?.data || [];
+
+    const discordResult = results.find((r) => r.provider === "Discord");
+    if (discordResult) {
+      if (discordResult.success) {
+        if (event === "application_created") {
+          toast.success("Discord alert sent for new application!");
+        }
+      } else {
+        console.warn("Discord Webhook dispatch failed:", discordResult.error);
+        toast.error(`Discord webhook failed: ${discordResult.error}`);
+      }
+    }
+
+    return results;
   } catch (err: unknown) {
     console.warn("Backend webhook dispatch failed:", err);
     return [
