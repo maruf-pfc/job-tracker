@@ -13,4 +13,6 @@ export const createJobApplicationSchema = z.object({
   applicationStatusId: z.string().min(1, "Status is required"),
   workTypeId: z.string().min(1, "Work type is required"),
   jobTypeId: z.string().min(1, "Job type is required"),
+  appliedAt: z.string().optional(),
+  followUpDate: z.string().optional(),
 });

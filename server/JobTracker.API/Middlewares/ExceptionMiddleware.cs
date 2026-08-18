@@ -29,6 +29,10 @@ public class ExceptionMiddleware
 
             var (statusCode, message) = exception switch
             {
+                Exceptions.NotFoundException => ((int)HttpStatusCode.NotFound, exception.Message),
+                Exceptions.UnauthorizedException => ((int)HttpStatusCode.Unauthorized, exception.Message),
+                Exceptions.ForbiddenException => ((int)HttpStatusCode.Forbidden, exception.Message),
+                Exceptions.BadRequestException => ((int)HttpStatusCode.BadRequest, exception.Message),
                 UnauthorizedAccessException => ((int)HttpStatusCode.Unauthorized, exception.Message),
                 KeyNotFoundException => ((int)HttpStatusCode.NotFound, exception.Message),
                 BadHttpRequestException => ((int)HttpStatusCode.BadRequest, exception.Message),

@@ -29,6 +29,17 @@ type Props = {
   initialData?: JobApplication | null;
 };
 
+const toDateInputString = (dateStr?: string | null) => {
+  if (!dateStr || dateStr.startsWith("0001-01-01")) return "";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime()) || d.getFullYear() <= 1970) return "";
+    return d.toISOString().slice(0, 10);
+  } catch {
+    return "";
+  }
+};
+
 export default function ApplicationForm({ onSuccess, initialData }: Props) {
   const queryClient = useQueryClient();
 
@@ -37,12 +48,19 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
     handleSubmit,
     reset,
     control,
+    setValue,
+    getValues,
     formState: { errors },
   } = useForm<CreateJobApplicationRequest>({
     resolver: zodResolver(createJobApplicationSchema),
+    defaultValues: {
+      appliedAt: new Date().toISOString().slice(0, 10),
+      followUpDate: "",
+    },
   });
 
   const selectedJobTypeId = useWatch({ control, name: "jobTypeId" });
+  const selectedCompanyId = useWatch({ control, name: "companyId" });
 
   const { data: companies } = useQuery({
     queryKey: ["companies"],
@@ -85,12 +103,45 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
     selectedJobType?.name.toLowerCase().includes("bank") ||
     selectedJobType?.name.toLowerCase().includes("cadre");
 
+  // Auto-fill Location and Website from selected Company details
+  useEffect(() => {
+    if (!selectedCompanyId || !companies) return;
+    const found = companies.find((c) => c.id === selectedCompanyId);
+    if (found) {
+      if (found.location) {
+        setValue("location", found.location, { shouldValidate: true });
+      }
+      if (!getValues("jobUrl") && (found.careerPageUrl || found.websiteUrl)) {
+        setValue("jobUrl", found.careerPageUrl || found.websiteUrl || "", {
+          shouldValidate: true,
+        });
+      }
+    }
+  }, [selectedCompanyId, companies, setValue, getValues]);
+
   useEffect(() => {
     if (!initialData) {
+      reset({
+        companyId: "",
+        role: "",
+        jobUrl: "",
+        location: "",
+        salaryRange: "",
+        notes: "",
+        resumeDriveLink: "",
+        priorityId: priorities?.[0]?.id || "",
+        sourcePlatformId: platforms?.[0]?.id || "",
+        applicationStatusId: statuses?.[0]?.id || "",
+        workTypeId: workTypes?.[0]?.id || "",
+        jobTypeId: jobTypes?.[0]?.id || "",
+        appliedAt: new Date().toISOString().slice(0, 10),
+        followUpDate: "",
+      });
       return;
     }
 
-    const targetCompanyId = companies?.find((c) => c.name === initialData.company)?.id || "";
+    const targetCompany = companies?.find((c) => c.name === initialData.company);
+    const targetCompanyId = targetCompany?.id || "";
     const targetPriorityId = priorities?.find((p) => p.name === initialData.priority)?.id || "";
     const targetStatusId = statuses?.find((s) => s.name === initialData.applicationStatus)?.id || "";
     const targetWorkTypeId = workTypes?.find((w) => w.name === initialData.workType)?.id || "";
@@ -100,8 +151,8 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
     reset({
       companyId: targetCompanyId,
       role: initialData.role || "",
-      jobUrl: initialData.jobUrl || "",
-      location: initialData.location || "",
+      jobUrl: initialData.jobUrl || targetCompany?.careerPageUrl || targetCompany?.websiteUrl || "",
+      location: initialData.location || targetCompany?.location || "",
       salaryRange: initialData.salaryRange || "",
       notes: initialData.notes || "",
       resumeDriveLink: initialData.resumeDriveLink || "",
@@ -110,14 +161,18 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
       applicationStatusId: targetStatusId,
       workTypeId: targetWorkTypeId,
       jobTypeId: targetJobTypeId,
+      appliedAt: toDateInputString(initialData.appliedAt) || new Date().toISOString().slice(0, 10),
+      followUpDate: toDateInputString(initialData.followUpDate),
     });
   }, [initialData, reset, companies, jobRoles, priorities, statuses, workTypes, jobTypes, platforms]);
 
   const mutation = useMutation({
     mutationFn: (data: CreateJobApplicationRequest) => {
-      const payload = {
+      const payload: CreateJobApplicationRequest = {
         ...data,
         sourcePlatformId: data.sourcePlatformId || platforms?.[0]?.id || "",
+        appliedAt: data.appliedAt ? new Date(data.appliedAt).toISOString() : new Date().toISOString(),
+        followUpDate: data.followUpDate ? new Date(data.followUpDate).toISOString() : undefined,
       };
 
       if (initialData) {
@@ -167,7 +222,7 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
               <option value="">Select organization...</option>
               {companies?.map((company) => (
                 <option key={company.id} value={company.id}>
-                  {company.name}
+                  {company.name} {company.location ? `(${company.location})` : ""}
                 </option>
               ))}
             </Select>
@@ -195,13 +250,14 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
             )}
           </div>
 
-          {/* Location */}
+          {/* Location (Auto-populated from selected company) */}
           <div className="space-y-1.5">
             <Label>Location / Posting</Label>
             <Input
               placeholder={isGovtOrBank ? "e.g. Agargaon, Dhaka / All Bangladesh" : "e.g. Dhaka, Bangladesh (or Remote)"}
               {...register("location")}
             />
+            <p className="text-[11px] text-slate-500">Auto-filled from company details; editable if needed.</p>
           </div>
 
           {/* Salary Range / Pay Scale */}
@@ -315,7 +371,35 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
         </div>
       </ApplicationFormSection>
 
-      {/* Section 3: Notes & Exam Documents */}
+      {/* Section 3: Timeline, Applied Date & Deadlines */}
+      <ApplicationFormSection
+        title="Application Timeline & Deadlines"
+        description="Record when you submitted this application and track the application deadline or exam date."
+      >
+        <div className="grid gap-4 md:grid-cols-2">
+          {/* Applied Date */}
+          <div className="space-y-1.5">
+            <Label>Applied Date</Label>
+            <Input
+              type="date"
+              {...register("appliedAt")}
+            />
+            <p className="text-[11px] text-slate-500">Date on which you submitted the application.</p>
+          </div>
+
+          {/* Application Deadline */}
+          <div className="space-y-1.5">
+            <Label>Application Deadline</Label>
+            <Input
+              type="date"
+              {...register("followUpDate")}
+            />
+            <p className="text-[11px] text-slate-500">Upcoming application closing date or exam schedule.</p>
+          </div>
+        </div>
+      </ApplicationFormSection>
+
+      {/* Section 4: Notes & Exam Documents */}
       <ApplicationFormSection
         title="Syllabus, Exam Notes & Documents"
         description="Track written syllabus, past exam question links, and resume/application form."

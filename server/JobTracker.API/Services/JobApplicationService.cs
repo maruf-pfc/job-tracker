@@ -153,7 +153,13 @@ public class JobApplicationService : IJobApplicationService
                 JobType = j.JobType.Name,
                 SourcePlatform = j.SourcePlatform.Name,
                 ApplicationStatus = j.ApplicationStatus.Name,
-                WorkType = j.WorkType.Name
+                WorkType = j.WorkType.Name,
+                CoverLetter = j.CoverLetter,
+                ResumeDriveLink = j.ResumeDriveLink,
+                FollowUpDate = j.FollowUpDate,
+                IsArchived = j.IsArchived,
+                CreatedAt = j.CreatedAt,
+                UpdatedAt = j.UpdatedAt
             })
             .FirstOrDefaultAsync();
     }
@@ -161,6 +167,14 @@ public class JobApplicationService : IJobApplicationService
     public async Task<JobApplicationDto> CreateAsync(CreateJobApplicationDto dto)
     {
         var userId = _currentUser.UserId;
+
+        var appliedAtUtc = dto.AppliedAt == default || dto.AppliedAt.Year < 1970
+            ? DateTime.UtcNow
+            : DateTime.SpecifyKind(dto.AppliedAt, DateTimeKind.Utc);
+
+        var followUpDateUtc = dto.FollowUpDate.HasValue && dto.FollowUpDate.Value.Year >= 1970
+            ? DateTime.SpecifyKind(dto.FollowUpDate.Value, DateTimeKind.Utc)
+            : (DateTime?)null;
 
         var application = new JobApplication
         {
@@ -170,7 +184,7 @@ public class JobApplicationService : IJobApplicationService
             Location = dto.Location?.Trim(),
             SalaryRange = dto.SalaryRange?.Trim(),
             Notes = dto.Notes?.Trim(),
-            AppliedAt = dto.AppliedAt,
+            AppliedAt = appliedAtUtc,
             UserId = userId!.Value,
             PriorityId = dto.PriorityId,
             JobTypeId = dto.JobTypeId,
@@ -179,7 +193,7 @@ public class JobApplicationService : IJobApplicationService
             WorkTypeId = dto.WorkTypeId,
             CoverLetter = dto.CoverLetter?.Trim(),
             ResumeDriveLink = dto.ResumeDriveLink?.Trim(),
-            FollowUpDate = dto.FollowUpDate,
+            FollowUpDate = followUpDateUtc,
             IsArchived = dto.IsArchived,
         };
 
@@ -205,13 +219,17 @@ public class JobApplicationService : IJobApplicationService
             throw new Exception("Application not found");
         }
 
+        if (dto.AppliedAt != default && dto.AppliedAt.Year >= 1970)
+        {
+            application.AppliedAt = DateTime.SpecifyKind(dto.AppliedAt, DateTimeKind.Utc);
+        }
+
         application.CompanyId = dto.CompanyId;
         application.Role = dto.Role.Trim();
         application.JobUrl = dto.JobUrl?.Trim();
         application.Location = dto.Location?.Trim();
         application.SalaryRange = dto.SalaryRange?.Trim();
         application.Notes = dto.Notes?.Trim();
-        application.AppliedAt = dto.AppliedAt;
         application.PriorityId = dto.PriorityId;
         application.JobTypeId = dto.JobTypeId;
         application.SourcePlatformId = dto.SourcePlatformId;
@@ -220,7 +238,9 @@ public class JobApplicationService : IJobApplicationService
         application.UpdatedAt = DateTime.UtcNow;
         application.CoverLetter = dto.CoverLetter?.Trim();
         application.ResumeDriveLink = dto.ResumeDriveLink?.Trim();
-        application.FollowUpDate = dto.FollowUpDate;
+        application.FollowUpDate = dto.FollowUpDate.HasValue && dto.FollowUpDate.Value.Year >= 1970
+            ? DateTime.SpecifyKind(dto.FollowUpDate.Value, DateTimeKind.Utc)
+            : (DateTime?)null;
         application.IsArchived = dto.IsArchived;
 
         await _context.SaveChangesAsync();

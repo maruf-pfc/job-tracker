@@ -1,12 +1,6 @@
 import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  getJobRoles,
-  createJobRole,
-  updateJobRole,
-  deleteJobRole,
-} from "@/services/jobRoleService";
+import { useJobRoles } from "@/hooks/useJobRoles";
 import type { JobRole, CreateJobRoleRequest } from "@/services/jobRoleService";
 import Input from "@/components/ui/Input";
 import Label from "@/components/ui/Label";
@@ -19,7 +13,6 @@ import { UserCheck, Plus, Search, ChevronLeft, ChevronRight } from "lucide-react
 const ITEMS_PER_PAGE = 8;
 
 export default function RolesPage() {
-  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,11 +21,15 @@ export default function RolesPage() {
   // Form state
   const [name, setName] = useState("");
 
-  const { data: roles, isPending } = useQuery({
-    queryKey: ["job-roles"],
-    queryFn: getJobRoles,
-    staleTime: 10 * 1000,
-  });
+  const {
+    roles,
+    isLoading,
+    createRole,
+    updateRole,
+    deleteRole,
+    isCreating,
+    isUpdating,
+  } = useJobRoles();
 
   const openCreateModal = () => {
     setEditingRole(null);
@@ -46,46 +43,7 @@ export default function RolesPage() {
     setIsModalOpen(true);
   };
 
-  const createMutation = useMutation({
-    mutationFn: (req: CreateJobRoleRequest) => createJobRole(req),
-    onSuccess: (newRole) => {
-      toast.success("Job role created successfully");
-      queryClient.setQueryData(["job-roles"], (old: JobRole[] = []) => [...old, newRole]);
-      queryClient.refetchQueries({ queryKey: ["job-roles"] });
-      setIsModalOpen(false);
-    },
-    onError: (err: { response?: { data?: { message?: string } } }) =>
-      toast.error(err.response?.data?.message || "Failed to create job role"),
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: (req: CreateJobRoleRequest) => updateJobRole(editingRole!.id, req),
-    onSuccess: (updatedRole) => {
-      toast.success("Job role updated successfully");
-      queryClient.setQueryData(["job-roles"], (old: JobRole[] = []) =>
-        old.map((r) => (r.id === updatedRole.id ? updatedRole : r))
-      );
-      queryClient.refetchQueries({ queryKey: ["job-roles"] });
-      setIsModalOpen(false);
-    },
-    onError: (err: { response?: { data?: { message?: string } } }) =>
-      toast.error(err.response?.data?.message || "Failed to update job role"),
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => deleteJobRole(id),
-    onSuccess: (_, deletedId) => {
-      toast.success("Job role deleted");
-      queryClient.setQueryData(["job-roles"], (old: JobRole[] = []) =>
-        old.filter((r) => r.id !== deletedId)
-      );
-      queryClient.refetchQueries({ queryKey: ["job-roles"] });
-    },
-    onError: (err: { response?: { data?: { message?: string } } }) =>
-      toast.error(err.response?.data?.message || "Failed to delete job role"),
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
       toast.error("Role title is required");
@@ -96,10 +54,15 @@ export default function RolesPage() {
       name: name.trim(),
     };
 
-    if (editingRole) {
-      updateMutation.mutate(payload);
-    } else {
-      createMutation.mutate(payload);
+    try {
+      if (editingRole) {
+        await updateRole({ id: editingRole.id, data: payload });
+      } else {
+        await createRole(payload);
+      }
+      setIsModalOpen(false);
+    } catch {
+      // Handled in hook
     }
   };
 
@@ -113,7 +76,7 @@ export default function RolesPage() {
     currentPage * ITEMS_PER_PAGE
   );
 
-  if (isPending) {
+  if (isLoading) {
     return <RolesSkeleton />;
   }
 
@@ -183,13 +146,12 @@ export default function RolesPage() {
                     </div>
                   </td>
 
-                  {/* Actions */}
                   <td className="px-5 py-4 whitespace-nowrap text-right">
                     <ApplicationActions
                       onEdit={() => openEditModal(role)}
-                      onDelete={() => {
+                      onDelete={async () => {
                         if (confirm(`Are you sure you want to delete ${role.name}?`)) {
-                          deleteMutation.mutate(role.id);
+                          await deleteRole(role.id);
                         }
                       }}
                     />
@@ -249,9 +211,9 @@ export default function RolesPage() {
           <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-4">
             <Button
               type="submit"
-              disabled={createMutation.isPending || updateMutation.isPending}
+              disabled={isCreating || isUpdating}
             >
-              {createMutation.isPending || updateMutation.isPending
+              {isCreating || isUpdating
                 ? "Saving..."
                 : editingRole
                 ? "Update Role"

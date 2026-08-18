@@ -41,6 +41,8 @@ export type CreateJobApplicationRequest = {
   applicationStatusId: string;
   workTypeId: string;
   jobTypeId: string;
+  appliedAt?: string;
+  followUpDate?: string;
 };
 
 export type UpdateJobApplicationRequest = CreateJobApplicationRequest;

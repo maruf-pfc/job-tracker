@@ -1,5 +1,4 @@
 import { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
 import ApplicationsHeader from "@/components/applications/ApplicationsHeader";
 import ApplicationsFilters from "@/components/applications/ApplicationsFilters";
 import ApplicationsTable from "@/components/applications/ApplicationsTable";
@@ -7,9 +6,8 @@ import { KanbanBoard } from "@/components/applications/KanbanBoard";
 import ApplicationModal from "@/components/applications/ApplicationModal";
 import ApplicationForm from "@/components/applications/ApplicationForm";
 import Button from "@/components/ui/Button";
-import { getApplications } from "@/services/jobApplicationService";
+import { useApplications } from "@/hooks/useApplications";
 import { LayoutGrid, List, Plus } from "lucide-react";
-
 import { ApplicationsSkeleton } from "@/components/common/Skeletons";
 
 export default function ApplicationsPage() {
@@ -22,17 +20,12 @@ export default function ApplicationsPage() {
   const [priorityFilter, setPriorityFilter] = useState("");
   const [workTypeFilter, setWorkTypeFilter] = useState("");
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["applications"],
-    queryFn: getApplications,
-  });
-
-  const items = data?.items;
+  const { applications, isLoading } = useApplications();
 
   const filteredApplications = useMemo(() => {
-    if (!items) return [];
+    if (!applications) return [];
 
-    return items.filter((app) => {
+    return applications.filter((app) => {
       const matchesSearch =
         !searchQuery ||
         app.company?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -53,7 +46,7 @@ export default function ApplicationsPage() {
 
       return matchesSearch && matchesStatus && matchesPriority && matchesWorkType;
     });
-  }, [items, searchQuery, statusFilter, priorityFilter, workTypeFilter]);
+  }, [applications, searchQuery, statusFilter, priorityFilter, workTypeFilter]);
 
   const handleResetFilters = () => {
     setSearchQuery("");

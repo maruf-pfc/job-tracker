@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { getProfile, updateProfile } from "@/services/profileService";
-import type { UserProfile } from "@/services/profileService";
+import { useProfile } from "@/hooks/useProfile";
+import { useAuthStore } from "@/stores/authStore";
+import type { UserProfile } from "@/types/profile";
 import Input from "@/components/ui/Input";
 import Label from "@/components/ui/Label";
 import Button from "@/components/ui/Button";
@@ -24,11 +23,13 @@ import {
 } from "lucide-react";
 
 export default function ProfilePage() {
-  const queryClient = useQueryClient();
+  const user = useAuthStore((state) => state.user);
   const [activeTab, setActiveTab] = useState<
     "personal" | "education" | "experience" | "coding"
   >("personal");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  const { profile, isLoading, updateProfile, isUpdating } = useProfile();
 
   // Form State
   const [formData, setFormData] = useState<UserProfile>({
@@ -63,50 +64,20 @@ export default function ProfilePage() {
     bioSummary: "",
   });
 
-  const { data: profile, isPending } = useQuery({
-    queryKey: ["user-profile"],
-    queryFn: getProfile,
-    staleTime: 10 * 1000,
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: (data: UserProfile) => updateProfile(data),
-    onSuccess: () => {
-      toast.success("Profile updated in database successfully!");
-      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
-      setIsEditModalOpen(false);
-    },
-    onError: () => toast.error("Failed to update profile"),
-  });
-
-  const openEditModal = () => {
-    setFormData(currentProfile);
-    setIsEditModalOpen(true);
-  };
-
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateMutation.mutate(formData);
-  };
-
-  if (isPending && !profile) {
-    return <ProfileSkeleton />;
-  }
-
-  const currentProfile = profile || {
-    nameEnglish: "Software Engineer",
+  const currentProfile: UserProfile = profile || {
+    nameEnglish: user?.name || "",
     nameBangla: "",
     fatherName: "",
     motherName: "",
     dateOfBirth: "",
-    nationality: "Bangladeshi",
-    religion: "Islam",
-    gender: "Male",
+    nationality: "",
+    religion: "",
+    gender: "",
     birthRegistration: "",
     nationalId: "",
-    maritalStatus: "Single",
+    maritalStatus: "",
     mobileNumber: "",
-    email: "user@example.com",
+    email: user?.email || "",
 
     presentDivision: "",
     presentDistrict: "",
@@ -127,8 +98,27 @@ export default function ProfilePage() {
     permanentPoliceStation: "",
     permanentPostCode: "",
 
-    bioSummary: "Full Stack Engineer passionate about building modern web applications, scalable APIs, and developer tools.",
+    bioSummary: "",
   };
+
+  const openEditModal = () => {
+    setFormData(currentProfile);
+    setIsEditModalOpen(true);
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await updateProfile(formData);
+      setIsEditModalOpen(false);
+    } catch {
+      // Handled in hook
+    }
+  };
+
+  if (isLoading && !profile) {
+    return <ProfileSkeleton />;
+  }
 
   return (
     <div className="space-y-6">
@@ -476,8 +466,8 @@ export default function ProfilePage() {
           </div>
 
           <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-4">
-            <Button type="submit" disabled={updateMutation.isPending} className="flex items-center gap-1.5">
-              <Save className="w-4 h-4" /> {updateMutation.isPending ? "Saving..." : "Save Profile Details"}
+            <Button type="submit" disabled={isUpdating} className="flex items-center gap-1.5">
+              <Save className="w-4 h-4" /> {isUpdating ? "Saving..." : "Save Profile Details"}
             </Button>
           </div>
         </form>

@@ -109,16 +109,17 @@ export default function ApplicationsTable({ applications, isLoading }: Props) {
     <>
       <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs">
         <div className="overflow-x-auto w-full">
-          <table className="w-full min-w-[760px] text-left border-collapse">
+          <table className="w-full text-left border-collapse">
           <thead className="border-b border-slate-200 bg-slate-50/80 text-xs font-bold uppercase tracking-wider text-slate-500">
             <tr>
-              <th className="px-5 py-3.5">Organization & Role</th>
-              <th className="px-5 py-3.5">Category & Platform</th>
-              <th className="px-5 py-3.5">Status / Stage</th>
-              <th className="px-5 py-3.5">Priority</th>
-              <th className="px-5 py-3.5">Location & Compensation</th>
-              <th className="px-5 py-3.5">Applied Date</th>
-              <th className="px-5 py-3.5 text-right">Actions</th>
+              <th className="px-4 py-3.5">Organization & Role</th>
+              <th className="px-4 py-3.5">Category & Platform</th>
+              <th className="px-4 py-3.5">Status / Stage</th>
+              <th className="px-4 py-3.5">Priority</th>
+              <th className="px-4 py-3.5">Location & Compensation</th>
+              <th className="px-4 py-3.5">Applied Date</th>
+              <th className="px-4 py-3.5">Application Deadline</th>
+              <th className="px-4 py-3.5 text-right">Actions</th>
             </tr>
           </thead>
 
@@ -127,11 +128,12 @@ export default function ApplicationsTable({ applications, isLoading }: Props) {
               const priorityClass = PRIORITY_STYLE_MAP[app.priority] || PRIORITY_STYLE_MAP.Low;
               const isRejected = app.applicationStatus?.toLowerCase() === "rejected";
               const isGovt = isGovtOrBank(app);
+              const deadlineFormatted = formatDate(app.followUpDate);
 
               return (
                 <tr key={app.id} className="hover:bg-slate-50/80 transition-colors">
                   {/* Organization & Role */}
-                  <td className="px-5 py-4">
+                  <td className="px-4 py-4">
                     <div className="space-y-1">
                       <div className="font-semibold text-slate-900 flex items-center gap-1.5">
                         <span>{app.role}</span>
@@ -159,7 +161,7 @@ export default function ApplicationsTable({ applications, isLoading }: Props) {
                   </td>
 
                   {/* Category & Platform */}
-                  <td className="px-5 py-4 whitespace-nowrap">
+                  <td className="px-4 py-4 whitespace-nowrap">
                     <div className="space-y-1">
                       <div>
                         {isGovt ? (
@@ -181,7 +183,7 @@ export default function ApplicationsTable({ applications, isLoading }: Props) {
                   </td>
 
                   {/* Status Badge & Retrospective Link */}
-                  <td className="px-5 py-4 whitespace-nowrap">
+                  <td className="px-4 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-2">
                       <ApplicationStatusBadge status={app.applicationStatus} />
                       {isRejected && (
@@ -198,14 +200,14 @@ export default function ApplicationsTable({ applications, isLoading }: Props) {
                   </td>
 
                   {/* Priority Pill */}
-                  <td className="px-5 py-4 whitespace-nowrap">
+                  <td className="px-4 py-4 whitespace-nowrap">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${priorityClass}`}>
                       {app.priority}
                     </span>
                   </td>
 
                   {/* Location & Compensation */}
-                  <td className="px-5 py-4 whitespace-nowrap">
+                  <td className="px-4 py-4 whitespace-nowrap">
                     <div className="space-y-1 text-xs text-slate-600">
                       {app.location && (
                         <div className="flex items-center gap-1">
@@ -223,15 +225,26 @@ export default function ApplicationsTable({ applications, isLoading }: Props) {
                   </td>
 
                   {/* Applied Date */}
-                  <td className="px-5 py-4 whitespace-nowrap text-xs text-slate-600 font-medium">
+                  <td className="px-4 py-4 whitespace-nowrap text-xs text-slate-600 font-medium">
                     <div className="flex items-center gap-1.5">
                       <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                       <span>{formatDate(app.appliedAt)}</span>
                     </div>
                   </td>
 
+                  {/* Application Deadline */}
+                  <td className="px-4 py-4 whitespace-nowrap text-xs font-medium">
+                    {deadlineFormatted !== "N/A" ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200/80">
+                        ⏰ {deadlineFormatted}
+                      </span>
+                    ) : (
+                      <span className="text-slate-400">N/A</span>
+                    )}
+                  </td>
+
                   {/* Actions */}
-                  <td className="px-5 py-4 whitespace-nowrap text-right">
+                  <td className="px-4 py-4 whitespace-nowrap text-right">
                     <ApplicationActions
                       onEdit={() => setEditingApplication(app)}
                       onDelete={() => setSelectedId(app.id)}

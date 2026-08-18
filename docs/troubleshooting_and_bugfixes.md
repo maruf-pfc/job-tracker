@@ -105,3 +105,18 @@ After seeding or updating companies/roles, navigating to `RolesPage` or `Compani
 
 ### Fix Applied
 Updated `staleTime` across [`RolesPage.tsx`](file:///home/maruf/Documents/GitHub/Resume%20Projects/job-tracker/client/src/pages/RolesPage.tsx), [`CompaniesPage.tsx`](file:///home/maruf/Documents/GitHub/Resume%20Projects/job-tracker/client/src/pages/CompaniesPage.tsx), and [`ProfilePage.tsx`](file:///home/maruf/Documents/GitHub/Resume%20Projects/job-tracker/client/src/pages/ProfilePage.tsx) from 5 minutes to `10 * 1000` (10 seconds) for near-instant revalidation.
+
+---
+
+## 6. TypeScript Circular Type Resolution on `@/types/profile`
+
+### Symptom
+TypeScript / Language Server reported `Cannot find module '@/types/profile' or its corresponding type declarations` in [`useProfile.ts`](file:///home/maruf/Documents/GitHub/Resume%20Projects/job-tracker/client/src/hooks/useProfile.ts).
+
+### Root Cause
+An inverted architecture existed where [`types/profile.ts`](file:///home/maruf/Documents/GitHub/Resume%20Projects/job-tracker/client/src/types/profile.ts) was re-exporting the `UserProfile` type from [`services/profileService.ts`](file:///home/maruf/Documents/GitHub/Resume%20Projects/job-tracker/client/src/services/profileService.ts). When hooks and components simultaneously imported types and services, TypeScript encountered an inverted dependency cycle.
+
+### Fix Applied
+1. Moved the canonical [`UserProfile`](file:///home/maruf/Documents/GitHub/Resume%20Projects/job-tracker/client/src/types/profile.ts) interface definition directly into [`src/types/profile.ts`](file:///home/maruf/Documents/GitHub/Resume%20Projects/job-tracker/client/src/types/profile.ts).
+2. Refactored [`src/services/profileService.ts`](file:///home/maruf/Documents/GitHub/Resume%20Projects/job-tracker/client/src/services/profileService.ts) and [`src/pages/ProfilePage.tsx`](file:///home/maruf/Documents/GitHub/Resume%20Projects/job-tracker/client/src/pages/ProfilePage.tsx) to import `UserProfile` cleanly from `@/types/profile`.
+

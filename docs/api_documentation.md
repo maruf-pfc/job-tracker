@@ -168,3 +168,35 @@ Base URL: `http://localhost:5104/api` (Local) / `https://jobtracker-api.vercel.a
 ### 3. Get Job Roles (Isolated + Global Defaults)
 - **HTTP Method**: `GET`
 - **Path**: `/api/job-roles`
+
+---
+
+## 👤 User Profile & Credentials Endpoints (`/api/profile`)
+
+### 1. Get User Profile
+- **HTTP Method**: `GET`
+- **Path**: `/api/profile`
+- **Headers**: `Authorization: Bearer <token>`
+- **Response (`200 OK`)**: Returns current user's profile information (personal details, address, academic history, and coding profiles).
+
+### 2. Upsert User Profile
+- **HTTP Method**: `PUT`
+- **Path**: `/api/profile`
+- **Headers**: `Authorization: Bearer <token>`
+- **Request Body**:
+  ```json
+  {
+    "nameEnglish": "Jane Doe",
+    "nameBangla": "জেন ডো",
+    "mobileNumber": "+8801700000000",
+    "email": "jane@example.com",
+    "presentDivision": "Dhaka",
+    "presentDistrict": "Dhaka",
+    "permanentDivision": "Dhaka",
+    "bioSummary": "Senior Fullstack Engineer specializing in scalable cloud applications.",
+    "educationDetailsJson": "...",
+    "codingProfilesJson": "..."
+  }
+  ```
+- **Response (`200 OK`)**: Returns updated profile entity.
+

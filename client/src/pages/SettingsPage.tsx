@@ -5,8 +5,11 @@ import { Download, Upload, Database, Bot, Send, Bell } from "lucide-react";
 import { api } from "@/services/api";
 import { toast } from "sonner";
 
+import { triggerWebhooks } from "@/services/webhookService";
+
 export default function SettingsPage() {
   const [importing, setImporting] = useState(false);
+  const [testingWebhooks, setTestingWebhooks] = useState(false);
 
   // Integrations State
   const [n8nWebhookUrl, setN8nWebhookUrl] = useState(
@@ -28,6 +31,40 @@ export default function SettingsPage() {
     localStorage.setItem("telegram_chat_id", telegramChatId);
     localStorage.setItem("discord_webhook_url", discordWebhookUrl);
     toast.success("Automation & Webhook settings saved!");
+  };
+
+  const handleTestWebhooks = async () => {
+    handleSaveIntegrations();
+    setTestingWebhooks(true);
+    try {
+      const results = await triggerWebhooks("test_event", {
+        company: "Google (Demo / Test)",
+        role: "Senior Full Stack Engineer",
+        applicationStatus: "Applied",
+        salaryRange: "$150,000 - $180,000",
+        location: "Remote / Hybrid",
+        jobUrl: "https://careers.google.com",
+      });
+
+      if (results.length === 0) {
+        toast.info("No webhook URLs configured to test.");
+        return;
+      }
+
+      const succeeded = results.filter((r) => r.success).map((r) => r.provider);
+      const failed = results.filter((r) => !r.success).map((r) => `${r.provider} (${r.error})`);
+
+      if (succeeded.length > 0) {
+        toast.success(`Webhook test delivered to: ${succeeded.join(", ")}`);
+      }
+      if (failed.length > 0) {
+        toast.error(`Webhook delivery failed for: ${failed.join(", ")}`);
+      }
+    } catch {
+      toast.error("An error occurred while testing webhooks.");
+    } finally {
+      setTestingWebhooks(false);
+    }
   };
 
   const handleExportCsv = async () => {
@@ -132,9 +169,18 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <div className="pt-2">
+        <div className="pt-2 flex flex-wrap items-center gap-3">
           <Button onClick={handleSaveIntegrations} className="flex items-center gap-2">
             <Bot className="w-4 h-4" /> Save Automation Settings
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={handleTestWebhooks}
+            disabled={testingWebhooks}
+            className="flex items-center gap-2"
+          >
+            <Send className="w-4 h-4 text-indigo-500" />
+            {testingWebhooks ? "Sending Test Payload..." : "Test Webhooks (Send Ping)"}
           </Button>
         </div>
       </div>

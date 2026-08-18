@@ -229,8 +229,15 @@ export function KanbanBoard({ applications, isLoading }: Props) {
                         </div>
                       )}
 
+                      {/* Deadline / Exam Date Badge */}
+                      {formatDate(app.followUpDate) !== "N/A" && (
+                        <div className="text-[10px] font-medium text-amber-700 bg-amber-50 border border-amber-200/60 rounded px-1.5 py-0.5 flex items-center gap-1 w-fit">
+                          <span>⏰ Deadline: {formatDate(app.followUpDate)}</span>
+                        </div>
+                      )}
+
                       <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
-                        <span className="text-[11px] text-slate-500 flex items-center gap-1">
+                        <span className="text-[11px] text-slate-500 flex items-center gap-1" title="Applied Date">
                           <Calendar className="w-3 h-3 text-slate-400" />
                           {formatDate(app.appliedAt)}
                         </span>

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Building2,
   Plus,
@@ -18,19 +17,13 @@ import Textarea from "@/components/ui/Textarea";
 import ApplicationModal from "@/components/applications/ApplicationModal";
 import ApplicationActions from "@/components/applications/ApplicationActions";
 import { CompaniesSkeleton } from "@/components/common/Skeletons";
-import {
-  getCompanies,
-  createCompany,
-  updateCompany,
-  deleteCompany,
-} from "@/services/companyService";
+import { useCompanies } from "@/hooks/useCompanies";
 import type { Company } from "@/types/company";
 import Label from "@/components/ui/Label";
 
 const ITEMS_PER_PAGE = 8;
 
 export default function CompaniesPage() {
-  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -43,10 +36,15 @@ export default function CompaniesPage() {
   const [careerPageUrl, setCareerPageUrl] = useState("");
   const [notes, setNotes] = useState("");
 
-  const { data: companies = [], isPending } = useQuery({
-    queryKey: ["companies"],
-    queryFn: getCompanies,
-  });
+  const {
+    companies,
+    isLoading,
+    createCompany,
+    updateCompany,
+    deleteCompany,
+    isCreating,
+    isUpdating,
+  } = useCompanies();
 
   const resetForm = () => {
     setName("");
@@ -72,48 +70,7 @@ export default function CompaniesPage() {
     setIsModalOpen(true);
   };
 
-  const createMutation = useMutation({
-    mutationFn: createCompany,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["companies"] });
-      toast.success("Organization added successfully");
-      setIsModalOpen(false);
-      resetForm();
-    },
-    onError: (err: unknown) => {
-      const axiosErr = err as { response?: { data?: { message?: string } } };
-      toast.error(axiosErr.response?.data?.message || "Failed to add organization");
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: { name: string; location?: string; websiteUrl?: string; careerPageUrl?: string; notes?: string } }) =>
-      updateCompany(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["companies"] });
-      toast.success("Organization updated successfully");
-      setIsModalOpen(false);
-      resetForm();
-    },
-    onError: (err: unknown) => {
-      const axiosErr = err as { response?: { data?: { message?: string } } };
-      toast.error(axiosErr.response?.data?.message || "Failed to update organization");
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: deleteCompany,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["companies"] });
-      toast.success("Organization deleted successfully");
-    },
-    onError: (err: unknown) => {
-      const axiosErr = err as { response?: { data?: { message?: string } } };
-      toast.error(axiosErr.response?.data?.message || "Failed to delete organization");
-    },
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
       toast.error("Name is required");
@@ -128,10 +85,16 @@ export default function CompaniesPage() {
       notes: notes.trim() || undefined,
     };
 
-    if (editingCompany) {
-      updateMutation.mutate({ id: editingCompany.id, data: payload });
-    } else {
-      createMutation.mutate(payload);
+    try {
+      if (editingCompany) {
+        await updateCompany({ id: editingCompany.id, data: payload });
+      } else {
+        await createCompany(payload);
+      }
+      setIsModalOpen(false);
+      resetForm();
+    } catch {
+      // Handled in hook
     }
   };
 
@@ -166,7 +129,7 @@ export default function CompaniesPage() {
     currentPage * ITEMS_PER_PAGE
   );
 
-  if (isPending) {
+  if (isLoading) {
     return <CompaniesSkeleton />;
   }
 
@@ -315,9 +278,9 @@ export default function CompaniesPage() {
                     <td className="px-5 py-4 whitespace-nowrap text-right">
                       <ApplicationActions
                         onEdit={() => openEditModal(company)}
-                        onDelete={() => {
+                        onDelete={async () => {
                           if (confirm(`Are you sure you want to delete ${company.name}?`)) {
-                            deleteMutation.mutate(company.id);
+                            await deleteCompany(company.id);
                           }
                         }}
                       />
@@ -418,9 +381,9 @@ export default function CompaniesPage() {
           <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-4">
             <Button
               type="submit"
-              disabled={createMutation.isPending || updateMutation.isPending}
+              disabled={isCreating || isUpdating}
             >
-              {createMutation.isPending || updateMutation.isPending
+              {isCreating || isUpdating
                 ? "Saving..."
                 : editingCompany
                 ? "Update Organization"
