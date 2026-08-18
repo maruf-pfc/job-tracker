@@ -7,6 +7,11 @@ export const getProfile = async (): Promise<UserProfile> => {
 };
 
 export const updateProfile = async (profile: UserProfile): Promise<UserProfile> => {
-  const response = await api.put("/profile", profile);
+  const payload: UserProfile = {
+    ...profile,
+    dateOfBirth: profile.dateOfBirth && profile.dateOfBirth.trim() !== "" ? profile.dateOfBirth.trim() : undefined,
+  };
+  const response = await api.put("/profile", payload);
   return response.data.data;
 };
+

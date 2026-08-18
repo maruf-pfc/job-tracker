@@ -1,3 +1,24 @@
+export type EducationRecord = {
+  degree: string;
+  institute: string;
+  major?: string;
+  passingYear?: string;
+  cgpaOrGrade?: string;
+  boardOrUniversity?: string;
+};
+
+export type CodingProfiles = {
+  github?: string;
+  linkedin?: string;
+  codeforces?: string;
+  leetcode?: string;
+  codechef?: string;
+  hackerrank?: string;
+  portfolioUrl?: string;
+  topSkills?: string[];
+  designation?: string;
+};
+
 export type UserProfile = {
   id?: string;
   userId?: string;
@@ -42,3 +63,4 @@ export type UserProfile = {
   educationDetailsJson?: string;
   codingProfilesJson?: string;
 };
+
