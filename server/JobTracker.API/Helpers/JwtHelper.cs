@@ -14,9 +14,10 @@ public static class JwtHelper
         if (string.IsNullOrWhiteSpace(jwtKey)) jwtKey = configuration["JWT_KEY"];
         if (string.IsNullOrWhiteSpace(jwtKey)) jwtKey = Environment.GetEnvironmentVariable("JWT_KEY");
         if (string.IsNullOrWhiteSpace(jwtKey)) jwtKey = Environment.GetEnvironmentVariable("Jwt__Key");
+
         if (string.IsNullOrWhiteSpace(jwtKey) || jwtKey.Length < 32)
         {
-            jwtKey = "JobTrackerSecureDefaultJwtSigningSecretKeyMustBe32CharsLong!";
+            throw new InvalidOperationException("JWT Key is not configured or is less than 32 characters. Please set the JWT_KEY environment variable.");
         }
 
         var jwtIssuer = configuration["Jwt:Issuer"];
