@@ -116,10 +116,6 @@ export default function DashboardPage() {
     );
   }, [failureAnalytics, trackFilter]);
 
-  if (loading) {
-    return <DashboardSkeleton />;
-  }
-
   // Chart data formatting from real analytics
   const statusChartData = useMemo(() => {
     if (!analytics?.statusBreakdown || analytics.statusBreakdown.length === 0) return [];
@@ -161,6 +157,10 @@ export default function DashboardPage() {
       { metric: "Self Confidence", value: failureAnalytics.avgConfidenceRating / 2, max: 5, fill: "#10b981" },
     ];
   }, [failureAnalytics, totalRetrospectives]);
+
+  if (loading) {
+    return <DashboardSkeleton />;
+  }
 
   return (
     <div className="space-y-8 pb-12">
