@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "5432:5432"
+      - "${PORT_DB:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -29,8 +29,9 @@ services:
       Jwt__Audience: "${JWT_AUDIENCE}"
       Admin__Email: "${ADMIN_EMAIL}"
       Admin__Password: "${ADMIN_PASSWORD}"
+      GEMINI_API_KEY: "${GEMINI_API_KEY}"
     ports:
-      - "8080:8080"
+      - "${PORT_API:-5104}:8080"
 
   client:
     build:
@@ -38,7 +39,7 @@ services:
       dockerfile: Dockerfile
     container_name: jobtracker-client
     ports:
-      - "80:80"
+      - "${PORT_CLIENT:-3000}:80"
     depends_on:
       - api
 
