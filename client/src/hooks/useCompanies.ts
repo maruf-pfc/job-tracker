@@ -19,9 +19,16 @@ export function useCompanies() {
 
   const createMutation = useMutation({
     mutationFn: (data: CreateCompanyRequest) => createCompany(data),
-    onSuccess: async () => {
+    onSuccess: async (newCompany) => {
       toast.success("Company created successfully");
+      queryClient.setQueryData<Company[]>(QUERY_KEYS.COMPANIES, (old) => {
+        if (!old) return [newCompany];
+        return [...old.filter((c) => c.id !== newCompany.id), newCompany].sort((a, b) =>
+          a.name.localeCompare(b.name)
+        );
+      });
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.COMPANIES });
+      await queryClient.refetchQueries({ queryKey: QUERY_KEYS.COMPANIES });
     },
     onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to create company");
@@ -31,9 +38,14 @@ export function useCompanies() {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: CreateCompanyRequest }) =>
       updateCompany(id, data),
-    onSuccess: async () => {
+    onSuccess: async (updatedCompany) => {
       toast.success("Company updated successfully");
+      queryClient.setQueryData<Company[]>(QUERY_KEYS.COMPANIES, (old) => {
+        if (!old) return [updatedCompany];
+        return old.map((c) => (c.id === updatedCompany.id ? updatedCompany : c));
+      });
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.COMPANIES });
+      await queryClient.refetchQueries({ queryKey: QUERY_KEYS.COMPANIES });
     },
     onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to update company");
@@ -42,9 +54,14 @@ export function useCompanies() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteCompany(id),
-    onSuccess: async () => {
+    onSuccess: async (_, deletedId) => {
       toast.success("Company deleted successfully");
+      queryClient.setQueryData<Company[]>(QUERY_KEYS.COMPANIES, (old) => {
+        if (!old) return [];
+        return old.filter((c) => c.id !== deletedId);
+      });
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.COMPANIES });
+      await queryClient.refetchQueries({ queryKey: QUERY_KEYS.COMPANIES });
     },
     onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to delete company");

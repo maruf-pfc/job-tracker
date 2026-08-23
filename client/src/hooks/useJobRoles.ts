@@ -19,9 +19,16 @@ export function useJobRoles() {
 
   const createMutation = useMutation({
     mutationFn: (data: CreateJobRoleRequest) => createJobRole(data),
-    onSuccess: async () => {
+    onSuccess: async (newRole) => {
       toast.success("Job role created successfully");
+      queryClient.setQueryData<JobRole[]>(QUERY_KEYS.ROLES, (old) => {
+        if (!old) return [newRole];
+        return [...old.filter((r) => r.id !== newRole.id), newRole].sort((a, b) =>
+          a.name.localeCompare(b.name)
+        );
+      });
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ROLES });
+      await queryClient.refetchQueries({ queryKey: QUERY_KEYS.ROLES });
     },
     onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to create job role");
@@ -31,9 +38,14 @@ export function useJobRoles() {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: CreateJobRoleRequest }) =>
       updateJobRole(id, data),
-    onSuccess: async () => {
+    onSuccess: async (updatedRole) => {
       toast.success("Job role updated successfully");
+      queryClient.setQueryData<JobRole[]>(QUERY_KEYS.ROLES, (old) => {
+        if (!old) return [updatedRole];
+        return old.map((r) => (r.id === updatedRole.id ? updatedRole : r));
+      });
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ROLES });
+      await queryClient.refetchQueries({ queryKey: QUERY_KEYS.ROLES });
     },
     onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to update job role");
@@ -42,9 +54,14 @@ export function useJobRoles() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteJobRole(id),
-    onSuccess: async () => {
+    onSuccess: async (_, deletedId) => {
       toast.success("Job role deleted successfully");
+      queryClient.setQueryData<JobRole[]>(QUERY_KEYS.ROLES, (old) => {
+        if (!old) return [];
+        return old.filter((r) => r.id !== deletedId);
+      });
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ROLES });
+      await queryClient.refetchQueries({ queryKey: QUERY_KEYS.ROLES });
     },
     onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to delete job role");
