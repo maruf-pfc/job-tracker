@@ -27,6 +27,7 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IInterviewRoundService, InterviewRoundService>();
         services.AddScoped<IAiAdvisorService, AiAdvisorService>();
         services.AddScoped<IImportExportService, ImportExportService>();
+        services.AddScoped<IWebhookDispatcherService, WebhookDispatcherService>();
 
         return services;
     }

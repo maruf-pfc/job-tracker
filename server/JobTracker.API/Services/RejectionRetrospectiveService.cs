@@ -18,19 +18,12 @@ public class RejectionRetrospectiveService : IRejectionRetrospectiveService
         _currentUserService = currentUserService;
     }
 
-    private async Task<Guid> GetEffectiveUserIdAsync()
+    private Task<Guid> GetEffectiveUserIdAsync()
     {
         var userId = _currentUserService.UserId;
         if (userId.HasValue && userId.Value != Guid.Empty)
         {
-            var exists = await _context.Users.AnyAsync(u => u.Id == userId.Value);
-            if (exists) return userId.Value;
-        }
-
-        var firstUser = await _context.Users.FirstOrDefaultAsync();
-        if (firstUser != null)
-        {
-            return firstUser.Id;
+            return Task.FromResult(userId.Value);
         }
 
         throw new UnauthorizedAccessException("User not authenticated.");

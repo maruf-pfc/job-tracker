@@ -97,11 +97,15 @@ public class ImportExportService : IImportExportService
 
             if (string.IsNullOrWhiteSpace(companyName) || string.IsNullOrWhiteSpace(role)) continue;
 
-            // Find or create Company
-            var company = await _context.Companies.FirstOrDefaultAsync(c => c.Name.ToLower() == companyName.ToLower());
+            // Find or create Company isolated to the current user
+            var company = await _context.Companies.FirstOrDefaultAsync(c => c.UserId == userId && c.Name.ToLower() == companyName.ToLower());
             if (company is null)
             {
-                company = new Company { Name = companyName };
+                company = new Company 
+                { 
+                    Name = companyName,
+                    UserId = userId
+                };
                 _context.Companies.Add(company);
                 await _context.SaveChangesAsync();
             }
