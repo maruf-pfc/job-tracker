@@ -19,16 +19,16 @@ public class ProfileController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetProfile()
+    public async Task<IActionResult> GetProfile(CancellationToken cancellationToken)
     {
-        var result = await _profileService.GetProfileAsync();
+        var result = await _profileService.GetProfileAsync(cancellationToken);
         return Ok(ApiResponse<object>.SuccessResponse(result, "Profile loaded successfully"));
     }
 
     [HttpPut]
-    public async Task<IActionResult> UpdateProfile([FromBody] UserProfileDto dto)
+    public async Task<IActionResult> UpdateProfile([FromBody] UserProfileDto dto, CancellationToken cancellationToken)
     {
-        var result = await _profileService.UpdateProfileAsync(dto);
+        var result = await _profileService.UpdateProfileAsync(dto, cancellationToken);
         return Ok(ApiResponse<object>.SuccessResponse(result, "Profile updated successfully"));
     }
 }

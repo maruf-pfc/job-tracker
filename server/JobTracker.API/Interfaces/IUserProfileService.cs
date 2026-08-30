@@ -4,6 +4,6 @@ namespace JobTracker.API.Interfaces;
 
 public interface IUserProfileService
 {
-    Task<UserProfileDto> GetProfileAsync();
-    Task<UserProfileDto> UpdateProfileAsync(UserProfileDto dto);
+    Task<UserProfileDto> GetProfileAsync(CancellationToken cancellationToken = default);
+    Task<UserProfileDto> UpdateProfileAsync(UserProfileDto dto, CancellationToken cancellationToken = default);
 }

@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace JobTracker.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
 [Route("api/job-roles")]
 [Authorize]
 public class JobRolesController : ControllerBase
@@ -20,23 +19,23 @@ public class JobRolesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
-        var result = await _jobRoleService.GetAllAsync();
+        var result = await _jobRoleService.GetAllAsync(cancellationToken);
         return Ok(ApiResponse<object>.SuccessResponse(result, "Data fetched successfully"));
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(CreateJobRoleDto dto)
+    public async Task<IActionResult> Create(CreateJobRoleDto dto, CancellationToken cancellationToken)
     {
-        var result = await _jobRoleService.CreateAsync(dto);
+        var result = await _jobRoleService.CreateAsync(dto, cancellationToken);
         return Ok(ApiResponse<object>.SuccessResponse(result, "Created successfully"));
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, CreateJobRoleDto dto)
+    public async Task<IActionResult> Update(Guid id, CreateJobRoleDto dto, CancellationToken cancellationToken)
     {
-        var result = await _jobRoleService.UpdateAsync(id, dto);
+        var result = await _jobRoleService.UpdateAsync(id, dto, cancellationToken);
         if (result is null)
         {
             return NotFound(ApiResponse<string>.FailureResponse("Resource not found"));
@@ -45,9 +44,9 @@ public class JobRolesController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        var deleted = await _jobRoleService.DeleteAsync(id);
+        var deleted = await _jobRoleService.DeleteAsync(id, cancellationToken);
         if (!deleted)
         {
             return NotFound(ApiResponse<string>.FailureResponse("Resource not found"));

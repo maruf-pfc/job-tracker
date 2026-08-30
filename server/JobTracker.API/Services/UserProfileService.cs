@@ -1,5 +1,6 @@
 using JobTracker.API.Configs;
 using JobTracker.API.DTOs.Profile;
+using JobTracker.API.Exceptions;
 using JobTracker.API.Interfaces;
 using JobTracker.API.Models;
 using Microsoft.EntityFrameworkCore;
@@ -17,25 +18,25 @@ public class UserProfileService : IUserProfileService
         _currentUserService = currentUserService;
     }
 
-    private Task<Guid> GetEffectiveUserIdAsync()
+    private Guid GetEffectiveUserId()
     {
         var userId = _currentUserService.UserId;
         if (userId.HasValue && userId.Value != Guid.Empty)
         {
-            return Task.FromResult(userId.Value);
+            return userId.Value;
         }
 
-        throw new UnauthorizedAccessException("User is not authenticated.");
+        throw new UnauthorizedException("User is not authenticated.");
     }
 
-    public async Task<UserProfileDto> GetProfileAsync()
+    public async Task<UserProfileDto> GetProfileAsync(CancellationToken cancellationToken = default)
     {
-        var userId = await GetEffectiveUserIdAsync();
-        var profile = await _context.UserProfiles.FirstOrDefaultAsync(p => p.UserId == userId);
+        var userId = GetEffectiveUserId();
+        var profile = await _context.UserProfiles.FirstOrDefaultAsync(p => p.UserId == userId, cancellationToken);
 
         if (profile is null)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
             profile = new UserProfile
             {
                 UserId = userId,
@@ -47,16 +48,16 @@ public class UserProfileService : IUserProfileService
             };
 
             _context.UserProfiles.Add(profile);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
         return MapToDto(profile);
     }
 
-    public async Task<UserProfileDto> UpdateProfileAsync(UserProfileDto dto)
+    public async Task<UserProfileDto> UpdateProfileAsync(UserProfileDto dto, CancellationToken cancellationToken = default)
     {
-        var userId = await GetEffectiveUserIdAsync();
-        var profile = await _context.UserProfiles.FirstOrDefaultAsync(p => p.UserId == userId);
+        var userId = GetEffectiveUserId();
+        var profile = await _context.UserProfiles.FirstOrDefaultAsync(p => p.UserId == userId, cancellationToken);
 
         if (profile is null)
         {
@@ -104,7 +105,7 @@ public class UserProfileService : IUserProfileService
         profile.CodingProfilesJson = dto.CodingProfilesJson;
         profile.UpdatedAt = DateTime.UtcNow;
 
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
         return MapToDto(profile);
     }
 

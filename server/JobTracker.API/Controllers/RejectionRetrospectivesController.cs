@@ -1,6 +1,6 @@
 using JobTracker.API.Common;
 using JobTracker.API.DTOs.Rejection;
-using JobTracker.API.Services;
+using JobTracker.API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,23 +19,23 @@ public class RejectionRetrospectivesController : ControllerBase
     }
 
     [HttpPost("{applicationId:guid}")]
-    public async Task<IActionResult> UpsertRetrospective(Guid applicationId, [FromBody] CreateRejectionRetrospectiveDto dto)
+    public async Task<IActionResult> UpsertRetrospective(Guid applicationId, [FromBody] CreateRejectionRetrospectiveDto dto, CancellationToken cancellationToken)
     {
-        var result = await _service.UpsertRetrospectiveAsync(applicationId, dto);
+        var result = await _service.UpsertRetrospectiveAsync(applicationId, dto, cancellationToken);
         return Ok(ApiResponse<object>.SuccessResponse(result, "Retrospective saved successfully"));
     }
 
     [HttpGet("{applicationId:guid}")]
-    public async Task<IActionResult> GetByApplicationId(Guid applicationId)
+    public async Task<IActionResult> GetByApplicationId(Guid applicationId, CancellationToken cancellationToken)
     {
-        var result = await _service.GetByApplicationIdAsync(applicationId);
+        var result = await _service.GetByApplicationIdAsync(applicationId, cancellationToken);
         return Ok(ApiResponse<object>.SuccessResponse(result, "Retrospective loaded successfully"));
     }
 
     [HttpGet("analytics")]
-    public async Task<IActionResult> GetAnalytics()
+    public async Task<IActionResult> GetAnalytics(CancellationToken cancellationToken)
     {
-        var result = await _service.GetFailureAnalyticsAsync();
+        var result = await _service.GetFailureAnalyticsAsync(cancellationToken);
         return Ok(ApiResponse<object>.SuccessResponse(result, "Failure analytics loaded successfully"));
     }
 }

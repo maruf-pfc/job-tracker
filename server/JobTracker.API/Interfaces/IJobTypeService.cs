@@ -4,7 +4,7 @@ namespace JobTracker.API.Interfaces;
 
 public interface IJobTypeService
 {
-    Task<List<JobTypeDto>> GetAllAsync();
-    Task<JobTypeDto> CreateAsync(CreateJobTypeDto dto);
-    Task<bool> DeleteAsync(Guid id);
+    Task<List<JobTypeDto>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<JobTypeDto> CreateAsync(CreateJobTypeDto dto, CancellationToken cancellationToken = default);
+    Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 }

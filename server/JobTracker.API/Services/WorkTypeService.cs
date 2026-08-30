@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace JobTracker.API.Services;
 
-public class WorkTypeService: IWorkTypeService
+public class WorkTypeService : IWorkTypeService
 {
     private readonly AppDbContext _context;
 
@@ -15,31 +15,28 @@ public class WorkTypeService: IWorkTypeService
         _context = context;
     }
 
-
-
-    public async Task<List<WorkTypeDto>> GetAllAsync()
+    public async Task<List<WorkTypeDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        return await _context
-            .WorkTypes
+        return await _context.WorkTypes
+            .AsNoTracking()
             .OrderBy(w => w.Name)
             .Select(w => new WorkTypeDto
             {
                 Id = w.Id,
                 Name = w.Name,
             })
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<WorkTypeDto> CreateAsync(CreateWorkTypeDto dto)
+    public async Task<WorkTypeDto> CreateAsync(CreateWorkTypeDto dto, CancellationToken cancellationToken = default)
     {
         var entity = new WorkType
-            {
-                Name = dto.Name,
-            };
+        {
+            Name = dto.Name.Trim(),
+        };
 
         _context.WorkTypes.Add(entity);
-
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
 
         return new WorkTypeDto
         {
@@ -48,11 +45,9 @@ public class WorkTypeService: IWorkTypeService
         };
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var entity = await _context
-                .WorkTypes
-                .FirstOrDefaultAsync(w => w.Id == id);
+        var entity = await _context.WorkTypes.FirstOrDefaultAsync(w => w.Id == id, cancellationToken);
 
         if (entity is null)
         {
@@ -60,8 +55,7 @@ public class WorkTypeService: IWorkTypeService
         }
 
         _context.WorkTypes.Remove(entity);
-
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
 
         return true;
     }

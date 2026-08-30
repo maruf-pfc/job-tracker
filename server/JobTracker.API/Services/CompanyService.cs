@@ -1,5 +1,6 @@
 using JobTracker.API.Configs;
 using JobTracker.API.DTOs.Company;
+using JobTracker.API.Exceptions;
 using JobTracker.API.Interfaces;
 using JobTracker.API.Models;
 using Microsoft.EntityFrameworkCore;
@@ -17,10 +18,21 @@ public class CompanyService : ICompanyService
         _currentUser = currentUser;
     }
 
-    public async Task<List<CompanyDto>> GetAllAsync()
+    private Guid GetRequiredUserId()
     {
         var userId = _currentUser.UserId;
+        if (!userId.HasValue || userId.Value == Guid.Empty)
+        {
+            throw new UnauthorizedException("User is not authenticated.");
+        }
+        return userId.Value;
+    }
+
+    public async Task<List<CompanyDto>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        var userId = GetRequiredUserId();
         return await _context.Companies
+            .AsNoTracking()
             .Where(c => c.UserId == userId)
             .OrderBy(c => c.Name)
             .Select(c => new CompanyDto
@@ -33,13 +45,14 @@ public class CompanyService : ICompanyService
                 IsFavorite = c.IsFavorite,
                 IsArchived = c.IsArchived,
             })
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<CompanyDto?> GetByIdAsync(Guid id)
+    public async Task<CompanyDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var userId = _currentUser.UserId;
+        var userId = GetRequiredUserId();
         return await _context.Companies
+            .AsNoTracking()
             .Where(c => c.Id == id && c.UserId == userId)
             .Select(c => new CompanyDto
             {
@@ -51,11 +64,12 @@ public class CompanyService : ICompanyService
                 IsFavorite = c.IsFavorite,
                 IsArchived = c.IsArchived,
             })
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<CompanyDto> CreateAsync(CreateCompanyDto dto)
+    public async Task<CompanyDto> CreateAsync(CreateCompanyDto dto, CancellationToken cancellationToken = default)
     {
+        var userId = GetRequiredUserId();
         var company = new Company
         {
             Name = dto.Name.Trim(),
@@ -63,11 +77,11 @@ public class CompanyService : ICompanyService
             WebsiteUrl = dto.WebsiteUrl?.Trim(),
             Location = dto.Location?.Trim(),
             Notes = dto.Notes?.Trim(),
-            UserId = _currentUser.UserId
+            UserId = userId
         };
 
         _context.Companies.Add(company);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
 
         return new CompanyDto
         {
@@ -81,10 +95,10 @@ public class CompanyService : ICompanyService
         };
     }
 
-    public async Task<CompanyDto?> UpdateAsync(Guid id, CreateCompanyDto dto)
+    public async Task<CompanyDto?> UpdateAsync(Guid id, CreateCompanyDto dto, CancellationToken cancellationToken = default)
     {
-        var userId = _currentUser.UserId;
-        var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
+        var userId = GetRequiredUserId();
+        var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId, cancellationToken);
         if (company is null)
         {
             return null;
@@ -97,7 +111,7 @@ public class CompanyService : ICompanyService
         company.Notes = dto.Notes?.Trim();
         company.UpdatedAt = DateTime.UtcNow;
 
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
 
         return new CompanyDto
         {
@@ -111,10 +125,10 @@ public class CompanyService : ICompanyService
         };
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var userId = _currentUser.UserId;
-        var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
+        var userId = GetRequiredUserId();
+        var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId, cancellationToken);
 
         if (company is null)
         {
@@ -124,7 +138,7 @@ public class CompanyService : ICompanyService
         // Delete linked job applications for this user first
         var linkedApps = await _context.JobApplications
             .Where(j => j.CompanyId == id && j.UserId == userId)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         if (linkedApps.Any())
         {
@@ -132,7 +146,7 @@ public class CompanyService : ICompanyService
         }
 
         _context.Companies.Remove(company);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
         return true;
     }
 }

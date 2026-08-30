@@ -1,5 +1,6 @@
 using System.Text;
 using JobTracker.API.Configs;
+using JobTracker.API.Exceptions;
 using JobTracker.API.Interfaces;
 using JobTracker.API.Models;
 using Microsoft.AspNetCore.Http;
@@ -18,10 +19,21 @@ public class ImportExportService : IImportExportService
         _currentUser = currentUser;
     }
 
-    public async Task<byte[]> ExportCsvAsync()
+    private Guid GetRequiredUserId()
     {
-        var userId = _currentUser.UserId ?? throw new UnauthorizedAccessException();
+        var userId = _currentUser.UserId;
+        if (!userId.HasValue || userId.Value == Guid.Empty)
+        {
+            throw new UnauthorizedException("User is not authenticated.");
+        }
+        return userId.Value;
+    }
+
+    public async Task<byte[]> ExportCsvAsync(CancellationToken cancellationToken = default)
+    {
+        var userId = GetRequiredUserId();
         var applications = await _context.JobApplications
+            .AsNoTracking()
             .Include(j => j.Company)
             .Include(j => j.Priority)
             .Include(j => j.JobType)
@@ -30,7 +42,7 @@ public class ImportExportService : IImportExportService
             .Include(j => j.ApplicationStatus)
             .Where(j => j.UserId == userId)
             .OrderByDescending(j => j.AppliedAt)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         var sb = new StringBuilder();
         sb.AppendLine("Company,Role,JobUrl,Location,SalaryRange,Priority,JobType,WorkType,SourcePlatform,ApplicationStatus,AppliedAt,Notes");
@@ -56,17 +68,17 @@ public class ImportExportService : IImportExportService
         return Encoding.UTF8.GetBytes(sb.ToString());
     }
 
-    public async Task<int> ImportCsvAsync(IFormFile file)
+    public async Task<int> ImportCsvAsync(IFormFile file, CancellationToken cancellationToken = default)
     {
         if (file is null || file.Length == 0)
         {
-            throw new ArgumentException("Uploaded file is empty.");
+            throw new BadRequestException("Uploaded file is empty.");
         }
 
-        var userId = _currentUser.UserId ?? throw new UnauthorizedAccessException();
+        var userId = GetRequiredUserId();
 
         using var reader = new StreamReader(file.OpenReadStream(), Encoding.UTF8);
-        var content = await reader.ReadToEndAsync();
+        var content = await reader.ReadToEndAsync(cancellationToken);
         var lines = content.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
 
         if (lines.Length <= 1)
@@ -75,15 +87,15 @@ public class ImportExportService : IImportExportService
         }
 
         // Default fallbacks
-        var defaultPriority = await _context.Priorities.FirstOrDefaultAsync() 
+        var defaultPriority = await _context.Priorities.FirstOrDefaultAsync(cancellationToken) 
             ?? new Priority { Name = "Medium", Color = "amber" };
-        var defaultJobType = await _context.JobTypes.FirstOrDefaultAsync() 
+        var defaultJobType = await _context.JobTypes.FirstOrDefaultAsync(cancellationToken) 
             ?? new JobType { Name = "Full Time" };
-        var defaultWorkType = await _context.WorkTypes.FirstOrDefaultAsync() 
+        var defaultWorkType = await _context.WorkTypes.FirstOrDefaultAsync(cancellationToken) 
             ?? new WorkType { Name = "Remote" };
-        var defaultPlatform = await _context.SourcePlatforms.FirstOrDefaultAsync() 
+        var defaultPlatform = await _context.SourcePlatforms.FirstOrDefaultAsync(cancellationToken) 
             ?? new SourcePlatform { Name = "LinkedIn" };
-        var defaultStatus = await _context.ApplicationStatuses.FirstOrDefaultAsync() 
+        var defaultStatus = await _context.ApplicationStatuses.FirstOrDefaultAsync(cancellationToken) 
             ?? new ApplicationStatus { Name = "Applied" };
 
         var count = 0;
@@ -98,7 +110,9 @@ public class ImportExportService : IImportExportService
             if (string.IsNullOrWhiteSpace(companyName) || string.IsNullOrWhiteSpace(role)) continue;
 
             // Find or create Company isolated to the current user
-            var company = await _context.Companies.FirstOrDefaultAsync(c => c.UserId == userId && c.Name.ToLower() == companyName.ToLower());
+            var company = await _context.Companies
+                .FirstOrDefaultAsync(c => c.UserId == userId && c.Name.ToLower() == companyName.ToLower(), cancellationToken);
+
             if (company is null)
             {
                 company = new Company 
@@ -107,7 +121,7 @@ public class ImportExportService : IImportExportService
                     UserId = userId
                 };
                 _context.Companies.Add(company);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
             }
 
             var jobUrl = fields.Length > 2 ? fields[2] : null;
@@ -136,7 +150,7 @@ public class ImportExportService : IImportExportService
             count++;
         }
 
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
         return count;
     }
 

@@ -1,9 +1,10 @@
 using JobTracker.API.Configs;
+using JobTracker.API.DTOs.Common;
 using JobTracker.API.DTOs.JobApplication;
+using JobTracker.API.Exceptions;
 using JobTracker.API.Interfaces;
 using JobTracker.API.Models;
 using Microsoft.EntityFrameworkCore;
-using JobTracker.API.DTOs.Common;
 
 namespace JobTracker.API.Services;
 
@@ -18,58 +19,56 @@ public class JobApplicationService : IJobApplicationService
         _currentUser = currentUser;
     }
 
-    public async Task<PaginatedResponseDto<JobApplicationDto>> GetAllAsync(JobApplicationQueryDto query)
+    private Guid GetRequiredUserId()
     {
         var userId = _currentUser.UserId;
+        if (!userId.HasValue || userId.Value == Guid.Empty)
+        {
+            throw new UnauthorizedException("User is not authenticated.");
+        }
+        return userId.Value;
+    }
+
+    public async Task<PaginatedResponseDto<JobApplicationDto>> GetAllAsync(JobApplicationQueryDto query, CancellationToken cancellationToken = default)
+    {
+        var userId = GetRequiredUserId();
         var applicationsQuery = _context.JobApplications
-                .Where(j => j.UserId == userId)
-                .AsQueryable();
+            .AsNoTracking()
+            .Where(j => j.UserId == userId);
 
         // Search
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
             var search = query.Search.Trim().ToLower();
             applicationsQuery = applicationsQuery.Where(j =>
-                    j.Company.Name.ToLower().Contains(search) || j.Role.ToLower().Contains(search)
-                );
+                j.Company.Name.ToLower().Contains(search) || j.Role.ToLower().Contains(search)
+            );
         }
 
         // Filters
         if (query.PriorityId.HasValue)
         {
-            applicationsQuery = applicationsQuery.Where(j =>
-                    j.PriorityId == query.PriorityId
-                );
+            applicationsQuery = applicationsQuery.Where(j => j.PriorityId == query.PriorityId);
         }
 
         if (query.JobTypeId.HasValue)
         {
-            applicationsQuery = applicationsQuery.Where(j =>
-                    j.JobTypeId == query.JobTypeId
-                );
+            applicationsQuery = applicationsQuery.Where(j => j.JobTypeId == query.JobTypeId);
         }
 
         if (query.SourcePlatformId.HasValue)
         {
-            applicationsQuery = applicationsQuery.Where(j =>
-                    j.SourcePlatformId ==
-                    query.SourcePlatformId
-                );
+            applicationsQuery = applicationsQuery.Where(j => j.SourcePlatformId == query.SourcePlatformId);
         }
 
         if (query.ApplicationStatusId.HasValue)
         {
-            applicationsQuery = applicationsQuery.Where(j =>
-                    j.ApplicationStatusId ==
-                    query.ApplicationStatusId
-                );
+            applicationsQuery = applicationsQuery.Where(j => j.ApplicationStatusId == query.ApplicationStatusId);
         }
 
         if (query.WorkTypeId.HasValue)
         {
-            applicationsQuery = applicationsQuery.Where(j =>
-                    j.WorkTypeId == query.WorkTypeId
-                );
+            applicationsQuery = applicationsQuery.Where(j => j.WorkTypeId == query.WorkTypeId);
         }
 
         // Sorting (default: new to old based on creation time)
@@ -91,7 +90,7 @@ public class JobApplicationService : IJobApplicationService
         };
 
         // Pagination
-        var totalCount = await applicationsQuery.CountAsync();
+        var totalCount = await applicationsQuery.CountAsync(cancellationToken);
 
         var items = await applicationsQuery
             .Skip((query.Page - 1) * query.PageSize)
@@ -118,7 +117,7 @@ public class JobApplicationService : IJobApplicationService
                 CreatedAt = j.CreatedAt,
                 UpdatedAt = j.UpdatedAt,
             })
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         return new PaginatedResponseDto<JobApplicationDto>
         {
@@ -130,15 +129,13 @@ public class JobApplicationService : IJobApplicationService
         };
     }
 
-    public async Task<JobApplicationDto?> GetByIdAsync(Guid id)
+    public async Task<JobApplicationDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var userId = _currentUser.UserId;
+        var userId = GetRequiredUserId();
 
         return await _context.JobApplications
-            .Where(j =>
-                j.Id == id &&
-                j.UserId == userId
-            )
+            .AsNoTracking()
+            .Where(j => j.Id == id && j.UserId == userId)
             .Select(j => new JobApplicationDto
             {
                 Id = j.Id,
@@ -161,12 +158,12 @@ public class JobApplicationService : IJobApplicationService
                 CreatedAt = j.CreatedAt,
                 UpdatedAt = j.UpdatedAt
             })
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<JobApplicationDto> CreateAsync(CreateJobApplicationDto dto)
+    public async Task<JobApplicationDto> CreateAsync(CreateJobApplicationDto dto, CancellationToken cancellationToken = default)
     {
-        var userId = _currentUser.UserId;
+        var userId = GetRequiredUserId();
 
         var appliedAtUtc = dto.AppliedAt == default || dto.AppliedAt.Year < 1970
             ? DateTime.UtcNow
@@ -185,7 +182,7 @@ public class JobApplicationService : IJobApplicationService
             SalaryRange = dto.SalaryRange?.Trim(),
             Notes = dto.Notes?.Trim(),
             AppliedAt = appliedAtUtc,
-            UserId = userId!.Value,
+            UserId = userId,
             PriorityId = dto.PriorityId,
             JobTypeId = dto.JobTypeId,
             SourcePlatformId = dto.SourcePlatformId,
@@ -198,25 +195,22 @@ public class JobApplicationService : IJobApplicationService
         };
 
         _context.JobApplications.Add(application);
+        await _context.SaveChangesAsync(cancellationToken);
 
-        await _context.SaveChangesAsync();
-
-        return await GetByIdAsync(application.Id) ?? throw new Exception("Failed to create application");
+        return await GetByIdAsync(application.Id, cancellationToken)
+            ?? throw new NotFoundException("JobApplication", application.Id);
     }
 
-    public async Task<JobApplicationDto> UpdateAsync(Guid id, UpdateJobApplicationDto dto)
+    public async Task<JobApplicationDto> UpdateAsync(Guid id, UpdateJobApplicationDto dto, CancellationToken cancellationToken = default)
     {
-        var userId = _currentUser.UserId;
+        var userId = GetRequiredUserId();
 
         var application = await _context.JobApplications
-            .FirstOrDefaultAsync(j =>
-                j.Id == id &&
-                j.UserId == userId
-            );
+            .FirstOrDefaultAsync(j => j.Id == id && j.UserId == userId, cancellationToken);
 
         if (application is null)
         {
-            throw new Exception("Application not found");
+            throw new NotFoundException("JobApplication", id);
         }
 
         if (dto.AppliedAt != default && dto.AppliedAt.Year >= 1970)
@@ -243,52 +237,51 @@ public class JobApplicationService : IJobApplicationService
             : (DateTime?)null;
         application.IsArchived = dto.IsArchived;
 
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
 
-        return await GetByIdAsync(id) ?? throw new Exception("Application not found");
+        return await GetByIdAsync(id, cancellationToken)
+            ?? throw new NotFoundException("JobApplication", id);
     }
 
-    public async Task<JobApplicationDto> UpdateStatusAsync(Guid id, Guid statusId)
+    public async Task<JobApplicationDto> UpdateStatusAsync(Guid id, Guid statusId, CancellationToken cancellationToken = default)
     {
-        var userId = _currentUser.UserId;
+        var userId = GetRequiredUserId();
         var application = await _context.JobApplications
-            .FirstOrDefaultAsync(j => j.Id == id && j.UserId == userId);
+            .FirstOrDefaultAsync(j => j.Id == id && j.UserId == userId, cancellationToken);
 
         if (application is null)
         {
-            throw new Exception("Application not found");
+            throw new NotFoundException("JobApplication", id);
         }
 
-        var statusExists = await _context.ApplicationStatuses.AnyAsync(s => s.Id == statusId);
+        var statusExists = await _context.ApplicationStatuses.AnyAsync(s => s.Id == statusId, cancellationToken);
         if (!statusExists)
         {
-            throw new Exception("Invalid application status ID");
+            throw new BadRequestException("Invalid application status ID.");
         }
 
         application.ApplicationStatusId = statusId;
         application.UpdatedAt = DateTime.UtcNow;
 
-        await _context.SaveChangesAsync();
-        return await GetByIdAsync(id) ?? throw new Exception("Application not found");
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return await GetByIdAsync(id, cancellationToken)
+            ?? throw new NotFoundException("JobApplication", id);
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var userId = _currentUser.UserId;
+        var userId = GetRequiredUserId();
 
         var application = await _context.JobApplications
-            .FirstOrDefaultAsync(j =>
-                j.Id == id &&
-                j.UserId == userId
-            );
+            .FirstOrDefaultAsync(j => j.Id == id && j.UserId == userId, cancellationToken);
 
         if (application is null)
         {
-            throw new Exception("Application not found");
+            throw new NotFoundException("JobApplication", id);
         }
 
         _context.JobApplications.Remove(application);
-
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
     }
 }

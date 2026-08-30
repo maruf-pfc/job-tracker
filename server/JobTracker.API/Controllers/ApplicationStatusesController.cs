@@ -7,54 +7,51 @@ using Microsoft.AspNetCore.Mvc;
 namespace JobTracker.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/application-statuses")]
 [Authorize]
 public class ApplicationStatusesController : ControllerBase
 {
-    private readonly IApplicationStatusService _service;
+    private readonly IApplicationStatusService _applicationStatusService;
 
-    public ApplicationStatusesController(IApplicationStatusService service
-    )
+    public ApplicationStatusesController(IApplicationStatusService applicationStatusService)
     {
-        _service = service;
+        _applicationStatusService = applicationStatusService;
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
-        var result = await _service.GetAllAsync();
-
+        var result = await _applicationStatusService.GetAllAsync(cancellationToken);
         return Ok(
             ApiResponse<object>.SuccessResponse(
                 result,
-                "Application statuses fetched successfully"
+                "Data fetched successfully"
             )
         );
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(CreateApplicationStatusDto dto)
+    public async Task<IActionResult> Create(CreateApplicationStatusDto dto, CancellationToken cancellationToken)
     {
-        var result = await _service.CreateAsync(dto);
-
+        var result = await _applicationStatusService.CreateAsync(dto, cancellationToken);
         return Ok(
             ApiResponse<object>.SuccessResponse(
                 result,
-                "Application status created successfully"
+                "Created successfully"
             )
         );
     }
 
     [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        var deleted = await _service.DeleteAsync(id);
+        var result = await _applicationStatusService.DeleteAsync(id, cancellationToken);
 
-        if (!deleted)
+        if (!result)
         {
             return NotFound(
                 ApiResponse<string>.FailureResponse(
-                    "Application status not found"
+                    "Resource not found"
                 )
             );
         }
@@ -62,7 +59,7 @@ public class ApplicationStatusesController : ControllerBase
         return Ok(
             ApiResponse<string>.SuccessResponse(
                 null,
-                "Application status deleted successfully"
+                "Deleted successfully"
             )
         );
     }
