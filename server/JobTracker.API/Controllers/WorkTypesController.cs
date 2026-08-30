@@ -1,26 +1,27 @@
+using JobTracker.API.Common;
 using JobTracker.API.DTOs.WorkType;
 using JobTracker.API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using JobTracker.API.Common;
 
 namespace JobTracker.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/work-types")]
 [Authorize]
 public class WorkTypesController : ControllerBase
 {
-    private readonly IWorkTypeService _service;
-    public WorkTypesController(IWorkTypeService service)
+    private readonly IWorkTypeService _workTypeService;
+
+    public WorkTypesController(IWorkTypeService workTypeService)
     {
-        _service = service;
+        _workTypeService = workTypeService;
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
-        var result = await _service.GetAllAsync();
+        var result = await _workTypeService.GetAllAsync(cancellationToken);
         return Ok(
             ApiResponse<object>.SuccessResponse(
                 result,
@@ -30,9 +31,9 @@ public class WorkTypesController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(CreateWorkTypeDto dto)
+    public async Task<IActionResult> Create(CreateWorkTypeDto dto, CancellationToken cancellationToken)
     {
-        var result = await _service.CreateAsync(dto);
+        var result = await _workTypeService.CreateAsync(dto, cancellationToken);
         return Ok(
             ApiResponse<object>.SuccessResponse(
                 result,
@@ -42,11 +43,11 @@ public class WorkTypesController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        var deleted = await _service.DeleteAsync(id);
+        var result = await _workTypeService.DeleteAsync(id, cancellationToken);
 
-        if (!deleted)
+        if (!result)
         {
             return NotFound(
                 ApiResponse<string>.FailureResponse(
@@ -54,7 +55,7 @@ public class WorkTypesController : ControllerBase
                 )
             );
         }
-        
+
         return Ok(
             ApiResponse<string>.SuccessResponse(
                 null,

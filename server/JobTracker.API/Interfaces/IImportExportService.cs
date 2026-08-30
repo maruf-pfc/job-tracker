@@ -4,6 +4,6 @@ namespace JobTracker.API.Interfaces;
 
 public interface IImportExportService
 {
-    Task<int> ImportCsvAsync(IFormFile file);
-    Task<byte[]> ExportCsvAsync();
+    Task<int> ImportCsvAsync(IFormFile file, CancellationToken cancellationToken = default);
+    Task<byte[]> ExportCsvAsync(CancellationToken cancellationToken = default);
 }

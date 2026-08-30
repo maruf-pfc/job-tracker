@@ -97,6 +97,6 @@ public class InterviewRoundServiceTests
             RoundDate = DateTime.UtcNow
         };
 
-        await Assert.ThrowsAsync<KeyNotFoundException>(() => service.CreateAsync(appId, dto));
+        await Assert.ThrowsAsync<JobTracker.API.Exceptions.NotFoundException>(() => service.CreateAsync(appId, dto));
     }
 }

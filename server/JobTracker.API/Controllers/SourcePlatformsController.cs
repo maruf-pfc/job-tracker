@@ -1,27 +1,27 @@
+using JobTracker.API.Common;
 using JobTracker.API.DTOs.SourcePlatform;
 using JobTracker.API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using JobTracker.API.Common;
 
 namespace JobTracker.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/source-platforms")]
 [Authorize]
-public class SourcePlatformsController: ControllerBase
+public class SourcePlatformsController : ControllerBase
 {
-    private readonly ISourcePlatformService _service;
+    private readonly ISourcePlatformService _sourcePlatformService;
 
-    public SourcePlatformsController(ISourcePlatformService service)
+    public SourcePlatformsController(ISourcePlatformService sourcePlatformService)
     {
-        _service = service;
+        _sourcePlatformService = sourcePlatformService;
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
-        var result = await _service.GetAllAsync();
+        var result = await _sourcePlatformService.GetAllAsync(cancellationToken);
         return Ok(
             ApiResponse<object>.SuccessResponse(
                 result,
@@ -31,9 +31,9 @@ public class SourcePlatformsController: ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(CreateSourcePlatformDto dto)
+    public async Task<IActionResult> Create(CreateSourcePlatformDto dto, CancellationToken cancellationToken)
     {
-        var result = await _service.CreateAsync(dto);
+        var result = await _sourcePlatformService.CreateAsync(dto, cancellationToken);
         return Ok(
             ApiResponse<object>.SuccessResponse(
                 result,
@@ -43,11 +43,11 @@ public class SourcePlatformsController: ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        var deleted = await _service.DeleteAsync(id);
+        var result = await _sourcePlatformService.DeleteAsync(id, cancellationToken);
 
-        if (!deleted)
+        if (!result)
         {
             return NotFound(
                 ApiResponse<string>.FailureResponse(

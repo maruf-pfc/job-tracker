@@ -1,5 +1,6 @@
 using JobTracker.API.Configs;
 using JobTracker.API.DTOs.Priority;
+using JobTracker.API.Exceptions;
 using JobTracker.API.Interfaces;
 using JobTracker.API.Models;
 using Microsoft.EntityFrameworkCore;
@@ -15,9 +16,10 @@ public class PriorityService : IPriorityService
         _context = context;
     }
 
-    public async Task<List<PriorityDto>> GetAllAsync()
+    public async Task<List<PriorityDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _context.Priorities
+            .AsNoTracking()
             .OrderBy(p => p.Name)
             .Select(p => new PriorityDto
             {
@@ -26,12 +28,13 @@ public class PriorityService : IPriorityService
                 Color = p.Color,
                 IsActive = p.IsActive
             })
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<PriorityDto?> GetByIdAsync(Guid id)
+    public async Task<PriorityDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Priorities
+            .AsNoTracking()
             .Where(p => p.Id == id)
             .Select(p => new PriorityDto
             {
@@ -40,10 +43,10 @@ public class PriorityService : IPriorityService
                 Color = p.Color,
                 IsActive = p.IsActive
             })
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<PriorityDto> CreateAsync(CreatePriorityDto dto)
+    public async Task<PriorityDto> CreateAsync(CreatePriorityDto dto, CancellationToken cancellationToken = default)
     {
         var priority = new Priority
         {
@@ -52,8 +55,7 @@ public class PriorityService : IPriorityService
         };
 
         _context.Priorities.Add(priority);
-
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
 
         return new PriorityDto
         {
@@ -64,13 +66,13 @@ public class PriorityService : IPriorityService
         };
     }
 
-    public async Task<PriorityDto> UpdateAsync(Guid id, UpdatePriorityDto dto)
+    public async Task<PriorityDto> UpdateAsync(Guid id, UpdatePriorityDto dto, CancellationToken cancellationToken = default)
     {
-        var priority = await _context.Priorities.FirstOrDefaultAsync(p => p.Id == id);
+        var priority = await _context.Priorities.FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
 
         if (priority is null)
         {
-            throw new Exception("Priority not found");
+            throw new NotFoundException("Priority", id);
         }
 
         priority.Name = dto.Name.Trim();
@@ -78,7 +80,7 @@ public class PriorityService : IPriorityService
         priority.IsActive = dto.IsActive;
         priority.UpdatedAt = DateTime.UtcNow;
 
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
 
         return new PriorityDto
         {
@@ -89,17 +91,16 @@ public class PriorityService : IPriorityService
         };
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var priority = await _context.Priorities.FirstOrDefaultAsync(p => p.Id == id);
+        var priority = await _context.Priorities.FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
 
         if (priority is null)
         {
-            throw new Exception("Priority not found");
+            throw new NotFoundException("Priority", id);
         }
 
         _context.Priorities.Remove(priority);
-
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
     }
 }

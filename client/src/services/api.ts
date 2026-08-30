@@ -6,15 +6,10 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const storage = localStorage.getItem("job-tracker-auth");
+  const token = useAuthStore.getState().token;
 
-  if (storage) {
-    const parsed = JSON.parse(storage);
-    const token = parsed.state?.token;
-
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
 
   return config;
@@ -25,7 +20,7 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       useAuthStore.getState().logout();
-      if (window.location.pathname !== "/login") {
+      if (typeof window !== "undefined" && window.location.pathname !== "/login") {
         window.location.href = "/login";
       }
     }

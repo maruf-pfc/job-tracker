@@ -1,6 +1,5 @@
-using System.Threading.Tasks;
 using JobTracker.API.DTOs.AiAdvisor;
-using JobTracker.API.Services;
+using JobTracker.API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,16 +18,16 @@ public class AiAdvisorController : ControllerBase
     }
 
     [HttpGet("insights")]
-    public async Task<ActionResult<AiCareerInsightDto>> GetInsights([FromQuery] bool forceRefresh = false)
+    public async Task<ActionResult<AiCareerInsightDto>> GetInsights([FromQuery] bool forceRefresh, CancellationToken cancellationToken)
     {
-        var result = await _aiAdvisorService.GetCareerAdvisorInsightsAsync(forceRefresh);
+        var result = await _aiAdvisorService.GetCareerAdvisorInsightsAsync(forceRefresh, cancellationToken);
         return Ok(result);
     }
 
     [HttpPost("insights/refresh")]
-    public async Task<ActionResult<AiCareerInsightDto>> RefreshInsights()
+    public async Task<ActionResult<AiCareerInsightDto>> RefreshInsights(CancellationToken cancellationToken)
     {
-        var result = await _aiAdvisorService.GetCareerAdvisorInsightsAsync(forceRefresh: true);
+        var result = await _aiAdvisorService.GetCareerAdvisorInsightsAsync(forceRefresh: true, cancellationToken);
         return Ok(result);
     }
 }

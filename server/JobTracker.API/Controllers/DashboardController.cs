@@ -18,54 +18,49 @@ public class DashboardController : ControllerBase
     }
 
     [HttpGet("summary")]
-    public async Task<IActionResult> GetSummary()
+    public async Task<IActionResult> GetSummary(CancellationToken cancellationToken)
     {
-        var result = await _dashboardService.GetSummaryAsync();
-
+        var result = await _dashboardService.GetSummaryAsync(cancellationToken);
         return Ok(
             ApiResponse<object>.SuccessResponse(
                 result,
-                "Dashboard summary fetched successfully"
+                "Data fetched successfully"
             )
         );
     }
 
-    [HttpGet("status-chart")]
-    public async Task<IActionResult>
-    GetApplicationsByStatus()
+    [HttpGet("chart")]
+    public async Task<IActionResult> GetApplicationsByStatus(CancellationToken cancellationToken)
     {
-        var result = await _dashboardService.GetApplicationsByStatusAsync();
-
+        var result = await _dashboardService.GetApplicationsByStatusAsync(cancellationToken);
         return Ok(
             ApiResponse<object>.SuccessResponse(
                 result,
-                "Status chart fetched successfully"
+                "Data fetched successfully"
             )
         );
     }
 
-    [HttpGet("platform-chart")]
-    public async Task<IActionResult>
-    GetApplicationsByPlatform()
+    [HttpGet("platform")]
+    public async Task<IActionResult> GetApplicationsByPlatform(CancellationToken cancellationToken)
     {
-        var result = await _dashboardService.GetApplicationsByPlatformAsync();
-
+        var result = await _dashboardService.GetApplicationsByPlatformAsync(cancellationToken);
         return Ok(
             ApiResponse<object>.SuccessResponse(
                 result,
-                "Platform chart fetched successfully"
+                "Data fetched successfully"
             )
         );
     }
 
     [HttpGet("analytics")]
-    public async Task<IActionResult> GetAnalytics()
+    public async Task<IActionResult> GetAnalytics(CancellationToken cancellationToken)
     {
-        var result = await _dashboardService.GetAnalyticsAsync();
+        var result = await _dashboardService.GetAnalyticsAsync(cancellationToken);
         return Ok(
             ApiResponse<object>.SuccessResponse(
                 result,
-                "Dashboard analytics fetched successfully"
+                "Analytics data fetched successfully"
             )
         );
     }

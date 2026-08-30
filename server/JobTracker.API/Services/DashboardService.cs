@@ -1,5 +1,6 @@
 using JobTracker.API.Configs;
 using JobTracker.API.DTOs.Dashboard;
+using JobTracker.API.Exceptions;
 using JobTracker.API.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,16 +17,25 @@ public class DashboardService : IDashboardService
         _currentUser = currentUser;
     }
 
-
-    public async Task<DashboardSummaryDto> GetSummaryAsync()
+    private Guid GetRequiredUserId()
     {
         var userId = _currentUser.UserId;
+        if (!userId.HasValue || userId.Value == Guid.Empty)
+        {
+            throw new UnauthorizedException("User is not authenticated.");
+        }
+        return userId.Value;
+    }
+
+    public async Task<DashboardSummaryDto> GetSummaryAsync(CancellationToken cancellationToken = default)
+    {
+        var userId = GetRequiredUserId();
         var statusCounts = await _context.JobApplications
             .AsNoTracking()
             .Where(j => j.UserId == userId)
             .GroupBy(j => j.ApplicationStatus.Name)
             .Select(g => new { Status = g.Key, Count = g.Count() })
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         int GetCount(string name) => statusCounts.FirstOrDefault(s => string.Equals(s.Status, name, StringComparison.OrdinalIgnoreCase))?.Count ?? 0;
 
@@ -39,9 +49,9 @@ public class DashboardService : IDashboardService
         };
     }
 
-    public async Task<List<ApplicationStatusChartDto>> GetApplicationsByStatusAsync()
+    public async Task<List<ApplicationStatusChartDto>> GetApplicationsByStatusAsync(CancellationToken cancellationToken = default)
     {
-        var userId = _currentUser.UserId;
+        var userId = GetRequiredUserId();
 
         return await _context.JobApplications
             .AsNoTracking()
@@ -55,12 +65,12 @@ public class DashboardService : IDashboardService
                 }
             )
             .OrderByDescending(x => x.Count)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<List<PlatformAnalyticsDto>> GetApplicationsByPlatformAsync()
+    public async Task<List<PlatformAnalyticsDto>> GetApplicationsByPlatformAsync(CancellationToken cancellationToken = default)
     {
-        var userId = _currentUser.UserId;
+        var userId = GetRequiredUserId();
 
         return await _context.JobApplications
             .AsNoTracking()
@@ -74,12 +84,12 @@ public class DashboardService : IDashboardService
                 }
             )
             .OrderByDescending(x => x.Count)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<DashboardAnalyticsDto> GetAnalyticsAsync()
+    public async Task<DashboardAnalyticsDto> GetAnalyticsAsync(CancellationToken cancellationToken = default)
     {
-        var userId = _currentUser.UserId;
+        var userId = GetRequiredUserId();
         var applications = await _context.JobApplications
             .AsNoTracking()
             .Where(j => j.UserId == userId)
@@ -91,7 +101,7 @@ public class DashboardService : IDashboardService
                 Priority = j.Priority != null ? j.Priority.Name : "Medium",
                 WorkType = j.WorkType != null ? j.WorkType.Name : "Hybrid"
             })
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         var totalCount = applications.Count;
         var interviewCount = applications.Count(j => 

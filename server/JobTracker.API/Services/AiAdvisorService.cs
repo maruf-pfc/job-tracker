@@ -39,7 +39,7 @@ public class AiAdvisorService : IAiAdvisorService
         _httpClient.Timeout = TimeSpan.FromSeconds(45);
     }
 
-    public async Task<AiCareerInsightDto> GetCareerAdvisorInsightsAsync(bool forceRefresh = false)
+    public async Task<AiCareerInsightDto> GetCareerAdvisorInsightsAsync(bool forceRefresh = false, CancellationToken cancellationToken = default)
     {
         var userId = _currentUser.UserId;
         if (!userId.HasValue)

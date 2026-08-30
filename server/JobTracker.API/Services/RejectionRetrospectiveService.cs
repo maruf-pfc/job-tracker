@@ -18,19 +18,12 @@ public class RejectionRetrospectiveService : IRejectionRetrospectiveService
         _currentUserService = currentUserService;
     }
 
-    private async Task<Guid> GetEffectiveUserIdAsync()
+    private Task<Guid> GetEffectiveUserIdAsync()
     {
         var userId = _currentUserService.UserId;
         if (userId.HasValue && userId.Value != Guid.Empty)
         {
-            var exists = await _context.Users.AnyAsync(u => u.Id == userId.Value);
-            if (exists) return userId.Value;
-        }
-
-        var firstUser = await _context.Users.FirstOrDefaultAsync();
-        if (firstUser != null)
-        {
-            return firstUser.Id;
+            return Task.FromResult(userId.Value);
         }
 
         throw new UnauthorizedAccessException("User not authenticated.");
@@ -46,7 +39,8 @@ public class RejectionRetrospectiveService : IRejectionRetrospectiveService
 
     public async Task<RejectionRetrospectiveResponseDto> UpsertRetrospectiveAsync(
         Guid applicationId,
-        CreateRejectionRetrospectiveDto dto)
+        CreateRejectionRetrospectiveDto dto,
+        CancellationToken cancellationToken = default)
     {
         var userId = await GetEffectiveUserIdAsync();
 
@@ -129,13 +123,13 @@ public class RejectionRetrospectiveService : IRejectionRetrospectiveService
         return MapToResponse(entity, dto.SpecificWeaknessTags ?? new List<string>(), extraData);
     }
 
-    public async Task<RejectionRetrospectiveResponseDto?> GetByApplicationIdAsync(Guid applicationId)
+    public async Task<RejectionRetrospectiveResponseDto?> GetByApplicationIdAsync(Guid applicationId, CancellationToken cancellationToken = default)
     {
         var userId = await GetEffectiveUserIdAsync();
 
         var entity = await _context.RejectionRetrospectives
             .AsNoTracking()
-            .FirstOrDefaultAsync(r => r.JobApplicationId == applicationId && r.UserId == userId);
+            .FirstOrDefaultAsync(r => r.JobApplicationId == applicationId && r.UserId == userId, cancellationToken);
 
         if (entity == null) return null;
 
@@ -144,14 +138,14 @@ public class RejectionRetrospectiveService : IRejectionRetrospectiveService
         return MapToResponse(entity, tags, extra);
     }
 
-    public async Task<FailureAnalyticsDto> GetFailureAnalyticsAsync()
+    public async Task<FailureAnalyticsDto> GetFailureAnalyticsAsync(CancellationToken cancellationToken = default)
     {
         var userId = await GetEffectiveUserIdAsync();
 
         var retrospectives = await _context.RejectionRetrospectives
             .AsNoTracking()
             .Where(r => r.UserId == userId)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         var total = retrospectives.Count;
         if (total == 0)

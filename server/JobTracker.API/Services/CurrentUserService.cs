@@ -24,7 +24,7 @@ public class CurrentUserService : ICurrentUserService
                          ?? user.FindFirstValue(JwtRegisteredClaimNames.Sub)
                          ?? user.FindFirstValue("sub");
 
-            return string.IsNullOrEmpty(userIdStr) ? null : Guid.Parse(userIdStr);
+            return Guid.TryParse(userIdStr, out var parsedGuid) ? parsedGuid : null;
         }
     }
 }

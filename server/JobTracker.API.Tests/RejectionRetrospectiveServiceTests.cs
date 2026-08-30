@@ -204,4 +204,24 @@ public class RejectionRetrospectiveServiceTests
         Assert.Equal(2, analytics.StageBreakdown.Count);
         Assert.True(analytics.RemediationActionPlan.Count >= 2);
     }
+
+    [Fact]
+    public async Task UpsertRetrospectiveAsync_ShouldThrowUnauthorized_WhenUserNotAuthenticated()
+    {
+        var (context, _, _, appId) = CreateTestContext();
+        var unauthenticatedUserMock = new Mock<ICurrentUserService>();
+        unauthenticatedUserMock.Setup(u => u.UserId).Returns((Guid?)null);
+
+        var service = new RejectionRetrospectiveService(context, unauthenticatedUserMock.Object);
+
+        var dto = new CreateRejectionRetrospectiveDto
+        {
+            JobDomain = "Corporate",
+            FailedStage = "Coding Round",
+            PrimaryRootCause = "Technical Depth"
+        };
+
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.UpsertRetrospectiveAsync(appId, dto));
+    }
 }
+

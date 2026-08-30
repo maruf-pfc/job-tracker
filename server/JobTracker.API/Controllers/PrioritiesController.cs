@@ -1,14 +1,14 @@
+using JobTracker.API.Common;
 using JobTracker.API.DTOs.Priority;
 using JobTracker.API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using JobTracker.API.Common;
 
 namespace JobTracker.API.Controllers;
 
 [ApiController]
-[Authorize]
 [Route("api/[controller]")]
+[Authorize]
 public class PrioritiesController : ControllerBase
 {
     private readonly IPriorityService _priorityService;
@@ -19,9 +19,9 @@ public class PrioritiesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
-        var result = await _priorityService.GetAllAsync();
+        var result = await _priorityService.GetAllAsync(cancellationToken);
         return Ok(
             ApiResponse<object>.SuccessResponse(
                 result,
@@ -31,9 +31,19 @@ public class PrioritiesController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
-        var result = await _priorityService.GetByIdAsync(id);
+        var result = await _priorityService.GetByIdAsync(id, cancellationToken);
+
+        if (result is null)
+        {
+            return NotFound(
+                ApiResponse<string>.FailureResponse(
+                    "Resource not found"
+                )
+            );
+        }
+
         return Ok(
             ApiResponse<object>.SuccessResponse(
                 result,
@@ -43,9 +53,9 @@ public class PrioritiesController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(CreatePriorityDto dto)
+    public async Task<IActionResult> Create(CreatePriorityDto dto, CancellationToken cancellationToken)
     {
-        var result = await _priorityService.CreateAsync(dto);
+        var result = await _priorityService.CreateAsync(dto, cancellationToken);
         return Ok(
             ApiResponse<object>.SuccessResponse(
                 result,
@@ -55,9 +65,9 @@ public class PrioritiesController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, UpdatePriorityDto dto)
+    public async Task<IActionResult> Update(Guid id, UpdatePriorityDto dto, CancellationToken cancellationToken)
     {
-        var result = await _priorityService.UpdateAsync(id, dto);
+        var result = await _priorityService.UpdateAsync(id, dto, cancellationToken);
         return Ok(
             ApiResponse<object>.SuccessResponse(
                 result,
@@ -67,15 +77,9 @@ public class PrioritiesController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        await _priorityService.DeleteAsync(id);
-
-        return Ok(
-            ApiResponse<string>.SuccessResponse(
-                null,
-                "Deleted successfully"
-            )
-        );
+        await _priorityService.DeleteAsync(id, cancellationToken);
+        return NoContent();
     }
 }

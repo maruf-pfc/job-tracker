@@ -1,8 +1,8 @@
+using JobTracker.API.Common;
 using JobTracker.API.DTOs.JobApplication;
 using JobTracker.API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using JobTracker.API.Common;
 
 namespace JobTracker.API.Controllers;
 
@@ -19,9 +19,9 @@ public class JobApplicationsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] JobApplicationQueryDto query)
+    public async Task<IActionResult> GetAll([FromQuery] JobApplicationQueryDto query, CancellationToken cancellationToken)
     {
-        var result = await _jobApplicationService.GetAllAsync(query);
+        var result = await _jobApplicationService.GetAllAsync(query, cancellationToken);
         return Ok(
             ApiResponse<object>.SuccessResponse(
                 result,
@@ -31,9 +31,9 @@ public class JobApplicationsController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
-        var result = await _jobApplicationService.GetByIdAsync(id);
+        var result = await _jobApplicationService.GetByIdAsync(id, cancellationToken);
         return Ok(
             ApiResponse<object>.SuccessResponse(
                 result,
@@ -43,9 +43,9 @@ public class JobApplicationsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create( CreateJobApplicationDto dto)
+    public async Task<IActionResult> Create(CreateJobApplicationDto dto, CancellationToken cancellationToken)
     {
-        var result = await _jobApplicationService.CreateAsync(dto);
+        var result = await _jobApplicationService.CreateAsync(dto, cancellationToken);
         return Ok(
             ApiResponse<object>.SuccessResponse(
                 result,
@@ -55,9 +55,9 @@ public class JobApplicationsController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update( Guid id, UpdateJobApplicationDto dto)
+    public async Task<IActionResult> Update(Guid id, UpdateJobApplicationDto dto, CancellationToken cancellationToken)
     {
-        var result = await _jobApplicationService.UpdateAsync(id, dto);
+        var result = await _jobApplicationService.UpdateAsync(id, dto, cancellationToken);
         return Ok(
             ApiResponse<object>.SuccessResponse(
                 result,
@@ -67,9 +67,9 @@ public class JobApplicationsController : ControllerBase
     }
 
     [HttpPatch("{id:guid}/status")]
-    public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] Guid statusId)
+    public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] Guid statusId, CancellationToken cancellationToken)
     {
-        var result = await _jobApplicationService.UpdateStatusAsync(id, statusId);
+        var result = await _jobApplicationService.UpdateStatusAsync(id, statusId, cancellationToken);
         return Ok(
             ApiResponse<object>.SuccessResponse(
                 result,
@@ -79,9 +79,9 @@ public class JobApplicationsController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete( Guid id)
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        await _jobApplicationService.DeleteAsync(id);
+        await _jobApplicationService.DeleteAsync(id, cancellationToken);
         return NoContent();
     }
 }

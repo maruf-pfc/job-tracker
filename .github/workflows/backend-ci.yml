@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - dev
+      - refactor/*
   pull_request:
     branches:
       - main
@@ -17,10 +18,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: server
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -31,13 +28,13 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Restore dependencies
-        run: dotnet restore JobTracker.API/JobTracker.API.csproj
+        run: dotnet restore JobTracker.slnx
 
       - name: Security Vulnerability Audit
-        run: dotnet list JobTracker.API/JobTracker.API.csproj package --vulnerable || true
+        run: dotnet list server/JobTracker.API/JobTracker.API.csproj package --vulnerable || true
 
-      - name: Build project
-        run: dotnet build JobTracker.API/JobTracker.API.csproj --no-restore
+      - name: Build solution
+        run: dotnet build JobTracker.slnx --no-restore
 
       - name: Run xUnit tests
-        run: dotnet test JobTracker.API.Tests/JobTracker.API.Tests.csproj
+        run: dotnet test JobTracker.slnx --no-build --verbosity normal

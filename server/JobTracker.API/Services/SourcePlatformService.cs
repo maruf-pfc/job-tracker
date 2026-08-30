@@ -9,38 +9,34 @@ namespace JobTracker.API.Services;
 public class SourcePlatformService : ISourcePlatformService
 {
     private readonly AppDbContext _context;
-    private readonly ICurrentUserService _currentUser;
 
-    public SourcePlatformService(AppDbContext context, ICurrentUserService currentUser)
+    public SourcePlatformService(AppDbContext context)
     {
         _context = context;
-        _currentUser = currentUser;
     }
 
-    public async Task<List<SourcePlatformDto>> GetAllAsync()
+    public async Task<List<SourcePlatformDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var userId = _currentUser.UserId;
         return await _context.SourcePlatforms
-            .Where(s => s.UserId == userId || s.UserId == null)
+            .AsNoTracking()
             .OrderBy(s => s.Name)
             .Select(s => new SourcePlatformDto
             {
                 Id = s.Id,
                 Name = s.Name,
             })
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<SourcePlatformDto> CreateAsync(CreateSourcePlatformDto dto)
+    public async Task<SourcePlatformDto> CreateAsync(CreateSourcePlatformDto dto, CancellationToken cancellationToken = default)
     {
         var entity = new SourcePlatform
         {
-            Name = dto.Name,
-            UserId = _currentUser.UserId
+            Name = dto.Name.Trim(),
         };
 
         _context.SourcePlatforms.Add(entity);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
 
         return new SourcePlatformDto
         {
@@ -49,11 +45,9 @@ public class SourcePlatformService : ISourcePlatformService
         };
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var userId = _currentUser.UserId;
-        var entity = await _context.SourcePlatforms
-            .FirstOrDefaultAsync(s => s.Id == id && s.UserId == userId);
+        var entity = await _context.SourcePlatforms.FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
 
         if (entity is null)
         {
@@ -61,7 +55,8 @@ public class SourcePlatformService : ISourcePlatformService
         }
 
         _context.SourcePlatforms.Remove(entity);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
+
         return true;
     }
 }

@@ -83,7 +83,7 @@ An enterprise-grade, open-source **Career Operations OS and Recruitment Intellig
 - **AI Engine**: Google Gemini API (`gemini-3.6-flash`) with SHA-256 data signature caching
 - **Database & ORM**: PostgreSQL (Local / Neon Cloud) via Entity Framework Core 10
 - **Security & Auth**: ASP.NET Core Identity, JWT Bearer Tokens, Rate Limiting, Security Headers
-- **Testing**: xUnit, Moq, EF Core InMemory Provider (27 unit tests)
+- **Testing**: xUnit, Moq, EF Core InMemory Provider (49 unit tests)
 
 ---
 
@@ -130,21 +130,21 @@ bun run dev
 
 ## 🧪 Running Unit Tests
 
-### Backend Unit Tests (27 / 27 Passing)
+### Backend Unit Tests (49 / 49 Passing)
 ```bash
-cd server/JobTracker.API.Tests
-dotnet test
+dotnet test JobTracker.slnx
 ```
 
-### Frontend Unit Tests (18 / 18 Passing)
+### Frontend Unit Tests (24 / 24 Passing across 8 test suites)
 ```bash
 cd client
 bun run test
 ```
 
-### Production Build Verification
+### Production Build & Lint Verification
 ```bash
 cd client
+bun run lint
 bun run build
 ```
 
@@ -186,6 +186,7 @@ docker compose up --build -d
 ## 📚 Technical Documentation
 
 - 🏗 **[System Architecture & Design](docs/architecture.md)**: Clean architecture, AI caching subsystem, multi-tenant isolation.
+- 🛡 **[Refactoring & Hardening Report](docs/refactoring-report.md)**: Senior audit findings, SSRF mitigation, exception taxonomy, and test expansion report.
 - 🗄 **[Database Model & Schema](docs/database_schema.md)**: PostgreSQL ER Diagram, table constraints, indices, and UTC timestamp mappings.
 - 🔌 **[REST API Specifications](docs/api_documentation.md)**: Endpoints reference, AI Advisor endpoints, request/response DTO schemas.
 - 🛠 **[Troubleshooting & Bug Fixes](docs/troubleshooting_and_bugfixes.md)**: Resolution log (React hook ordering, state caching, user isolation).

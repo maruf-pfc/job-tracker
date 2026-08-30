@@ -1,15 +1,15 @@
+using JobTracker.API.Common;
 using JobTracker.API.DTOs.Company;
 using JobTracker.API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using JobTracker.API.Common;
 
 namespace JobTracker.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class CompaniesController: ControllerBase
+public class CompaniesController : ControllerBase
 {
     private readonly ICompanyService _companyService;
 
@@ -19,9 +19,9 @@ public class CompaniesController: ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
-        var result = await _companyService.GetAllAsync();
+        var result = await _companyService.GetAllAsync(cancellationToken);
         return Ok(
             ApiResponse<object>.SuccessResponse(
                 result,
@@ -31,9 +31,9 @@ public class CompaniesController: ControllerBase
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
-        var result = await _companyService.GetByIdAsync(id);
+        var result = await _companyService.GetByIdAsync(id, cancellationToken);
 
         if (result is null)
         {
@@ -53,9 +53,9 @@ public class CompaniesController: ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(CreateCompanyDto dto)
+    public async Task<IActionResult> Create(CreateCompanyDto dto, CancellationToken cancellationToken)
     {
-        var result = await _companyService.CreateAsync(dto);
+        var result = await _companyService.CreateAsync(dto, cancellationToken);
 
         return Ok(
             ApiResponse<object>.SuccessResponse(
@@ -66,9 +66,9 @@ public class CompaniesController: ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, CreateCompanyDto dto)
+    public async Task<IActionResult> Update(Guid id, CreateCompanyDto dto, CancellationToken cancellationToken)
     {
-        var result = await _companyService.UpdateAsync(id, dto);
+        var result = await _companyService.UpdateAsync(id, dto, cancellationToken);
 
         if (result is null)
         {
@@ -88,9 +88,9 @@ public class CompaniesController: ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        var deleted = await _companyService.DeleteAsync(id);
+        var deleted = await _companyService.DeleteAsync(id, cancellationToken);
 
         if (!deleted)
         {

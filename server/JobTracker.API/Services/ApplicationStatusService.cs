@@ -6,8 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace JobTracker.API.Services;
 
-public class ApplicationStatusService
-    : IApplicationStatusService
+public class ApplicationStatusService : IApplicationStatusService
 {
     private readonly AppDbContext _context;
 
@@ -16,28 +15,28 @@ public class ApplicationStatusService
         _context = context;
     }
 
-    public async Task<List<ApplicationStatusDto>> GetAllAsync()
+    public async Task<List<ApplicationStatusDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _context.ApplicationStatuses
+            .AsNoTracking()
             .OrderBy(a => a.Name)
             .Select(a => new ApplicationStatusDto
             {
                 Id = a.Id,
                 Name = a.Name,
             })
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<ApplicationStatusDto> CreateAsync(CreateApplicationStatusDto dto)
+    public async Task<ApplicationStatusDto> CreateAsync(CreateApplicationStatusDto dto, CancellationToken cancellationToken = default)
     {
         var entity = new ApplicationStatus
         {
-            Name = dto.Name,
+            Name = dto.Name.Trim(),
         };
 
         _context.ApplicationStatuses.Add(entity);
-
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
 
         return new ApplicationStatusDto
         {
@@ -46,9 +45,9 @@ public class ApplicationStatusService
         };
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var entity = await _context.ApplicationStatuses.FirstOrDefaultAsync( a => a.Id == id);
+        var entity = await _context.ApplicationStatuses.FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
 
         if (entity is null)
         {
@@ -56,8 +55,7 @@ public class ApplicationStatusService
         }
 
         _context.ApplicationStatuses.Remove(entity);
-
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
 
         return true;
     }
