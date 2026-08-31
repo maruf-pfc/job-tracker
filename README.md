@@ -67,6 +67,12 @@ An enterprise-grade, open-source **Career Operations OS and Recruitment Intellig
 ### 7. Integrations, Webhooks & Diagnostics Settings
 ![Settings](assets/Settings.png)
 
+### 8. Telegram Bot Automation & Live Alerts
+![Telegram Webhook Integration](assets/Telegram%20Webhook%20Integration.png)
+
+### 9. Discord Webhook Channel Notifications
+![Discord Webhook Integration](assets/Discord%20Webhook%20Integration.png)
+
 ---
 
 ## ⚡ Tech Stack Architecture
