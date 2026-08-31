@@ -10,7 +10,7 @@
 [![TailwindCSS v4](https://img.shields.io/badge/TailwindCSS-v4-38BDF8?logo=tailwindcss)](https://tailwindcss.com/)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-job--trackerr.vercel.app-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://job-trackerr.vercel.app)
 
-An enterprise-grade, open-source **Career Operations OS and Recruitment Intelligence Engine** built for modern tech professionals and government/bank candidates. Features Kanban pipeline workflows, multi-variable post-mortem failure analytics, full account isolation, and an **AI Strategic Career Advisor** with intelligent SHA-256 state caching.
+An enterprise-grade, open-source **Career Operations OS and Recruitment Intelligence Engine** built for modern tech professionals and government/bank candidates. Features comprehensive pipeline management, multi-variable post-mortem failure analytics, full account isolation, and an **AI Strategic Career Advisor** with intelligent SHA-256 state caching.
 
 🌐 **Live Production App**: [https://job-trackerr.vercel.app](https://job-trackerr.vercel.app)
 
@@ -49,28 +49,25 @@ An enterprise-grade, open-source **Career Operations OS and Recruitment Intellig
 ### 1. Analytics Dashboard & AI Career Strategist
 ![Dashboard](assets/Dashboard.png)
 
-### 2. Application Pipeline (Kanban Board)
-![Applications Kanban Board](assets/Applications%20Kanban%20Board.png)
-
-### 3. Applications Table with Responsive Scrolling
+### 2. Applications Table with Responsive Scrolling & Filter Suite
 ![Applications Table](assets/Applications%20Table.png)
 
-### 4. Target Companies Management (User Isolated + Global)
+### 3. Target Companies Management (User Isolated + Global)
 ![Company](assets/Company.png)
 
-### 5. Target Job Roles & Career Titles
+### 4. Target Job Roles & Career Titles
 ![Roles](assets/Roles.png)
 
-### 6. User Profile & Academic Credentials
+### 5. User Profile & Academic Credentials
 ![Profile](assets/Profile.png)
 
-### 7. Integrations, Webhooks & Diagnostics Settings
+### 6. Integrations, Webhooks & Diagnostics Settings
 ![Settings](assets/Settings.png)
 
-### 8. Telegram Bot Automation & Live Alerts
+### 7. Telegram Bot Automation & Live Alerts
 ![Telegram Webhook Integration](assets/Telegram%20Webhook%20Integration.png)
 
-### 9. Discord Webhook Channel Notifications
+### 8. Discord Webhook Channel Notifications
 ![Discord Webhook Integration](assets/Discord%20Webhook%20Integration.png)
 
 ---

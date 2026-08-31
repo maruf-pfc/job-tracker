@@ -2,17 +2,15 @@ import { useState, useMemo } from "react";
 import ApplicationsHeader from "@/components/applications/ApplicationsHeader";
 import ApplicationsFilters from "@/components/applications/ApplicationsFilters";
 import ApplicationsTable from "@/components/applications/ApplicationsTable";
-import { KanbanBoard } from "@/components/applications/KanbanBoard";
 import ApplicationModal from "@/components/applications/ApplicationModal";
 import ApplicationForm from "@/components/applications/ApplicationForm";
 import Button from "@/components/ui/Button";
 import { useApplications } from "@/hooks/useApplications";
-import { LayoutGrid, List, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { ApplicationsSkeleton } from "@/components/common/Skeletons";
 
 export default function ApplicationsPage() {
   const [open, setOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
 
   // Filters State
   const [searchQuery, setSearchQuery] = useState("");
@@ -56,7 +54,7 @@ export default function ApplicationsPage() {
   };
 
   if (isLoading) {
-    return <ApplicationsSkeleton viewMode={viewMode} />;
+    return <ApplicationsSkeleton />;
   }
 
   return (
@@ -65,32 +63,7 @@ export default function ApplicationsPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <ApplicationsHeader />
 
-        <div className="flex flex-wrap items-center gap-3 self-start md:self-auto">
-          {/* Segmented View Mode Toggle */}
-          <div className="flex items-center gap-1 bg-slate-200/80 p-1 rounded-xl">
-            <button
-              onClick={() => setViewMode("table")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                viewMode === "table"
-                  ? "bg-white text-slate-900 shadow-sm"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              <List className="w-3.5 h-3.5" /> Table
-            </button>
-
-            <button
-              onClick={() => setViewMode("kanban")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                viewMode === "kanban"
-                  ? "bg-white text-slate-900 shadow-sm"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              <LayoutGrid className="w-3.5 h-3.5" /> Kanban
-            </button>
-          </div>
-
+        <div className="flex items-center gap-3 self-start md:self-auto">
           {/* Primary Add Application Button */}
           <Button onClick={() => setOpen(true)} className="flex items-center gap-2">
             <Plus className="w-4 h-4" /> Add Application
@@ -111,17 +84,11 @@ export default function ApplicationsPage() {
         onReset={handleResetFilters}
       />
 
-      {/* Content Area: Table vs Kanban View */}
-      {viewMode === "table" ? (
-        <ApplicationsTable
-          applications={filteredApplications}
-          isLoading={isLoading}
-        />
-      ) : (
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-          <KanbanBoard applications={filteredApplications} />
-        </div>
-      )}
+      {/* Applications Table View */}
+      <ApplicationsTable
+        applications={filteredApplications}
+        isLoading={isLoading}
+      />
 
       {/* Application Creation Modal */}
       <ApplicationModal

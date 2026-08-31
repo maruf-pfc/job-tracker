@@ -52,7 +52,7 @@ Webhook credentials are configuration tokens managed securely in browser local s
 ### Dispatched Events
 1. **`application_created`**: Triggers when a new job application is submitted.
 2. **`application_updated`**: Triggers when application details/notes/links are edited.
-3. **`status_updated`**: Triggers when the application stage moves across the Kanban pipeline (e.g., `Applied` ➔ `Interview Scheduled` ➔ `Offer Received`).
+3. **`status_updated`**: Triggers when the application stage changes (e.g., `Applied` ➔ `Interview Scheduled` ➔ `Offer Received`).
 4. **`test_event`**: Manual trigger from **Settings & Integrations** via the **Test Webhooks (Send Ping)** button to verify connectivity.
 
 ### A. n8n Live Excel Sync Webhook Payload
