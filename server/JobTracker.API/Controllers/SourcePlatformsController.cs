@@ -8,6 +8,7 @@ namespace JobTracker.API.Controllers;
 
 [ApiController]
 [Route("api/source-platforms")]
+[Route("api/sourceplatforms")]
 [Authorize]
 public class SourcePlatformsController : ControllerBase
 {

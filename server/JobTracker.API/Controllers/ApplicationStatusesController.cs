@@ -8,6 +8,7 @@ namespace JobTracker.API.Controllers;
 
 [ApiController]
 [Route("api/application-statuses")]
+[Route("api/applicationstatuses")]
 [Authorize]
 public class ApplicationStatusesController : ControllerBase
 {
