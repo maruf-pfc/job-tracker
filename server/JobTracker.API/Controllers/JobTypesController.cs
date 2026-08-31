@@ -8,6 +8,7 @@ namespace JobTracker.API.Controllers;
 
 [ApiController]
 [Route("api/job-types")]
+[Route("api/jobtypes")]
 [Authorize]
 public class JobTypesController : ControllerBase
 {

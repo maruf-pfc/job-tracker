@@ -55,6 +55,18 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
   } = useForm<CreateJobApplicationRequest>({
     resolver: zodResolver(createJobApplicationSchema),
     defaultValues: {
+      companyId: "",
+      role: "",
+      jobUrl: "",
+      location: "",
+      salaryRange: "",
+      notes: "",
+      resumeDriveLink: "",
+      priorityId: "",
+      sourcePlatformId: "",
+      applicationStatusId: "",
+      workTypeId: "",
+      jobTypeId: "",
       appliedAt: new Date().toISOString().slice(0, 10),
       followUpDate: "",
     },
@@ -104,12 +116,12 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
     selectedJobType?.name.toLowerCase().includes("bank") ||
     selectedJobType?.name.toLowerCase().includes("cadre");
 
-  // Auto-fill Location and Website from selected Company details
+  // Auto-fill Location and Website from selected Company details if not yet entered
   useEffect(() => {
     if (!selectedCompanyId || !companies) return;
     const found = companies.find((c) => c.id === selectedCompanyId);
     if (found) {
-      if (found.location) {
+      if (found.location && !getValues("location")) {
         setValue("location", found.location, { shouldValidate: true });
       }
       if (!getValues("jobUrl") && (found.careerPageUrl || found.websiteUrl)) {
@@ -120,24 +132,24 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
     }
   }, [selectedCompanyId, companies, setValue, getValues]);
 
+  // Synchronize form defaults without overwriting in-flight user edits
   useEffect(() => {
     if (!initialData) {
-      reset({
-        companyId: "",
-        role: "",
-        jobUrl: "",
-        location: "",
-        salaryRange: "",
-        notes: "",
-        resumeDriveLink: "",
-        priorityId: priorities?.[0]?.id || "",
-        sourcePlatformId: platforms?.[0]?.id || "",
-        applicationStatusId: statuses?.[0]?.id || "",
-        workTypeId: workTypes?.[0]?.id || "",
-        jobTypeId: jobTypes?.[0]?.id || "",
-        appliedAt: new Date().toISOString().slice(0, 10),
-        followUpDate: "",
-      });
+      if (priorities?.length && !getValues("priorityId")) {
+        setValue("priorityId", priorities[0].id);
+      }
+      if (platforms?.length && !getValues("sourcePlatformId")) {
+        setValue("sourcePlatformId", platforms[0].id);
+      }
+      if (statuses?.length && !getValues("applicationStatusId")) {
+        setValue("applicationStatusId", statuses[0].id);
+      }
+      if (workTypes?.length && !getValues("workTypeId")) {
+        setValue("workTypeId", workTypes[0].id);
+      }
+      if (jobTypes?.length && !getValues("jobTypeId")) {
+        setValue("jobTypeId", jobTypes[0].id);
+      }
       return;
     }
 
@@ -157,21 +169,21 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
       salaryRange: initialData.salaryRange || "",
       notes: initialData.notes || "",
       resumeDriveLink: initialData.resumeDriveLink || "",
-      priorityId: targetPriorityId,
-      sourcePlatformId: targetPlatformId,
-      applicationStatusId: targetStatusId,
-      workTypeId: targetWorkTypeId,
-      jobTypeId: targetJobTypeId,
+      priorityId: targetPriorityId || (priorities?.[0]?.id ?? ""),
+      sourcePlatformId: targetPlatformId || (platforms?.[0]?.id ?? ""),
+      applicationStatusId: targetStatusId || (statuses?.[0]?.id ?? ""),
+      workTypeId: targetWorkTypeId || (workTypes?.[0]?.id ?? ""),
+      jobTypeId: targetJobTypeId || (jobTypes?.[0]?.id ?? ""),
       appliedAt: toDateInputString(initialData.appliedAt) || new Date().toISOString().slice(0, 10),
       followUpDate: toDateInputString(initialData.followUpDate),
     });
-  }, [initialData, reset, companies, jobRoles, priorities, statuses, workTypes, jobTypes, platforms]);
+  }, [initialData, reset, companies, jobRoles, priorities, statuses, workTypes, jobTypes, platforms, setValue, getValues]);
 
   const mutation = useMutation({
     mutationFn: (data: CreateJobApplicationRequest) => {
       const payload: CreateJobApplicationRequest = {
         ...data,
-        sourcePlatformId: data.sourcePlatformId || platforms?.[0]?.id || "",
+        sourcePlatformId: data.sourcePlatformId || platforms?.[0]?.id || undefined,
         appliedAt: data.appliedAt ? new Date(data.appliedAt).toISOString() : new Date().toISOString(),
         followUpDate: data.followUpDate ? new Date(data.followUpDate).toISOString() : undefined,
       };
@@ -425,7 +437,7 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
               rows={5}
               placeholder={
                 isGovtOrBank
-                  ? "## Written Exam Details\n- Date & Time: Friday, 10:00 AM at BUET\n- Topics: C++, Data Structures, Computer Networks, SQL\n- Marks: 200 (Pass mark: 50%)"
+                  ? "## Written Exam Details\n- Date & Time: Friday, 10:00 AM at BUET\n- Topics: C++, Data Structures, Computer Networks, SQL\n- Marks: 200 (Pass mark: 50%)\n- Focus: Analytical math, Bangladesh affairs, English comprehension"
                   : "Interview rounds, system design notes, follow-up timeline..."
               }
               {...register("notes")}
