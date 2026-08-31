@@ -138,6 +138,7 @@ public static class DbSeeder
             new() { Name = "LinkedIn" },
             new() { Name = "Indeed" },
             new() { Name = "Bdjobs" },
+            new() { Name = "Facebook" },
             new() { Name = "Teletalk AllJobs" },
             new() { Name = "BPSC (bpsc.gov.bd)" },
             new() { Name = "Bangladesh Bank eRecruitment" },
