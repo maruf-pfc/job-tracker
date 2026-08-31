@@ -157,15 +157,19 @@ export default function SettingsPage() {
               value={telegramToken}
               onChange={(e) => setTelegramToken(e.target.value)}
             />
+            <p className="text-[11px] text-slate-500">Obtain from <span className="font-medium text-slate-700">@BotFather</span> on Telegram.</p>
           </div>
 
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-slate-700 block">Telegram Chat / Channel ID</label>
             <Input
-              placeholder="-100123456789"
+              placeholder="Your User ID (e.g. 123456789) or Group ID (-100...)"
               value={telegramChatId}
               onChange={(e) => setTelegramChatId(e.target.value)}
             />
+            <p className="text-[11px] text-slate-500">
+              Enter your <span className="font-medium text-slate-700">personal user ID</span> (from <span className="font-medium text-slate-700">@userinfobot</span>) or group/channel ID. Do not enter the bot&apos;s own ID.
+            </p>
           </div>
         </div>
 
