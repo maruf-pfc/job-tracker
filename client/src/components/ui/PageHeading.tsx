@@ -1,0 +1,4 @@
+import type { ReactNode } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+type Props={eyebrow?:string;title:string;description?:string;action?:ReactNode};
+export default function PageHeading({eyebrow,title,description,action}:Props){const reduce=useReducedMotion();return <motion.header initial={reduce?false:{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{duration:.26,ease:"easeOut"}} className="flex flex-wrap items-start justify-between gap-4"><div>{eyebrow&&<p className="mb-2 text-[11px] font-semibold uppercase tracking-[.16em] text-[#69816c]">{eyebrow}</p>}<h1 className="text-[28px] font-semibold tracking-[-.05em] text-[#192c24] sm:text-[32px]">{title}</h1>{description&&<p className="mt-1 text-[13px] leading-6 text-[#728177]">{description}</p>}</div>{action}</motion.header>}

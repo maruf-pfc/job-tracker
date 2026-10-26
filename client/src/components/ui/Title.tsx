@@ -8,7 +8,7 @@ export default function Title({
   return (
     <h2
       className={cn(
-        "text-2xl font-semibold tracking-tight text-slate-900",
+        "text-2xl font-semibold tracking-tight text-[#203629]",
         className,
       )}
       {...props}

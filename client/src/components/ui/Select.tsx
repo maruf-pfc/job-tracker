@@ -9,7 +9,7 @@ export default function Select({
   return (
     <select
       className={cn(
-        "w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20",
+        "w-full rounded-[9px] border border-[#dbe4d8] bg-white text-[#23392b] placeholder:text-[#95a398] px-3 py-2.5 text-sm outline-none transition focus:border-[#4f8961] focus:ring-2 focus:ring-[#4f8961]/15",
         className,
       )}
       {...props}

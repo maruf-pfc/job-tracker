@@ -1,154 +1,21 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getApplicationStatuses } from "@/services/applicationStatusService";
 import { getJobTypes } from "@/services/jobTypeService";
 import { getWorkTypes } from "@/services/workTypeService";
 import { getPriorities } from "@/services/priorityService";
 import { getSourcePlatforms } from "@/services/sourcePlatformService";
-import Button from "@/components/ui/Button";
-import { Tag, Briefcase, Globe, Signal, Building } from "lucide-react";
-
-export default function LookupsPage() {
-  const [activeTab, setActiveTab] = useState<
-    "statuses" | "priorities" | "jobTypes" | "workTypes" | "platforms"
-  >("statuses");
-
-  const { data: statuses } = useQuery({ queryKey: ["statuses"], queryFn: getApplicationStatuses });
-  const { data: priorities } = useQuery({ queryKey: ["priorities"], queryFn: getPriorities });
-  const { data: jobTypes } = useQuery({ queryKey: ["jobTypes"], queryFn: getJobTypes });
-  const { data: workTypes } = useQuery({ queryKey: ["workTypes"], queryFn: getWorkTypes });
-  const { data: platforms } = useQuery({ queryKey: ["platforms"], queryFn: getSourcePlatforms });
-
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-            System Lookups
-          </h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Configure dropdown categories, priorities, platforms, and application statuses.
-          </p>
-        </div>
-        <Button>Add Category Option</Button>
-      </div>
-
-      {/* Tabs Filter Bar */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-2 flex flex-wrap gap-2">
-        <button
-          onClick={() => setActiveTab("statuses")}
-          className={`flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-xl transition-colors ${
-            activeTab === "statuses"
-              ? "bg-indigo-50 text-indigo-600 font-semibold"
-              : "text-slate-600 hover:bg-slate-50"
-          }`}
-        >
-          <Signal className="w-4 h-4" /> Application Statuses ({statuses?.length ?? 0})
-        </button>
-
-        <button
-          onClick={() => setActiveTab("priorities")}
-          className={`flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-xl transition-colors ${
-            activeTab === "priorities"
-              ? "bg-indigo-50 text-indigo-600 font-semibold"
-              : "text-slate-600 hover:bg-slate-50"
-          }`}
-        >
-          <Tag className="w-4 h-4" /> Priorities ({priorities?.length ?? 0})
-        </button>
-
-        <button
-          onClick={() => setActiveTab("jobTypes")}
-          className={`flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-xl transition-colors ${
-            activeTab === "jobTypes"
-              ? "bg-indigo-50 text-indigo-600 font-semibold"
-              : "text-slate-600 hover:bg-slate-50"
-          }`}
-        >
-          <Briefcase className="w-4 h-4" /> Job Types ({jobTypes?.length ?? 0})
-        </button>
-
-        <button
-          onClick={() => setActiveTab("workTypes")}
-          className={`flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-xl transition-colors ${
-            activeTab === "workTypes"
-              ? "bg-indigo-50 text-indigo-600 font-semibold"
-              : "text-slate-600 hover:bg-slate-50"
-          }`}
-        >
-          <Building className="w-4 h-4" /> Work Types ({workTypes?.length ?? 0})
-        </button>
-
-        <button
-          onClick={() => setActiveTab("platforms")}
-          className={`flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-xl transition-colors ${
-            activeTab === "platforms"
-              ? "bg-indigo-50 text-indigo-600 font-semibold"
-              : "text-slate-600 hover:bg-slate-50"
-          }`}
-        >
-          <Globe className="w-4 h-4" /> Source Platforms ({platforms?.length ?? 0})
-        </button>
-      </div>
-
-      {/* Content Container */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6">
-        {activeTab === "statuses" && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {statuses?.map((item) => (
-              <div key={item.id} className="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between">
-                <span className="text-sm font-semibold text-slate-900">{item.name}</span>
-                <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">Status</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {activeTab === "priorities" && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {priorities?.map((item) => (
-              <div key={item.id} className="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between">
-                <span className="text-sm font-semibold text-slate-900">{item.name}</span>
-                <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-amber-100 text-amber-800">Priority</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {activeTab === "jobTypes" && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {jobTypes?.map((item) => (
-              <div key={item.id} className="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between">
-                <span className="text-sm font-semibold text-slate-900">{item.name}</span>
-                <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-indigo-100 text-indigo-700">Job Type</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {activeTab === "workTypes" && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {workTypes?.map((item) => (
-              <div key={item.id} className="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between">
-                <span className="text-sm font-semibold text-slate-900">{item.name}</span>
-                <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-emerald-100 text-emerald-700">Work Type</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {activeTab === "platforms" && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {platforms?.map((item) => (
-              <div key={item.id} className="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between">
-                <span className="text-sm font-semibold text-slate-900">{item.name}</span>
-                <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-700">Platform</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
+import { Tag, BriefcaseBusiness, Globe2, SlidersHorizontal, Layers, Search, Database } from "lucide-react";
+const tabs=[{id:"statuses",label:"Application statuses",icon:Layers},{id:"priorities",label:"Priorities",icon:SlidersHorizontal},{id:"jobTypes",label:"Job types",icon:BriefcaseBusiness},{id:"workTypes",label:"Work types",icon:Tag},{id:"platforms",label:"Source platforms",icon:Globe2}] as const;
+type Tab=typeof tabs[number]["id"];
+export default function LookupsPage(){
+ const [activeTab,setActiveTab]=useState<Tab>("statuses"); const [search,setSearch]=useState("");
+ const statuses=useQuery({queryKey:["statuses"],queryFn:getApplicationStatuses}); const priorities=useQuery({queryKey:["priorities"],queryFn:getPriorities}); const jobTypes=useQuery({queryKey:["jobTypes"],queryFn:getJobTypes}); const workTypes=useQuery({queryKey:["workTypes"],queryFn:getWorkTypes}); const platforms=useQuery({queryKey:["platforms"],queryFn:getSourcePlatforms});
+ const datasets={statuses,priorities,jobTypes,workTypes,platforms}; const active=datasets[activeTab]; const items=useMemo(()=>(active.data??[]).filter(x=>x.name.toLowerCase().includes(search.trim().toLowerCase())),[active.data,search]);
+ const current=tabs.find(t=>t.id===activeTab)!;
+ return <div className="space-y-6 pb-12 text-[#1e3026]"><header><p className="mb-2 text-[11px] font-semibold uppercase tracking-[.16em] text-[#69816c]">Workspace configuration</p><h1 className="text-[28px] font-semibold tracking-[-.05em] sm:text-[32px]">Application categories</h1><p className="mt-1 text-[13px] text-[#728177]">Browse the statuses, job types, priorities and platforms available in your tracker.</p></header>
+  <div className="grid gap-4 lg:grid-cols-[230px_minmax(0,1fr)]"><aside className="h-fit rounded-[15px] border border-[#dfe7dc] bg-white p-2"><div className="px-3 pb-2 pt-3 text-[10px] font-semibold uppercase tracking-[.12em] text-[#899b8c]">Categories</div><nav aria-label="Lookup types" className="space-y-1">{tabs.map(({id,label,icon:Icon})=><button key={id} type="button" onClick={()=>{setActiveTab(id);setSearch("")}} aria-current={activeTab===id?"page":undefined} className={`flex w-full items-center justify-between rounded-[9px] px-3 py-2.5 text-left text-[13px] transition-colors ${activeTab===id?"bg-[#eaf3e9] font-semibold text-[#285c3d]":"text-[#63766a] hover:bg-[#f5f8f2]"}`}><span className="flex items-center gap-2.5"><Icon size={16}/>{label}</span><span className="text-[11px] text-[#8a9c8c]">{datasets[id].data?.length??0}</span></button>)}</nav></aside>
+  <section className="min-w-0 overflow-hidden rounded-[15px] border border-[#dfe7dc] bg-white"><div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e9eee7] p-5"><div><h2 className="text-[16px] font-semibold">{current.label}</h2><p className="mt-1 text-[12px] text-[#819082]">{active.data?.length??0} configured options</p></div><div className="relative w-full sm:w-64"><Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#829287]"/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Filter options..." aria-label="Filter options" className="h-10 w-full rounded-[9px] border border-[#dfe7dc] bg-[#fafbf8] pl-9 pr-3 text-[13px] outline-none focus:border-[#538a64] focus:ring-2 focus:ring-[#538a64]/15"/></div></div>
+  {active.isLoading?<div className="space-y-2 p-5" aria-live="polite">{[0,1,2,3].map(n=><div key={n} className="h-12 animate-pulse rounded-lg bg-[#edf2eb] motion-reduce:animate-none"/>)}</div>:active.isError?<div className="px-6 py-12 text-center text-[13px] text-[#a3443a]">Unable to load options. Check your connection and try again.</div>:items.length===0?<div className="flex flex-col items-center px-6 py-16 text-center"><span className="rounded-xl bg-[#ecf4eb] p-3 text-[#51765b]"><Database size={22}/></span><p className="mt-3 text-sm font-semibold">{search?"No matching options":"No options configured"}</p><p className="mt-1 text-[12px] text-[#819082]">{search?"Try another search term.":"Configured items will appear here."}</p></div>:<div className="divide-y divide-[#ecf0e9]">{items.map(item=><div key={item.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 transition hover:bg-[#f8faf7]"><div className="flex min-w-0 items-center gap-3"><span className="size-2.5 shrink-0 rounded-full bg-[#5c9168]"/><p className="truncate text-[13px] font-medium">{item.name}</p></div><span className="rounded-full bg-[#f1f5ee] px-2.5 py-1 text-[11px] text-[#66776a]">{current.label.slice(0,-1)}</span></div>)}</div>}
+  <div className="border-t border-[#e9eee7] px-5 py-3 text-[11px] text-[#849286]">Category options are currently read-only on this page.</div></section></div></div>;
 }

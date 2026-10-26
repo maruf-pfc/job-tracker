@@ -1,26 +1,8 @@
 import { Link } from "react-router-dom";
+import { BriefcaseBusiness, ArrowLeft, CheckCircle2 } from "lucide-react";
 import AuthCard from "@/components/auth/AuthCard";
 import RegisterForm from "@/components/auth/RegisterForm";
-
-export default function RegisterPage() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
-      <AuthCard
-        title="Create Account"
-        subtitle="Start organizing your applications, interviews, and opportunities."
-      >
-        <RegisterForm />
-
-        <p className="mt-6 text-center text-sm text-slate-600">
-          Already have an account?{" "}
-          <Link
-            to="/login"
-            className="font-medium text-blue-600 hover:text-blue-700"
-          >
-            Sign in
-          </Link>
-        </p>
-      </AuthCard>
-    </div>
-  );
-}
+export default function RegisterPage() { return <main className="grid min-h-dvh bg-[#f7f9f5] lg:grid-cols-[minmax(360px,44%)_1fr]">
+  <aside className="hidden min-h-dvh flex-col bg-[#14271e] p-10 text-white lg:flex xl:p-14"><div className="flex items-center gap-3"><span className="flex size-10 items-center justify-center rounded-xl bg-[#315e43]"><BriefcaseBusiness size={21}/></span><span className="text-lg font-semibold tracking-[-.04em]">Job Tracker</span></div><div className="my-auto max-w-[480px] py-16"><span className="inline-flex rounded-full border border-[#456b50] px-3 py-1 text-[11px] tracking-wide text-[#bdd6c0]">MAKE YOUR NEXT MOVE COUNT</span><h2 className="mt-7 text-4xl font-semibold leading-[1.15] tracking-[-.055em] xl:text-5xl">Your next chapter starts with a plan.</h2><p className="mt-5 text-[15px] leading-7 text-[#a6bcac]">Build a tidy workspace for applications, companies, interviews, and the opportunities ahead.</p><div className="mt-10 space-y-4">{["One place for every application", "Clear recruitment stages", "Insights that turn progress into action"].map(t=><p key={t} className="flex items-center gap-3 text-[13px] text-[#c8daca]"><CheckCircle2 size={17} className="text-[#98c59d]"/>{t}</p>)}</div></div><p className="text-[11px] text-[#90a997]">Built for focused job searching.</p></aside>
+  <section className="flex min-h-dvh flex-col px-5 py-7 sm:px-9"><div className="flex items-center justify-between lg:justify-end"><div className="flex items-center gap-2 text-[#244d35] lg:hidden"><BriefcaseBusiness size={22}/><span className="font-semibold">Job Tracker</span></div><Link to="/login" className="inline-flex items-center gap-2 text-[13px] font-medium text-[#2d6042] hover:underline"><ArrowLeft size={15}/> Back to sign in</Link></div><div className="flex flex-1 items-center justify-center py-12"><div className="w-full max-w-[460px]"><AuthCard title="Create your account" subtitle="Start tracking opportunities with a workspace that stays organized."><RegisterForm/><p className="mt-7 text-center text-[13px] text-[#728177]">Already registered? <Link to="/login" className="font-semibold text-[#2b6446] hover:underline">Sign in</Link></p></AuthCard></div></div></section>
+</main>; }

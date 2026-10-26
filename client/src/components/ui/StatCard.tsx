@@ -9,12 +9,12 @@ type Props = {
 export default function StatCard({ title, value, description }: Props) {
   return (
     <Card className="p-5">
-      <p className="text-sm font-medium text-slate-500">{title}</p>
+      <p className="text-sm font-medium text-[#738478]">{title}</p>
 
-      <h3 className="mt-2 text-3xl font-semibold text-slate-900">{value}</h3>
+      <h3 className="mt-2 text-3xl font-semibold text-[#203629]">{value}</h3>
 
       {description && (
-        <p className="mt-2 text-sm text-slate-500">{description}</p>
+        <p className="mt-2 text-sm text-[#738478]">{description}</p>
       )}
     </Card>
   );

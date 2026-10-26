@@ -55,7 +55,7 @@ export default function RegisterForm() {
         <Input id="name" placeholder="John Doe" {...registerField("name")} />
 
         {errors.name && (
-          <p className="text-sm text-red-600">{errors.name.message}</p>
+          <p className="text-sm text-[#b33d3d]">{errors.name.message}</p>
         )}
       </div>
 
@@ -70,7 +70,7 @@ export default function RegisterForm() {
         />
 
         {errors.email && (
-          <p className="text-sm text-red-600">{errors.email.message}</p>
+          <p className="text-sm text-[#b33d3d]">{errors.email.message}</p>
         )}
       </div>
 
@@ -80,7 +80,7 @@ export default function RegisterForm() {
         <Input id="password" type="password" {...registerField("password")} />
 
         {errors.password && (
-          <p className="text-sm text-red-600">{errors.password.message}</p>
+          <p className="text-sm text-[#b33d3d]">{errors.password.message}</p>
         )}
       </div>
 
@@ -94,7 +94,7 @@ export default function RegisterForm() {
         />
 
         {errors.confirmPassword && (
-          <p className="text-sm text-red-600">
+          <p className="text-sm text-[#b33d3d]">
             {errors.confirmPassword.message}
           </p>
         )}
