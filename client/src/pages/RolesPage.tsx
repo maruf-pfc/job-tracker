@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useJobRoles } from "@/hooks/useJobRoles";
 import type { JobRole, CreateJobRoleRequest } from "@/services/jobRoleService";
@@ -8,220 +8,23 @@ import Button from "@/components/ui/Button";
 import ApplicationModal from "@/components/applications/ApplicationModal";
 import ApplicationActions from "@/components/applications/ApplicationActions";
 import { RolesSkeleton } from "@/components/common/Skeletons";
-import { UserCheck, Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
-
-const ITEMS_PER_PAGE = 8;
-
+import { BriefcaseBusiness, Plus, Search, ChevronLeft, ChevronRight, Layers3 } from "lucide-react";
+const ITEMS_PER_PAGE = 10;
 export default function RolesPage() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingRole, setEditingRole] = useState<JobRole | null>(null);
-
-  // Form state
-  const [name, setName] = useState("");
-
-  const {
-    roles,
-    isLoading,
-    createRole,
-    updateRole,
-    deleteRole,
-    isCreating,
-    isUpdating,
-  } = useJobRoles();
-
-  const openCreateModal = () => {
-    setEditingRole(null);
-    setName("");
-    setIsModalOpen(true);
-  };
-
-  const openEditModal = (role: JobRole) => {
-    setEditingRole(role);
-    setName(role.name);
-    setIsModalOpen(true);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) {
-      toast.error("Role title is required");
-      return;
-    }
-
-    const payload: CreateJobRoleRequest = {
-      name: name.trim(),
-    };
-
-    try {
-      if (editingRole) {
-        await updateRole({ id: editingRole.id, data: payload });
-      } else {
-        await createRole(payload);
-      }
-      setIsModalOpen(false);
-    } catch {
-      // Handled in hook
-    }
-  };
-
-  const filteredRoles = roles?.filter((r) =>
-    r.name.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
-
-  const totalPages = Math.ceil(filteredRoles.length / ITEMS_PER_PAGE) || 1;
-  const paginatedRoles = filteredRoles.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
-
-  if (isLoading) {
-    return <RolesSkeleton />;
-  }
-
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            Roles & Titles
-          </h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Manage target job roles, titles, and career positions.
-          </p>
-        </div>
-
-        <Button onClick={openCreateModal} className="flex items-center gap-2 self-start sm:self-auto">
-          <Plus className="w-4 h-4" /> Add Role
-        </Button>
-      </div>
-
-      {/* Filter / Search Bar */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-        <div className="relative max-w-md">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Search roles..."
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-slate-900 placeholder:text-slate-400"
-          />
-        </div>
-      </div>
-
-      {/* Table List */}
-      <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-xs">
-        <table className="w-full min-w-[450px] text-left border-collapse">
-          <thead>
-            <tr className="border-b border-slate-200 bg-slate-50/80 text-xs font-semibold uppercase tracking-wider text-slate-500">
-              <th className="px-5 py-3.5">Role Title</th>
-              <th className="px-5 py-3.5 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 bg-white text-sm">
-            {!filteredRoles.length ? (
-              <tr>
-                <td colSpan={2} className="p-12 text-center">
-                  <UserCheck className="mx-auto h-8 w-8 text-slate-400 mb-2" />
-                  <h3 className="text-base font-semibold text-slate-900">No roles found</h3>
-                  <p className="mt-1 text-sm text-slate-500 max-w-sm mx-auto">
-                    Add custom job roles and positions to personalize your job tracker.
-                  </p>
-                </td>
-              </tr>
-            ) : (
-              paginatedRoles.map((role) => (
-                <tr key={role.id} className="hover:bg-slate-50/80 transition-colors">
-                  {/* Role Title */}
-                  <td className="px-5 py-4 font-semibold text-slate-900">
-                    <div className="flex items-center gap-2.5">
-                      <UserCheck className="w-4 h-4 text-indigo-600 shrink-0" />
-                      <span>{role.name}</span>
-                    </div>
-                  </td>
-
-                  <td className="px-5 py-4 whitespace-nowrap text-right">
-                    <ApplicationActions
-                      onEdit={() => openEditModal(role)}
-                      onDelete={async () => {
-                        if (confirm(`Are you sure you want to delete ${role.name}?`)) {
-                          await deleteRole(role.id);
-                        }
-                      }}
-                    />
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-
-        {/* Pagination Controls */}
-        <div className="flex flex-col sm:flex-row items-center justify-between px-5 py-3 border-t border-slate-100 bg-slate-50/50 text-xs text-slate-600 gap-2">
-          <span>
-            Showing <span className="font-bold text-slate-900">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> to{" "}
-            <span className="font-bold text-slate-900">{Math.min(currentPage * ITEMS_PER_PAGE, filteredRoles.length)}</span> of{" "}
-            <span className="font-bold text-slate-900">{filteredRoles.length}</span> roles
-          </span>
-          <div className="flex items-center gap-2">
-            <button
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              className="px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-slate-700 disabled:opacity-40 hover:bg-slate-50 transition-colors cursor-pointer flex items-center gap-1 font-medium"
-            >
-              <ChevronLeft className="w-3.5 h-3.5" /> Previous
-            </button>
-            <span className="px-2 font-semibold text-slate-700">
-              Page {currentPage} of {totalPages}
-            </span>
-            <button
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              className="px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-slate-700 disabled:opacity-40 hover:bg-slate-50 transition-colors cursor-pointer flex items-center gap-1 font-medium"
-            >
-              Next <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Create / Edit Role Modal */}
-      <ApplicationModal
-        open={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title={editingRole ? "Edit Job Role" : "Add Job Role"}
-      >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label>Role Title</Label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Frontend Engineer, Fullstack Developer"
-              required
-            />
-          </div>
-
-          <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-4">
-            <Button
-              type="submit"
-              disabled={isCreating || isUpdating}
-            >
-              {isCreating || isUpdating
-                ? "Saving..."
-                : editingRole
-                ? "Update Role"
-                : "Save Role"}
-            </Button>
-          </div>
-        </form>
-      </ApplicationModal>
-    </div>
-  );
+ const [searchTerm,setSearchTerm]=useState(""); const [currentPage,setCurrentPage]=useState(1); const [isModalOpen,setIsModalOpen]=useState(false); const [editingRole,setEditingRole]=useState<JobRole|null>(null); const [name,setName]=useState("");
+ const {roles,isLoading,createRole,updateRole,deleteRole,isCreating,isUpdating}=useJobRoles();
+ const openCreateModal=()=>{setEditingRole(null);setName("");setIsModalOpen(true)};
+ const openEditModal=(r:JobRole)=>{setEditingRole(r);setName(r.name);setIsModalOpen(true)};
+ const handleSubmit=async(e:React.FormEvent)=>{e.preventDefault();if(!name.trim()){toast.error("Role title is required");return;}const payload:CreateJobRoleRequest={name:name.trim()};try{if(editingRole){await updateRole({id:editingRole.id,data:payload})}else{await createRole(payload)}setIsModalOpen(false)}catch{/* hook handles errors */}};
+ const filteredRoles=useMemo(()=> (roles??[]).filter(r=>r.name.toLowerCase().includes(searchTerm.trim().toLowerCase())),[roles,searchTerm]);
+ const totalPages=Math.max(1,Math.ceil(filteredRoles.length/ITEMS_PER_PAGE)); const safePage=Math.min(currentPage,totalPages); const paginatedRoles=filteredRoles.slice((safePage-1)*ITEMS_PER_PAGE,safePage*ITEMS_PER_PAGE);
+ if(isLoading)return <RolesSkeleton/>;
+ return <div className="space-y-6 pb-12 text-[#1e3026]">
+  <header className="flex flex-wrap items-start justify-between gap-4"><div><p className="mb-2 text-[11px] font-semibold uppercase tracking-[.16em] text-[#69816c]">Your workspace / Roles</p><h1 className="text-[28px] font-semibold tracking-[-.05em] sm:text-[32px]">Roles & titles</h1><p className="mt-1 text-[13px] text-[#728177]">Organize the positions you're targeting and keep role names consistent.</p></div><Button onClick={openCreateModal} className="gap-2"><Plus size={17}/> Add role</Button></header>
+  <div className="grid gap-3 sm:grid-cols-2"><div className="rounded-[14px] border border-[#dfe7dc] bg-white px-5 py-5"><div className="flex items-center gap-2 text-[12px] text-[#728177]"><Layers3 size={15}/> Saved role titles</div><p className="mt-2 text-[28px] font-semibold tracking-[-.05em]">{roles?.length??0}</p></div><div className="rounded-[14px] border border-[#dfe7dc] bg-[#eef5ec] px-5 py-5"><div className="flex items-center gap-2 text-[12px] text-[#64816d]"><BriefcaseBusiness size={15}/> Role library</div><p className="mt-2 text-[14px] font-medium text-[#245339]">Find roles quickly, edit their titles, and keep your targets organized.</p></div></div>
+  <section className="overflow-hidden rounded-[15px] border border-[#dfe7dc] bg-white shadow-[0_3px_16px_rgba(21,45,30,.035)]"><div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e8eee5] p-4 sm:p-5"><h2 className="text-[14px] font-semibold">Role directory <span className="ml-1 text-[#8b9a8d]">({filteredRoles.length})</span></h2><div className="relative w-full sm:w-[300px]"><Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#829287]"/><input value={searchTerm} onChange={e=>{setSearchTerm(e.target.value);setCurrentPage(1)}} placeholder="Search role titles..." aria-label="Search role titles" className="h-10 w-full rounded-[9px] border border-[#dfe7dc] bg-[#fafbf8] pl-9 pr-3 text-[13px] outline-none transition focus:border-[#538a64] focus:ring-2 focus:ring-[#538a64]/15"/></div></div>
+  {filteredRoles.length===0?<div className="flex flex-col items-center px-5 py-16 text-center"><span className="mb-3 rounded-2xl bg-[#edf4ec] p-4 text-[#47795a]"><BriefcaseBusiness size={25}/></span><h3 className="font-semibold">{searchTerm?"No matching roles":"Your role library is empty"}</h3><p className="mt-2 max-w-sm text-[13px] text-[#728177]">{searchTerm?"Try another title or clear your search.":"Add the job titles you want to target to keep your applications organized."}</p>{!searchTerm&&<Button onClick={openCreateModal} className="mt-5"><Plus size={15}/> Add your first role</Button>}</div>:<><div className="hidden overflow-x-auto sm:block"><table className="w-full text-left text-[13px]"><thead className="border-b border-[#e8eee5] bg-[#fafbf8] text-[11px] uppercase tracking-[.1em] text-[#76867b]"><tr><th className="px-5 py-3 font-medium">Role title</th><th className="px-5 py-3 text-right font-medium">Actions</th></tr></thead><tbody className="divide-y divide-[#edf1ec]">{paginatedRoles.map(r=><tr key={r.id} className="transition-colors hover:bg-[#f7faf5]"><td className="px-5 py-4"><div className="flex items-center gap-3"><span className="rounded-lg bg-[#edf4ec] p-2 text-[#426e51]"><BriefcaseBusiness size={17}/></span><span className="font-medium">{r.name}</span></div></td><td className="px-5 py-4 text-right"><ApplicationActions onEdit={()=>openEditModal(r)} onDelete={async()=>{if(window.confirm(`Delete ${r.name}?`))await deleteRole(r.id)}}/></td></tr>)}</tbody></table></div><div className="divide-y divide-[#edf1ec] sm:hidden">{paginatedRoles.map(r=><div key={r.id} className="flex items-center justify-between gap-3 p-4"><div className="flex min-w-0 items-center gap-3"><span className="rounded-lg bg-[#edf4ec] p-2 text-[#426e51]"><BriefcaseBusiness size={17}/></span><span className="truncate text-[13px] font-medium">{r.name}</span></div><ApplicationActions onEdit={()=>openEditModal(r)} onDelete={async()=>{if(window.confirm(`Delete ${r.name}?`))await deleteRole(r.id)}}/></div>)}</div></>}
+  <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-[#e8eee5] px-4 py-3 text-[12px] text-[#728177] sm:px-5"><span>{filteredRoles.length?`Showing ${(safePage-1)*ITEMS_PER_PAGE+1}–${Math.min(safePage*ITEMS_PER_PAGE,filteredRoles.length)} of ${filteredRoles.length}`:"No roles to show"}</span><div className="flex items-center gap-2"><button aria-label="Previous page" disabled={safePage===1} onClick={()=>setCurrentPage(p=>Math.max(1,p-1))} className="rounded-lg border border-[#dfe7dc] p-2 enabled:hover:bg-[#f3f6f0] disabled:opacity-35"><ChevronLeft size={16}/></button><span>Page {safePage} / {totalPages}</span><button aria-label="Next page" disabled={safePage===totalPages} onClick={()=>setCurrentPage(p=>Math.min(totalPages,p+1))} className="rounded-lg border border-[#dfe7dc] p-2 enabled:hover:bg-[#f3f6f0] disabled:opacity-35"><ChevronRight size={16}/></button></div></footer></section>
+  <ApplicationModal open={isModalOpen} onClose={()=>setIsModalOpen(false)} title={editingRole?"Edit role":"Add role"}><form onSubmit={handleSubmit} className="space-y-5"><div className="space-y-2"><Label>Role title</Label><Input value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Frontend Engineer" required maxLength={200}/><p className="text-xs text-[#728177]">Use a clear title that you can reuse across applications.</p></div><div className="flex justify-end gap-2 border-t border-[#e6ebe4] pt-4"><Button type="button" variant="secondary" onClick={()=>setIsModalOpen(false)}>Cancel</Button><Button type="submit" disabled={isCreating||isUpdating}>{isCreating||isUpdating?"Saving...":editingRole?"Update role":"Save role"}</Button></div></form></ApplicationModal>
+ </div>;
 }

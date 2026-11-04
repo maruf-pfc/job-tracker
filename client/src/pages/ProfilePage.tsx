@@ -228,47 +228,49 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-12">
+      <div><p className="mb-2 text-[11px] font-semibold uppercase tracking-[.16em] text-[#69816c]">Your workspace / Profile</p><h2 className="text-[28px] font-semibold tracking-[-.05em] text-[#192c24] sm:text-[32px]">My profile</h2><p className="mt-1 text-[13px] text-[#728177]">Keep your information, education and professional links in one place.</p></div>
       {/* Header Profile Hero Card */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-6"
+        className="rounded-[15px] border border-[#dfe7dc] bg-white p-6 shadow-[0_3px_16px_rgba(21,45,30,.035)] space-y-6"
       >
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-2xl font-bold shadow-md shrink-0">
-              {getInitials(currentProfile.nameEnglish)}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="relative w-16 h-16 rounded-[15px] bg-[#2b6446] text-white flex items-center justify-center text-2xl font-bold shadow-md shrink-0 overflow-hidden border border-[#dfe7dc]">
+              <span className="absolute">{getInitials(currentProfile.nameEnglish)}</span>
+              <img src="/avatar.png" alt={currentProfile.nameEnglish || "User Avatar"} className="relative z-10 w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = "none"; }} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold text-slate-900">
+                <h1 className="text-2xl font-semibold tracking-[-.035em] text-[#192c24]">
                   {currentProfile.nameEnglish || "Your Name"}
                 </h1>
                 {currentProfile.nameBangla && (
-                  <span className="text-sm text-slate-500 font-normal">
+                  <span className="text-sm text-[#728177] font-normal">
                     ({currentProfile.nameBangla})
                   </span>
                 )}
               </div>
-              <p className="text-sm font-medium text-indigo-600 mt-0.5">
-                {parsedCoding.designation || "Software Professional & Candidate"}
+              <p className="text-sm font-medium text-[#2b6446] mt-0.5">
+                {parsedCoding.designation || "Add professional title"}
               </p>
-              <div className="flex items-center gap-3 text-xs text-slate-500 mt-1.5 flex-wrap">
+              <div className="flex items-center gap-3 text-xs text-[#728177] mt-1.5 flex-wrap">
                 <span className="flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                  <MapPin className="w-3.5 h-3.5 text-[#929f95]" />
                   {currentProfile.presentDistrict
                     ? `${currentProfile.presentDistrict}, ${currentProfile.presentDivision || "Bangladesh"}`
-                    : "Dhaka, Bangladesh"}
+                    : "Location not added"}
                 </span>
                 {currentProfile.email && (
                   <span className="flex items-center gap-1">
-                    <Mail className="w-3.5 h-3.5 text-slate-400" /> {currentProfile.email}
+                    <Mail className="w-3.5 h-3.5 text-[#929f95]" /> {currentProfile.email}
                   </span>
                 )}
                 {currentProfile.mobileNumber && (
                   <span className="flex items-center gap-1">
-                    <Phone className="w-3.5 h-3.5 text-slate-400" /> {currentProfile.mobileNumber}
+                    <Phone className="w-3.5 h-3.5 text-[#929f95]" /> {currentProfile.mobileNumber}
                   </span>
                 )}
               </div>
@@ -285,7 +287,7 @@ export default function ProfilePage() {
                 href={parsedCoding.github.startsWith("http") ? parsedCoding.github : `https://${parsedCoding.github}`}
                 target="_blank"
                 rel="noreferrer"
-                className="px-3 py-2 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors font-semibold text-xs flex items-center gap-1"
+                className="px-3 py-2 text-[#58685e] hover:text-[#192c24] bg-[#edf1e9] hover:bg-[#dfe7dc] rounded-xl transition-colors font-semibold text-xs flex items-center gap-1"
               >
                 GitHub <ExternalLink className="w-3 h-3" />
               </a>
@@ -295,7 +297,7 @@ export default function ProfilePage() {
                 href={parsedCoding.linkedin.startsWith("http") ? parsedCoding.linkedin : `https://${parsedCoding.linkedin}`}
                 target="_blank"
                 rel="noreferrer"
-                className="px-3 py-2 text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-colors font-semibold text-xs flex items-center gap-1"
+                className="px-3 py-2 text-[#2b6446] hover:text-[#22543b] bg-[#edf6ee] hover:bg-[#e5f1e8] rounded-xl transition-colors font-semibold text-xs flex items-center gap-1"
               >
                 LinkedIn <ExternalLink className="w-3 h-3" />
               </a>
@@ -305,7 +307,7 @@ export default function ProfilePage() {
                 href={parsedCoding.portfolioUrl.startsWith("http") ? parsedCoding.portfolioUrl : `https://${parsedCoding.portfolioUrl}`}
                 target="_blank"
                 rel="noreferrer"
-                className="px-3 py-2 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors font-semibold text-xs flex items-center gap-1"
+                className="px-3 py-2 text-[#58685e] hover:text-[#192c24] bg-[#edf1e9] hover:bg-[#dfe7dc] rounded-xl transition-colors font-semibold text-xs flex items-center gap-1"
               >
                 Portfolio <ExternalLink className="w-3 h-3" />
               </a>
@@ -315,23 +317,23 @@ export default function ProfilePage() {
 
         {/* Developer Bio Summary */}
         {currentProfile.bioSummary ? (
-          <div className="pt-4 border-t border-slate-100 text-xs sm:text-sm text-slate-600 leading-relaxed">
+          <div className="pt-4 border-t border-[#edf1e9] text-xs sm:text-sm text-[#58685e] leading-relaxed">
             {currentProfile.bioSummary}
           </div>
         ) : (
-          <div className="pt-4 border-t border-slate-100 text-xs text-slate-400 italic">
+          <div className="pt-4 border-t border-[#edf1e9] text-xs text-[#929f95] italic">
             Click "Edit Full Profile" to add your professional bio summary and career profile.
           </div>
         )}
 
         {/* Tab Navigation */}
-        <div className="flex items-center gap-2 overflow-x-auto border-b border-slate-200 pt-2 scrollbar-none">
+        <div className="flex items-center gap-2 overflow-x-auto border-b border-[#dfe7dc] pt-2 scrollbar-none">
           <button
             onClick={() => setActiveTab("personal")}
             className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap cursor-pointer ${
               activeTab === "personal"
-                ? "border-indigo-600 text-indigo-600"
-                : "border-transparent text-slate-500 hover:text-slate-800"
+                ? "border-[#2b6446] text-[#2b6446]"
+                : "border-transparent text-[#728177] hover:text-[#2a4033]"
             }`}
           >
             <User className="w-4 h-4" /> Personal & Address
@@ -341,8 +343,8 @@ export default function ProfilePage() {
             onClick={() => setActiveTab("education")}
             className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap cursor-pointer ${
               activeTab === "education"
-                ? "border-indigo-600 text-indigo-600"
-                : "border-transparent text-slate-500 hover:text-slate-800"
+                ? "border-[#2b6446] text-[#2b6446]"
+                : "border-transparent text-[#728177] hover:text-[#2a4033]"
             }`}
           >
             <GraduationCap className="w-4 h-4" /> Education & Credentials ({parsedEducation.length})
@@ -352,8 +354,8 @@ export default function ProfilePage() {
             onClick={() => setActiveTab("experience")}
             className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap cursor-pointer ${
               activeTab === "experience"
-                ? "border-indigo-600 text-indigo-600"
-                : "border-transparent text-slate-500 hover:text-slate-800"
+                ? "border-[#2b6446] text-[#2b6446]"
+                : "border-transparent text-[#728177] hover:text-[#2a4033]"
             }`}
           >
             <Briefcase className="w-4 h-4" /> Experience & Summary
@@ -363,8 +365,8 @@ export default function ProfilePage() {
             onClick={() => setActiveTab("coding")}
             className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap cursor-pointer ${
               activeTab === "coding"
-                ? "border-indigo-600 text-indigo-600"
-                : "border-transparent text-slate-500 hover:text-slate-800"
+                ? "border-[#2b6446] text-[#2b6446]"
+                : "border-transparent text-[#728177] hover:text-[#2a4033]"
             }`}
           >
             <Code className="w-4 h-4" /> Coding Handles & Stack
@@ -382,36 +384,36 @@ export default function ProfilePage() {
             exit={{ opacity: 0, y: -10 }}
             className="space-y-6"
           >
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-              <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-                <User className="w-5 h-5 text-indigo-600" /> Personal Identity Details
+            <div className="rounded-[15px] border border-[#dfe7dc] bg-white p-6 shadow-[0_3px_16px_rgba(21,45,30,.035)] space-y-4">
+              <h3 className="text-base font-bold text-[#192c24] border-b border-[#edf1e9] pb-3 flex items-center gap-2">
+                <User className="w-5 h-5 text-[#2b6446]" /> Personal Identity Details
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs sm:text-sm">
-                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
-                  <span className="text-slate-400 text-xs block font-medium">Name (English)</span>
-                  <span className="font-bold text-slate-900">{currentProfile.nameEnglish || "N/A"}</span>
+                <div className="bg-[#f8faf6] p-3.5 rounded-xl border border-[#edf1e9] space-y-1">
+                  <span className="text-[#929f95] text-xs block font-medium">Name (English)</span>
+                  <span className="font-bold text-[#192c24]">{currentProfile.nameEnglish || "N/A"}</span>
                 </div>
 
-                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
-                  <span className="text-slate-400 text-xs block font-medium">Name (Bangla)</span>
-                  <span className="font-bold text-slate-900">{currentProfile.nameBangla || "N/A"}</span>
+                <div className="bg-[#f8faf6] p-3.5 rounded-xl border border-[#edf1e9] space-y-1">
+                  <span className="text-[#929f95] text-xs block font-medium">Name (Bangla)</span>
+                  <span className="font-bold text-[#192c24]">{currentProfile.nameBangla || "N/A"}</span>
                 </div>
 
-                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
-                  <span className="text-slate-400 text-xs block font-medium">Father's Name</span>
-                  <span className="font-semibold text-slate-800">{currentProfile.fatherName || "Not Provided"}</span>
+                <div className="bg-[#f8faf6] p-3.5 rounded-xl border border-[#edf1e9] space-y-1">
+                  <span className="text-[#929f95] text-xs block font-medium">Father's Name</span>
+                  <span className="font-semibold text-[#2a4033]">{currentProfile.fatherName || "Not Provided"}</span>
                 </div>
 
-                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
-                  <span className="text-slate-400 text-xs block font-medium">Mother's Name</span>
-                  <span className="font-semibold text-slate-800">{currentProfile.motherName || "Not Provided"}</span>
+                <div className="bg-[#f8faf6] p-3.5 rounded-xl border border-[#edf1e9] space-y-1">
+                  <span className="text-[#929f95] text-xs block font-medium">Mother's Name</span>
+                  <span className="font-semibold text-[#2a4033]">{currentProfile.motherName || "Not Provided"}</span>
                 </div>
 
-                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
-                  <span className="text-slate-400 text-xs block font-medium">Date of Birth</span>
-                  <span className="font-semibold text-slate-800 flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-indigo-500" />{" "}
+                <div className="bg-[#f8faf6] p-3.5 rounded-xl border border-[#edf1e9] space-y-1">
+                  <span className="text-[#929f95] text-xs block font-medium">Date of Birth</span>
+                  <span className="font-semibold text-[#2a4033] flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-[#408660]" />{" "}
                     {currentProfile.dateOfBirth
                       ? new Date(currentProfile.dateOfBirth).toLocaleDateString("en-US", {
                           day: "numeric",
@@ -422,31 +424,31 @@ export default function ProfilePage() {
                   </span>
                 </div>
 
-                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
-                  <span className="text-slate-400 text-xs block font-medium">National ID (NID)</span>
-                  <span className="font-mono font-semibold text-slate-800">
-                    {currentProfile.nationalId || "Not Provided"}
+                <div className="bg-[#f8faf6] p-3.5 rounded-xl border border-[#edf1e9] space-y-1">
+                  <span className="text-[#929f95] text-xs block font-medium">National ID (NID)</span>
+                  <span className="font-mono font-semibold text-[#2a4033]">
+                    {currentProfile.nationalId ? `••••${currentProfile.nationalId.slice(-4)}` : "Not Provided"}
                   </span>
                 </div>
 
-                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
-                  <span className="text-slate-400 text-xs block font-medium">Birth Registration</span>
-                  <span className="font-mono font-semibold text-slate-800">
-                    {currentProfile.birthRegistration || "Not Provided"}
+                <div className="bg-[#f8faf6] p-3.5 rounded-xl border border-[#edf1e9] space-y-1">
+                  <span className="text-[#929f95] text-xs block font-medium">Birth Registration</span>
+                  <span className="font-mono font-semibold text-[#2a4033]">
+                    {currentProfile.birthRegistration ? `••••${currentProfile.birthRegistration.slice(-4)}` : "Not Provided"}
                   </span>
                 </div>
 
-                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
-                  <span className="text-slate-400 text-xs block font-medium">Nationality & Religion</span>
-                  <span className="font-semibold text-slate-800">
-                    {currentProfile.nationality || "Bangladeshi"} | {currentProfile.religion || "Islam"}
+                <div className="bg-[#f8faf6] p-3.5 rounded-xl border border-[#edf1e9] space-y-1">
+                  <span className="text-[#929f95] text-xs block font-medium">Nationality & Religion</span>
+                  <span className="font-semibold text-[#2a4033]">
+                    {currentProfile.nationality || "Not provided"} | {currentProfile.religion || "Not provided"}
                   </span>
                 </div>
 
-                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1">
-                  <span className="text-slate-400 text-xs block font-medium">Gender & Marital Status</span>
-                  <span className="font-semibold text-slate-800">
-                    {currentProfile.gender || "Male"} | {currentProfile.maritalStatus || "Single"}
+                <div className="bg-[#f8faf6] p-3.5 rounded-xl border border-[#edf1e9] space-y-1">
+                  <span className="text-[#929f95] text-xs block font-medium">Gender & Marital Status</span>
+                  <span className="font-semibold text-[#2a4033]">
+                    {currentProfile.gender || "Not provided"} | {currentProfile.maritalStatus || "Not provided"}
                   </span>
                 </div>
               </div>
@@ -455,89 +457,89 @@ export default function ProfilePage() {
             {/* Granular Addresses Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Present Address */}
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-                <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-indigo-600" /> Present Address (Voter Address)
+              <div className="rounded-[15px] border border-[#dfe7dc] bg-white p-6 shadow-[0_3px_16px_rgba(21,45,30,.035)] space-y-4">
+                <h3 className="text-base font-bold text-[#192c24] border-b border-[#edf1e9] pb-3 flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-[#2b6446]" /> Present Address (Voter Address)
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <span className="text-slate-400 text-xs block font-medium">Division</span>
-                    <strong className="text-slate-900">{currentProfile.presentDivision || "Not Provided"}</strong>
+                  <div className="bg-[#f8faf6] p-3 rounded-xl border border-[#edf1e9]">
+                    <span className="text-[#929f95] text-xs block font-medium">Division</span>
+                    <strong className="text-[#192c24]">{currentProfile.presentDivision || "Not Provided"}</strong>
                   </div>
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <span className="text-slate-400 text-xs block font-medium">District</span>
-                    <strong className="text-slate-900">{currentProfile.presentDistrict || "Not Provided"}</strong>
+                  <div className="bg-[#f8faf6] p-3 rounded-xl border border-[#edf1e9]">
+                    <span className="text-[#929f95] text-xs block font-medium">District</span>
+                    <strong className="text-[#192c24]">{currentProfile.presentDistrict || "Not Provided"}</strong>
                   </div>
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 sm:col-span-2">
-                    <span className="text-slate-400 text-xs block font-medium">Area</span>
-                    <strong className="text-slate-900">{currentProfile.presentArea || "Not Provided"}</strong>
+                  <div className="bg-[#f8faf6] p-3 rounded-xl border border-[#edf1e9] sm:col-span-2">
+                    <span className="text-[#929f95] text-xs block font-medium">Area</span>
+                    <strong className="text-[#192c24]">{currentProfile.presentArea || "Not Provided"}</strong>
                   </div>
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <span className="text-slate-400 text-xs block font-medium">Location</span>
-                    <strong className="text-slate-900">{currentProfile.presentLocation || "Not Provided"}</strong>
+                  <div className="bg-[#f8faf6] p-3 rounded-xl border border-[#edf1e9]">
+                    <span className="text-[#929f95] text-xs block font-medium">Location</span>
+                    <strong className="text-[#192c24]">{currentProfile.presentLocation || "Not Provided"}</strong>
                   </div>
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <span className="text-slate-400 text-xs block font-medium">House</span>
-                    <strong className="text-slate-900">{currentProfile.presentHouse || "Not Provided"}</strong>
+                  <div className="bg-[#f8faf6] p-3 rounded-xl border border-[#edf1e9]">
+                    <span className="text-[#929f95] text-xs block font-medium">House</span>
+                    <strong className="text-[#192c24]">{currentProfile.presentHouse || "Not Provided"}</strong>
                   </div>
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <span className="text-slate-400 text-xs block font-medium">Upazila</span>
-                    <strong className="text-slate-900">{currentProfile.presentUpazila || "Not Provided"}</strong>
+                  <div className="bg-[#f8faf6] p-3 rounded-xl border border-[#edf1e9]">
+                    <span className="text-[#929f95] text-xs block font-medium">Upazila</span>
+                    <strong className="text-[#192c24]">{currentProfile.presentUpazila || "Not Provided"}</strong>
                   </div>
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <span className="text-slate-400 text-xs block font-medium">Police Station</span>
-                    <strong className="text-slate-900">{currentProfile.presentPoliceStation || "Not Provided"}</strong>
+                  <div className="bg-[#f8faf6] p-3 rounded-xl border border-[#edf1e9]">
+                    <span className="text-[#929f95] text-xs block font-medium">Police Station</span>
+                    <strong className="text-[#192c24]">{currentProfile.presentPoliceStation || "Not Provided"}</strong>
                   </div>
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <span className="text-slate-400 text-xs block font-medium">Post Office</span>
-                    <strong className="text-slate-900">{currentProfile.presentPostOffice || "Not Provided"}</strong>
+                  <div className="bg-[#f8faf6] p-3 rounded-xl border border-[#edf1e9]">
+                    <span className="text-[#929f95] text-xs block font-medium">Post Office</span>
+                    <strong className="text-[#192c24]">{currentProfile.presentPostOffice || "Not Provided"}</strong>
                   </div>
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <span className="text-slate-400 text-xs block font-medium">Post Code</span>
-                    <strong className="text-slate-900">{currentProfile.presentPostCode || "Not Provided"}</strong>
+                  <div className="bg-[#f8faf6] p-3 rounded-xl border border-[#edf1e9]">
+                    <span className="text-[#929f95] text-xs block font-medium">Post Code</span>
+                    <strong className="text-[#192c24]">{currentProfile.presentPostCode || "Not Provided"}</strong>
                   </div>
                 </div>
               </div>
 
               {/* Permanent Address */}
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-                <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-                  <Building className="w-5 h-5 text-indigo-600" /> Permanent Address
+              <div className="rounded-[15px] border border-[#dfe7dc] bg-white p-6 shadow-[0_3px_16px_rgba(21,45,30,.035)] space-y-4">
+                <h3 className="text-base font-bold text-[#192c24] border-b border-[#edf1e9] pb-3 flex items-center gap-2">
+                  <Building className="w-5 h-5 text-[#2b6446]" /> Permanent Address
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <span className="text-slate-400 text-xs block font-medium">Division</span>
-                    <strong className="text-slate-900">{currentProfile.permanentDivision || "Not Provided"}</strong>
+                  <div className="bg-[#f8faf6] p-3 rounded-xl border border-[#edf1e9]">
+                    <span className="text-[#929f95] text-xs block font-medium">Division</span>
+                    <strong className="text-[#192c24]">{currentProfile.permanentDivision || "Not Provided"}</strong>
                   </div>
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <span className="text-slate-400 text-xs block font-medium">District</span>
-                    <strong className="text-slate-900">{currentProfile.permanentDistrict || "Not Provided"}</strong>
+                  <div className="bg-[#f8faf6] p-3 rounded-xl border border-[#edf1e9]">
+                    <span className="text-[#929f95] text-xs block font-medium">District</span>
+                    <strong className="text-[#192c24]">{currentProfile.permanentDistrict || "Not Provided"}</strong>
                   </div>
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <span className="text-slate-400 text-xs block font-medium">Upazila</span>
-                    <strong className="text-slate-900">{currentProfile.permanentUpazila || "Not Provided"}</strong>
+                  <div className="bg-[#f8faf6] p-3 rounded-xl border border-[#edf1e9]">
+                    <span className="text-[#929f95] text-xs block font-medium">Upazila</span>
+                    <strong className="text-[#192c24]">{currentProfile.permanentUpazila || "Not Provided"}</strong>
                   </div>
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <span className="text-slate-400 text-xs block font-medium">Union</span>
-                    <strong className="text-slate-900">{currentProfile.permanentUnion || "Not Provided"}</strong>
+                  <div className="bg-[#f8faf6] p-3 rounded-xl border border-[#edf1e9]">
+                    <span className="text-[#929f95] text-xs block font-medium">Union</span>
+                    <strong className="text-[#192c24]">{currentProfile.permanentUnion || "Not Provided"}</strong>
                   </div>
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <span className="text-slate-400 text-xs block font-medium">Village</span>
-                    <strong className="text-slate-900">{currentProfile.permanentVillage || "Not Provided"}</strong>
+                  <div className="bg-[#f8faf6] p-3 rounded-xl border border-[#edf1e9]">
+                    <span className="text-[#929f95] text-xs block font-medium">Village</span>
+                    <strong className="text-[#192c24]">{currentProfile.permanentVillage || "Not Provided"}</strong>
                   </div>
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <span className="text-slate-400 text-xs block font-medium">Post Office</span>
-                    <strong className="text-slate-900">{currentProfile.permanentPostOffice || "Not Provided"}</strong>
+                  <div className="bg-[#f8faf6] p-3 rounded-xl border border-[#edf1e9]">
+                    <span className="text-[#929f95] text-xs block font-medium">Post Office</span>
+                    <strong className="text-[#192c24]">{currentProfile.permanentPostOffice || "Not Provided"}</strong>
                   </div>
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <span className="text-slate-400 text-xs block font-medium">Police Station</span>
-                    <strong className="text-slate-900">{currentProfile.permanentPoliceStation || "Not Provided"}</strong>
+                  <div className="bg-[#f8faf6] p-3 rounded-xl border border-[#edf1e9]">
+                    <span className="text-[#929f95] text-xs block font-medium">Police Station</span>
+                    <strong className="text-[#192c24]">{currentProfile.permanentPoliceStation || "Not Provided"}</strong>
                   </div>
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <span className="text-slate-400 text-xs block font-medium">Post Code</span>
-                    <strong className="text-slate-900">{currentProfile.permanentPostCode || "Not Provided"}</strong>
+                  <div className="bg-[#f8faf6] p-3 rounded-xl border border-[#edf1e9]">
+                    <span className="text-[#929f95] text-xs block font-medium">Post Code</span>
+                    <strong className="text-[#192c24]">{currentProfile.permanentPostCode || "Not Provided"}</strong>
                   </div>
                 </div>
               </div>
@@ -554,10 +556,10 @@ export default function ProfilePage() {
             exit={{ opacity: 0, y: -10 }}
             className="space-y-6"
           >
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                  <GraduationCap className="w-5 h-5 text-indigo-600" /> Academic Degrees & Qualifications
+            <div className="rounded-[15px] border border-[#dfe7dc] bg-white p-6 shadow-[0_3px_16px_rgba(21,45,30,.035)] space-y-4">
+              <div className="flex items-center justify-between border-b border-[#edf1e9] pb-3">
+                <h3 className="text-base font-bold text-[#192c24] flex items-center gap-2">
+                  <GraduationCap className="w-5 h-5 text-[#2b6446]" /> Academic Degrees & Qualifications
                 </h3>
                 <Button onClick={openEditModal} variant="secondary" size="sm" className="flex items-center gap-1 text-xs">
                   <Plus className="w-3.5 h-3.5" /> Manage Education
@@ -569,31 +571,31 @@ export default function ProfilePage() {
                   {parsedEducation.map((edu, idx) => (
                     <div
                       key={idx}
-                      className="rounded-xl border border-slate-200/90 bg-slate-50/50 p-4 space-y-2 hover:border-indigo-200 transition-colors"
+                      className="rounded-xl border border-[#dfe7dc]/90 bg-[#f8faf6]/50 p-4 space-y-2 hover:border-[#c2dac9] transition-colors"
                     >
                       <div className="flex items-start justify-between gap-2">
-                        <span className="font-bold text-sm text-slate-900">{edu.degree || "Degree"}</span>
+                        <span className="font-bold text-sm text-[#192c24]">{edu.degree || "Degree"}</span>
                         {edu.passingYear && (
-                          <span className="text-[11px] font-semibold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-md">
+                          <span className="text-[11px] font-semibold bg-[#edf6ee] text-[#22543b] px-2 py-0.5 rounded-md">
                             {edu.passingYear}
                           </span>
                         )}
                       </div>
-                      <div className="text-xs text-slate-700 font-medium">{edu.institute || "Institution"}</div>
+                      <div className="text-xs text-[#42554a] font-medium">{edu.institute || "Institution"}</div>
                       {edu.major && (
-                        <div className="text-xs text-slate-500">Major / Group: <span className="text-slate-700 font-medium">{edu.major}</span></div>
+                        <div className="text-xs text-[#728177]">Major / Group: <span className="text-[#42554a] font-medium">{edu.major}</span></div>
                       )}
-                      <div className="flex items-center justify-between text-xs text-slate-500 pt-1 border-t border-slate-200/60">
-                        <span>CGPA / Grade: <strong className="text-slate-800">{edu.cgpaOrGrade || "N/A"}</strong></span>
+                      <div className="flex items-center justify-between text-xs text-[#728177] pt-1 border-t border-[#dfe7dc]/60">
+                        <span>CGPA / Grade: <strong className="text-[#2a4033]">{edu.cgpaOrGrade || "N/A"}</strong></span>
                         <span>{edu.boardOrUniversity || ""}</span>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-10 space-y-3 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                <div className="text-center py-10 space-y-3 bg-[#f8faf6] rounded-xl border border-dashed border-[#dfe7dc]">
                   <GraduationCap className="w-10 h-10 text-slate-300 mx-auto" />
-                  <p className="text-xs text-slate-500">No academic degrees recorded yet.</p>
+                  <p className="text-xs text-[#728177]">No academic degrees recorded yet.</p>
                   <Button onClick={openEditModal} size="sm" className="text-xs">
                     Add Education Records
                   </Button>
@@ -612,42 +614,42 @@ export default function ProfilePage() {
             exit={{ opacity: 0, y: -10 }}
             className="space-y-6"
           >
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                  <Briefcase className="w-5 h-5 text-indigo-600" /> Career Profile & Experience Overview
+            <div className="rounded-[15px] border border-[#dfe7dc] bg-white p-6 shadow-[0_3px_16px_rgba(21,45,30,.035)] space-y-4">
+              <div className="flex items-center justify-between border-b border-[#edf1e9] pb-3">
+                <h3 className="text-base font-bold text-[#192c24] flex items-center gap-2">
+                  <Briefcase className="w-5 h-5 text-[#2b6446]" /> Career Profile & Experience Overview
                 </h3>
               </div>
 
               <div className="space-y-4 text-xs sm:text-sm">
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-2">
-                  <span className="text-slate-500 font-bold uppercase tracking-wider text-xs block">
+                <div className="bg-[#f8faf6] p-4 rounded-xl border border-[#edf1e9] space-y-2">
+                  <span className="text-[#728177] font-bold uppercase tracking-wider text-xs block">
                     Current Professional Role
                   </span>
-                  <div className="text-base font-bold text-slate-900">
-                    {parsedCoding.designation || "Software Engineer / Job Candidate"}
+                  <div className="text-base font-bold text-[#192c24]">
+                    {parsedCoding.designation || "Not specified"}
                   </div>
                 </div>
 
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-2">
-                  <span className="text-slate-500 font-bold uppercase tracking-wider text-xs block">
+                <div className="bg-[#f8faf6] p-4 rounded-xl border border-[#edf1e9] space-y-2">
+                  <span className="text-[#728177] font-bold uppercase tracking-wider text-xs block">
                     Professional Summary & Target Focus
                   </span>
-                  <p className="text-slate-700 leading-relaxed">
+                  <p className="text-[#42554a] leading-relaxed">
                     {currentProfile.bioSummary || "Add your career summary in the profile editor."}
                   </p>
                 </div>
 
                 {parsedCoding.topSkills && parsedCoding.topSkills.length > 0 && (
-                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-2">
-                    <span className="text-slate-500 font-bold uppercase tracking-wider text-xs block">
+                  <div className="bg-[#f8faf6] p-4 rounded-xl border border-[#edf1e9] space-y-2">
+                    <span className="text-[#728177] font-bold uppercase tracking-wider text-xs block">
                       Core Technical Skills
                     </span>
                     <div className="flex flex-wrap gap-2 pt-1">
                       {parsedCoding.topSkills.map((skill, idx) => (
                         <span
                           key={idx}
-                          className="px-2.5 py-1 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-semibold"
+                          className="px-2.5 py-1 bg-white border border-[#dfe7dc] text-[#42554a] rounded-lg text-xs font-semibold"
                         >
                           {skill}
                         </span>
@@ -669,10 +671,10 @@ export default function ProfilePage() {
             exit={{ opacity: 0, y: -10 }}
             className="space-y-6"
           >
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                  <Code className="w-5 h-5 text-indigo-600" /> Competitive Programming & Online Handles
+            <div className="rounded-[15px] border border-[#dfe7dc] bg-white p-6 shadow-[0_3px_16px_rgba(21,45,30,.035)] space-y-4">
+              <div className="flex items-center justify-between border-b border-[#edf1e9] pb-3">
+                <h3 className="text-base font-bold text-[#192c24] flex items-center gap-2">
+                  <Code className="w-5 h-5 text-[#2b6446]" /> Competitive Programming & Online Handles
                 </h3>
                 <Button onClick={openEditModal} variant="secondary" size="sm" className="flex items-center gap-1 text-xs">
                   <Edit className="w-3.5 h-3.5" /> Edit Handles
@@ -680,18 +682,18 @@ export default function ProfilePage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs sm:text-sm">
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-1.5">
-                  <div className="flex items-center justify-between text-slate-500">
+                <div className="bg-[#f8faf6] p-4 rounded-xl border border-[#edf1e9] space-y-1.5">
+                  <div className="flex items-center justify-between text-[#728177]">
                     <span className="font-bold">GitHub</span>
-                    <Globe className="w-4 h-4 text-slate-400" />
+                    <Globe className="w-4 h-4 text-[#929f95]" />
                   </div>
-                  <div className="font-semibold text-slate-900 truncate">
+                  <div className="font-semibold text-[#192c24] truncate">
                     {parsedCoding.github ? (
                       <a
                         href={parsedCoding.github.startsWith("http") ? parsedCoding.github : `https://${parsedCoding.github}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-indigo-600 hover:underline flex items-center gap-1"
+                        className="text-[#2b6446] hover:underline flex items-center gap-1"
                       >
                         {parsedCoding.github} <ExternalLink className="w-3 h-3" />
                       </a>
@@ -701,18 +703,18 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-1.5">
-                  <div className="flex items-center justify-between text-slate-500">
+                <div className="bg-[#f8faf6] p-4 rounded-xl border border-[#edf1e9] space-y-1.5">
+                  <div className="flex items-center justify-between text-[#728177]">
                     <span className="font-bold">LinkedIn</span>
-                    <Globe className="w-4 h-4 text-slate-400" />
+                    <Globe className="w-4 h-4 text-[#929f95]" />
                   </div>
-                  <div className="font-semibold text-slate-900 truncate">
+                  <div className="font-semibold text-[#192c24] truncate">
                     {parsedCoding.linkedin ? (
                       <a
                         href={parsedCoding.linkedin.startsWith("http") ? parsedCoding.linkedin : `https://${parsedCoding.linkedin}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-indigo-600 hover:underline flex items-center gap-1"
+                        className="text-[#2b6446] hover:underline flex items-center gap-1"
                       >
                         {parsedCoding.linkedin} <ExternalLink className="w-3 h-3" />
                       </a>
@@ -722,18 +724,18 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-1.5">
-                  <div className="flex items-center justify-between text-slate-500">
+                <div className="bg-[#f8faf6] p-4 rounded-xl border border-[#edf1e9] space-y-1.5">
+                  <div className="flex items-center justify-between text-[#728177]">
                     <span className="font-bold">Codeforces</span>
                     <Award className="w-4 h-4 text-amber-500" />
                   </div>
-                  <div className="font-semibold text-slate-900 truncate">
+                  <div className="font-semibold text-[#192c24] truncate">
                     {parsedCoding.codeforces ? (
                       <a
                         href={`https://codeforces.com/profile/${parsedCoding.codeforces}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-indigo-600 hover:underline flex items-center gap-1"
+                        className="text-[#2b6446] hover:underline flex items-center gap-1"
                       >
                         {parsedCoding.codeforces} <ExternalLink className="w-3 h-3" />
                       </a>
@@ -743,18 +745,18 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-1.5">
-                  <div className="flex items-center justify-between text-slate-500">
+                <div className="bg-[#f8faf6] p-4 rounded-xl border border-[#edf1e9] space-y-1.5">
+                  <div className="flex items-center justify-between text-[#728177]">
                     <span className="font-bold">LeetCode</span>
                     <Award className="w-4 h-4 text-amber-500" />
                   </div>
-                  <div className="font-semibold text-slate-900 truncate">
+                  <div className="font-semibold text-[#192c24] truncate">
                     {parsedCoding.leetcode ? (
                       <a
                         href={`https://leetcode.com/${parsedCoding.leetcode}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-indigo-600 hover:underline flex items-center gap-1"
+                        className="text-[#2b6446] hover:underline flex items-center gap-1"
                       >
                         {parsedCoding.leetcode} <ExternalLink className="w-3 h-3" />
                       </a>
@@ -764,28 +766,28 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-1.5">
-                  <div className="flex items-center justify-between text-slate-500">
+                <div className="bg-[#f8faf6] p-4 rounded-xl border border-[#edf1e9] space-y-1.5">
+                  <div className="flex items-center justify-between text-[#728177]">
                     <span className="font-bold">CodeChef</span>
                     <Award className="w-4 h-4 text-amber-500" />
                   </div>
-                  <div className="font-semibold text-slate-900 truncate">
+                  <div className="font-semibold text-[#192c24] truncate">
                     {parsedCoding.codechef || "Not Provided"}
                   </div>
                 </div>
 
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-1.5">
-                  <div className="flex items-center justify-between text-slate-500">
+                <div className="bg-[#f8faf6] p-4 rounded-xl border border-[#edf1e9] space-y-1.5">
+                  <div className="flex items-center justify-between text-[#728177]">
                     <span className="font-bold">Portfolio Website</span>
-                    <Globe className="w-4 h-4 text-slate-400" />
+                    <Globe className="w-4 h-4 text-[#929f95]" />
                   </div>
-                  <div className="font-semibold text-slate-900 truncate">
+                  <div className="font-semibold text-[#192c24] truncate">
                     {parsedCoding.portfolioUrl ? (
                       <a
                         href={parsedCoding.portfolioUrl.startsWith("http") ? parsedCoding.portfolioUrl : `https://${parsedCoding.portfolioUrl}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-indigo-600 hover:underline flex items-center gap-1"
+                        className="text-[#2b6446] hover:underline flex items-center gap-1"
                       >
                         {parsedCoding.portfolioUrl} <ExternalLink className="w-3 h-3" />
                       </a>
@@ -808,12 +810,12 @@ export default function ProfilePage() {
       >
         <form onSubmit={handleSave} className="space-y-4 max-h-[80vh] overflow-y-auto pr-1">
           {/* Modal Tab Navigator */}
-          <div className="flex items-center gap-1 overflow-x-auto border-b border-slate-200 pb-2 scrollbar-none text-xs">
+          <div className="flex items-center gap-1 overflow-x-auto border-b border-[#dfe7dc] pb-2 scrollbar-none text-xs">
             <button
               type="button"
               onClick={() => setModalTab("basic")}
               className={`px-3 py-1.5 rounded-lg font-semibold transition-colors whitespace-nowrap cursor-pointer ${
-                modalTab === "basic" ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                modalTab === "basic" ? "bg-[#2b6446] text-white" : "bg-[#edf1e9] text-[#58685e] hover:bg-[#dfe7dc]"
               }`}
             >
               Basic Info
@@ -822,7 +824,7 @@ export default function ProfilePage() {
               type="button"
               onClick={() => setModalTab("identity")}
               className={`px-3 py-1.5 rounded-lg font-semibold transition-colors whitespace-nowrap cursor-pointer ${
-                modalTab === "identity" ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                modalTab === "identity" ? "bg-[#2b6446] text-white" : "bg-[#edf1e9] text-[#58685e] hover:bg-[#dfe7dc]"
               }`}
             >
               Identity & Civil
@@ -831,7 +833,7 @@ export default function ProfilePage() {
               type="button"
               onClick={() => setModalTab("present")}
               className={`px-3 py-1.5 rounded-lg font-semibold transition-colors whitespace-nowrap cursor-pointer ${
-                modalTab === "present" ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                modalTab === "present" ? "bg-[#2b6446] text-white" : "bg-[#edf1e9] text-[#58685e] hover:bg-[#dfe7dc]"
               }`}
             >
               Present Address
@@ -840,7 +842,7 @@ export default function ProfilePage() {
               type="button"
               onClick={() => setModalTab("permanent")}
               className={`px-3 py-1.5 rounded-lg font-semibold transition-colors whitespace-nowrap cursor-pointer ${
-                modalTab === "permanent" ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                modalTab === "permanent" ? "bg-[#2b6446] text-white" : "bg-[#edf1e9] text-[#58685e] hover:bg-[#dfe7dc]"
               }`}
             >
               Permanent Address
@@ -849,7 +851,7 @@ export default function ProfilePage() {
               type="button"
               onClick={() => setModalTab("education")}
               className={`px-3 py-1.5 rounded-lg font-semibold transition-colors whitespace-nowrap cursor-pointer ${
-                modalTab === "education" ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                modalTab === "education" ? "bg-[#2b6446] text-white" : "bg-[#edf1e9] text-[#58685e] hover:bg-[#dfe7dc]"
               }`}
             >
               Education
@@ -858,7 +860,7 @@ export default function ProfilePage() {
               type="button"
               onClick={() => setModalTab("coding")}
               className={`px-3 py-1.5 rounded-lg font-semibold transition-colors whitespace-nowrap cursor-pointer ${
-                modalTab === "coding" ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                modalTab === "coding" ? "bg-[#2b6446] text-white" : "bg-[#edf1e9] text-[#58685e] hover:bg-[#dfe7dc]"
               }`}
             >
               Coding & Handles
@@ -913,7 +915,7 @@ export default function ProfilePage() {
                   value={formData.bioSummary || ""}
                   onChange={(e) => setFormData({ ...formData, bioSummary: e.target.value })}
                   placeholder="Write a brief overview of your background, career focus, and skills..."
-                  className="w-full rounded-xl border border-slate-200 bg-white p-3 text-xs sm:text-sm text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all"
+                  className="w-full rounded-xl border border-[#dfe7dc] bg-white p-3 text-xs sm:text-sm text-[#192c24] focus:border-[#408660] focus:ring-1 focus:ring-[#408660] outline-none transition-all"
                 />
               </div>
             </div>
@@ -953,7 +955,7 @@ export default function ProfilePage() {
                   <select
                     value={formData.gender || "Male"}
                     onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all"
+                    className="w-full rounded-xl border border-[#dfe7dc] bg-white p-2.5 text-xs sm:text-sm text-[#192c24] focus:border-[#408660] focus:ring-1 focus:ring-[#408660] outline-none transition-all"
                   >
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
@@ -966,7 +968,7 @@ export default function ProfilePage() {
                   <select
                     value={formData.maritalStatus || "Single"}
                     onChange={(e) => setFormData({ ...formData, maritalStatus: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all"
+                    className="w-full rounded-xl border border-[#dfe7dc] bg-white p-2.5 text-xs sm:text-sm text-[#192c24] focus:border-[#408660] focus:ring-1 focus:ring-[#408660] outline-none transition-all"
                   >
                     <option value="Single">Single</option>
                     <option value="Married">Married</option>
@@ -1014,7 +1016,7 @@ export default function ProfilePage() {
           {/* Tab: Present Address */}
           {modalTab === "present" && (
             <div className="space-y-3 pt-1">
-              <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Present Address (Voter Location)</h4>
+              <h4 className="text-xs font-bold text-[#192c24] uppercase tracking-wider">Present Address (Voter Location)</h4>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div><Label>Division</Label><Input value={formData.presentDivision || ""} onChange={(e) => setFormData({ ...formData, presentDivision: e.target.value })} /></div>
                 <div><Label>District</Label><Input value={formData.presentDistrict || ""} onChange={(e) => setFormData({ ...formData, presentDistrict: e.target.value })} /></div>
@@ -1032,7 +1034,7 @@ export default function ProfilePage() {
           {/* Tab: Permanent Address */}
           {modalTab === "permanent" && (
             <div className="space-y-3 pt-1">
-              <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Permanent Address</h4>
+              <h4 className="text-xs font-bold text-[#192c24] uppercase tracking-wider">Permanent Address</h4>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div><Label>Division</Label><Input value={formData.permanentDivision || ""} onChange={(e) => setFormData({ ...formData, permanentDivision: e.target.value })} /></div>
                 <div><Label>District</Label><Input value={formData.permanentDistrict || ""} onChange={(e) => setFormData({ ...formData, permanentDistrict: e.target.value })} /></div>
@@ -1050,26 +1052,26 @@ export default function ProfilePage() {
           {modalTab === "education" && (
             <div className="space-y-4 pt-1">
               <div className="flex items-center justify-between">
-                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Academic Qualifications</h4>
+                <h4 className="text-xs font-bold text-[#192c24] uppercase tracking-wider">Academic Qualifications</h4>
                 <button
                   type="button"
                   onClick={handleAddEducation}
-                  className="px-2.5 py-1 text-xs font-semibold bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg flex items-center gap-1 transition-colors cursor-pointer"
+                  className="px-2.5 py-1 text-xs font-semibold bg-[#edf6ee] text-[#2b6446] hover:bg-[#e5f1e8] rounded-lg flex items-center gap-1 transition-colors cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" /> Add Degree
                 </button>
               </div>
 
               {educationList.length === 0 && (
-                <div className="text-center py-6 text-xs text-slate-400 border border-dashed border-slate-200 rounded-xl">
+                <div className="text-center py-6 text-xs text-[#929f95] border border-dashed border-[#dfe7dc] rounded-xl">
                   No education records added. Click "Add Degree" to record B.Sc, HSC, SSC, or certifications.
                 </div>
               )}
 
               {educationList.map((edu, idx) => (
-                <div key={idx} className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 space-y-3 relative">
+                <div key={idx} className="p-3.5 rounded-xl border border-[#dfe7dc] bg-[#f8faf6]/70 space-y-3 relative">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-indigo-700">Degree Entry #{idx + 1}</span>
+                    <span className="text-xs font-bold text-[#22543b]">Degree Entry #{idx + 1}</span>
                     <button
                       type="button"
                       onClick={() => handleRemoveEducation(idx)}
@@ -1137,7 +1139,7 @@ export default function ProfilePage() {
           {/* Tab: Coding & Handles */}
           {modalTab === "coding" && (
             <div className="space-y-4 pt-1">
-              <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Professional Handles & Designation</h4>
+              <h4 className="text-xs font-bold text-[#192c24] uppercase tracking-wider">Professional Handles & Designation</h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <Label>Professional Title / Designation</Label>
@@ -1192,7 +1194,7 @@ export default function ProfilePage() {
           )}
 
           {/* Modal Footer Controls */}
-          <div className="flex items-center justify-between border-t border-slate-200 pt-4">
+          <div className="flex items-center justify-between border-t border-[#dfe7dc] pt-4">
             <Button
               type="button"
               variant="secondary"

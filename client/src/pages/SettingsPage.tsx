@@ -104,71 +104,79 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-12">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-          Settings & Integrations
+        <h1 className="text-[30px] font-semibold tracking-[-.05em] text-[#192c24]">
+          Settings
         </h1>
-        <p className="mt-1 text-sm text-slate-600">
-          Manage automation webhooks (n8n, Telegram, Discord, Excel sync) and data backups.
+        <p className="mt-1 text-sm text-[#58685e]">
+          Manage connected automations and your application data.
         </p>
       </div>
 
+      <p className="rounded-[12px] border border-[#eadfbe] bg-[#fffaf0] px-4 py-3 text-xs leading-5 text-[#77633e]">Security note: Your current integration settings are stored in this browser's localStorage. Avoid using sensitive bot tokens on shared devices. For production, store secrets securely on the server.</p>
+
       {/* Automation Webhooks & Integrations */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 space-y-4 shadow-xs">
-        <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+      <div className="rounded-[15px] border border-[#dfe7dc] bg-white p-6 space-y-4 shadow-[0_3px_16px_rgba(21,45,30,.035)]">
+        <div className="flex items-center gap-3 border-b border-[#edf1e9] pb-4">
           <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
             <Bot className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-slate-900">n8n, Webhook & Bot Integrations</h3>
-            <p className="text-xs text-slate-500">Trigger live n8n Excel sheet backups or send alerts to Telegram/Discord on new applications.</p>
+            <h3 className="text-base font-bold text-[#192c24]">n8n, Webhook & Bot Integrations</h3>
+            <p className="text-xs text-[#728177]">Trigger live n8n Excel sheet backups or send alerts to Telegram/Discord on new applications.</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-              <Send className="w-3.5 h-3.5 text-indigo-500" /> n8n / Excel Webhook URL
+            <label className="text-xs font-semibold text-[#42554a] flex items-center gap-1.5">
+              <Send className="w-3.5 h-3.5 text-[#408660]" /> n8n / Excel Webhook URL
             </label>
             <Input
-              placeholder="https://n8n.example.com/webhook/job-application"
+              type="password"
+              autoComplete="off"
+              placeholder="n8n webhook URL"
               value={n8nWebhookUrl}
               onChange={(e) => setN8nWebhookUrl(e.target.value)}
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-              <Bell className="w-3.5 h-3.5 text-indigo-500" /> Discord Webhook URL
+            <label className="text-xs font-semibold text-[#42554a] flex items-center gap-1.5">
+              <Bell className="w-3.5 h-3.5 text-[#408660]" /> Discord Webhook URL
             </label>
             <Input
-              placeholder="https://discord.com/api/webhooks/..."
+              type="password"
+              autoComplete="off"
+              placeholder="Discord webhook URL"
               value={discordWebhookUrl}
               onChange={(e) => setDiscordWebhookUrl(e.target.value)}
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 block">Telegram Bot Token</label>
+            <label className="text-xs font-semibold text-[#42554a] block">Telegram Bot Token</label>
             <Input
-              placeholder="123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ"
+              type="password"
+              autoComplete="off"
+              placeholder="Bot token"
               value={telegramToken}
               onChange={(e) => setTelegramToken(e.target.value)}
             />
-            <p className="text-[11px] text-slate-500">Obtain from <span className="font-medium text-slate-700">@BotFather</span> on Telegram.</p>
+            <p className="text-[11px] text-[#728177]">Obtain from <span className="font-medium text-[#42554a]">@BotFather</span> on Telegram.</p>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 block">Telegram Chat / Channel ID</label>
+            <label className="text-xs font-semibold text-[#42554a] block">Telegram Chat / Channel ID</label>
             <Input
               placeholder="Your User ID (e.g. 123456789) or Group ID (-100...)"
               value={telegramChatId}
               onChange={(e) => setTelegramChatId(e.target.value)}
             />
-            <p className="text-[11px] text-slate-500">
-              Enter your <span className="font-medium text-slate-700">personal user ID</span> (from <span className="font-medium text-slate-700">@userinfobot</span>) or group/channel ID. Do not enter the bot&apos;s own ID.
+            <p className="text-[11px] text-[#728177]">
+              Enter your <span className="font-medium text-[#42554a]">personal user ID</span> (from <span className="font-medium text-[#42554a]">@userinfobot</span>) or group/channel ID. Do not enter the bot&apos;s own ID.
             </p>
           </div>
         </div>
@@ -183,21 +191,21 @@ export default function SettingsPage() {
             disabled={testingWebhooks}
             className="flex items-center gap-2"
           >
-            <Send className="w-4 h-4 text-indigo-500" />
+            <Send className="w-4 h-4 text-[#408660]" />
             {testingWebhooks ? "Sending Test Payload..." : "Test Webhooks (Send Ping)"}
           </Button>
         </div>
       </div>
 
       {/* Data Backup & Export Section */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 space-y-4 shadow-xs">
-        <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+      <div className="rounded-[15px] border border-[#dfe7dc] bg-white p-6 space-y-4 shadow-[0_3px_16px_rgba(21,45,30,.035)]">
+        <div className="flex items-center gap-3 border-b border-[#edf1e9] pb-4">
           <div className="p-3 bg-amber-50 text-amber-600 rounded-xl">
             <Database className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-slate-900">Data Backup & Restore</h3>
-            <p className="text-xs text-slate-500">Export your complete job tracking pipeline as CSV or import back data.</p>
+            <h3 className="text-base font-bold text-[#192c24]">Data Backup & Restore</h3>
+            <p className="text-xs text-[#728177]">Export your complete job tracking pipeline as CSV or import back data.</p>
           </div>
         </div>
 
@@ -206,7 +214,7 @@ export default function SettingsPage() {
             <Download className="w-4 h-4" /> Export CSV Backup
           </Button>
 
-          <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition-colors">
+          <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-[#edf1e9] hover:bg-[#dfe7dc] text-[#42554a] text-sm font-semibold rounded-xl transition-colors">
             <Upload className="w-4 h-4" /> {importing ? "Importing..." : "Import CSV File"}
             <input
               type="file"
