@@ -1,840 +1,254 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import {
+  ArrowRight, ArrowUpRight, BriefcaseBusiness, CalendarDays,
+  CheckCircle2, FileText, Filter, Layers3,
+  RefreshCw, SearchX, Sparkles, Target, TrendingUp,
+  AlertCircle, BarChart3, Globe2, Activity,
+} from "lucide-react";
+import {
+  Area, AreaChart, CartesianGrid, Cell, Pie, PieChart,
+  ResponsiveContainer, Tooltip, XAxis, YAxis,
+} from "recharts";
 import { getDashboardSummary, getDashboardAnalytics } from "@/services/dashboardService";
-import { getFailureAnalytics } from "@/services/rejectionService";
-import { aiAdvisorService } from "@/services/aiAdvisorService";
 import type { DashboardAnalytics } from "@/services/dashboardService";
 import type { DashboardSummary } from "@/types/dashboard";
-import type { FailureAnalytics } from "@/types/rejection";
-import type { AiCareerInsight } from "@/types/ai-advisor";
-import { AiCareerAdvisorCard } from "@/components/dashboard/AiCareerAdvisorCard";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-  AreaChart,
-  Area,
-} from "recharts";
-import {
-  Briefcase,
-  CheckCircle2,
-  TrendingUp,
-  Award,
-  BarChart3,
-  Layers,
-  PieChart as PieIcon,
-  Globe,
-  Filter,
-  Zap,
-  AlertTriangle,
-  Lightbulb,
-  Check,
-  Compass,
-  Clock,
-  ShieldAlert,
-  Gauge,
-  Brain,
-  BookOpen,
-  Target,
-  TrendingDown,
-} from "lucide-react";
-
 import { DashboardSkeleton } from "@/components/common/Skeletons";
 
-const STATUS_COLORS = ["#6366f1", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4"];
-const PLATFORM_COLORS = ["#3b82f6", "#10b981", "#8b5cf6", "#f59e0b", "#ec4899", "#64748b"];
-const FAILURE_COLORS = ["#f43f5e", "#fb7185", "#f97316", "#eab308", "#8b5cf6", "#06b6d4"];
+/**
+ * Drop-in dashboard page using existing API services.
+ * The application's existing layout is responsible for the global sidebar/topbar.
+ * No example application records are fabricated: date-based reminders and a live
+ * activity feed require endpoints not supplied in the original dashboard page.
+ */
+const GREEN = "#27613f";
+const STATUS_PALETTE = ["#92bda0", "#c6ddbd", "#2e7950", "#5c9b70", "#d6dad5", "#b5c6bd", "#d9b38c"];
+const TOOLTIP_STYLE = {
+  background: "#1c2c25", border: "1px solid #304638", borderRadius: 12,
+  color: "#fff", boxShadow: "0 12px 35px rgba(0,0,0,.14)", fontSize: 12,
+};
+
+const panel = "rounded-[18px] border border-[#e5e8e2] bg-white shadow-[0_2px_14px_rgba(25,45,29,0.025)]";
+const action = "inline-flex min-h-10 items-center justify-center gap-2 rounded-[10px] px-4 text-[13px] font-semibold transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#357a50] active:scale-[0.98]";
+const fmt = (n: number) => new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 }).format(n);
+const num = (n: unknown) => (typeof n === "number" && Number.isFinite(n) ? n : 0);
+const css = `
+  @keyframes jt-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes jt-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  .jt-enter { animation: jt-rise .55s cubic-bezier(.2,.75,.2,1) both; }
+  .jt-fill { transform-origin: left; animation: jt-fill .9s cubic-bezier(.2,.75,.2,1) both; }
+  .jt-enter-delay-1 { animation-delay: 80ms; }
+  .jt-enter-delay-2 { animation-delay: 150ms; }
+  .jt-enter-delay-3 { animation-delay: 220ms; }
+  .jt-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+  .jt-scroll::-webkit-scrollbar-thumb { background: #d9e3d9; border-radius: 6px; }
+  @media (prefers-reduced-motion: reduce) { .jt-enter, .jt-fill { animation: none !important; } * { scroll-behavior: auto !important; } }
+`;
+
+type IconComponent = typeof BriefcaseBusiness;
+function Metric({ label, value, icon: Icon, caption, tone = "green" }: {
+  label: string; value: string | number; icon: IconComponent; caption?: string;
+  tone?: "green" | "red" | "neutral";
+}) {
+  const toneClass = tone === "red" ? "bg-[#fbe9e8] text-[#ad4943]" : tone === "neutral" ? "bg-[#f0f1ed] text-[#5e6b60]" : "bg-[#eaf4e9] text-[#27613f]";
+  return (
+    <div className={`${panel} group min-w-0 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(35,71,43,.08)] sm:p-5`}>
+      <div className="flex items-start gap-3.5">
+        <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl ${toneClass}`}><Icon size={21} strokeWidth={1.8} /></span>
+        <div className="min-w-0">
+          <p className="text-[27px] font-semibold leading-none tracking-[-.045em] text-[#18251f] tabular-nums sm:text-[30px]">{value}</p>
+          <p className="mt-2 text-[12px] font-medium text-[#55635a] sm:text-[13px]">{label}</p>
+          {caption && <p className="mt-1 text-[11px] text-[#8a968d]">{caption}</p>}
+        </div>
+      </div>
+    </div>
+  );
+}
+function PanelHeading({ title, subtitle, to, linkText }: { title: string; subtitle?: string; to?: string; linkText?: string }) {
+  return <div className="flex flex-wrap items-start justify-between gap-3">
+    <div><h2 className="text-[16px] font-semibold tracking-[-.025em] text-[#1b2720] sm:text-[17px]">{title}</h2>
+      {subtitle && <p className="mt-1 text-[12px] leading-5 text-[#829085]">{subtitle}</p>}</div>
+    {to && <Link to={to} className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#27613f] transition-colors hover:text-[#123c27] focus-visible:underline">{linkText || "View all"}<ArrowRight size={14} /></Link>}
+  </div>;
+}
+function Empty({ title, description, icon: Icon = SearchX }: { title: string; description: string; icon?: IconComponent }) {
+  return <div className="flex min-h-[160px] flex-col items-center justify-center px-4 py-7 text-center">
+    <span className="mb-3 grid h-11 w-11 place-items-center rounded-full bg-[#f1f5f0] text-[#66816c]"><Icon size={20} strokeWidth={1.7} /></span>
+    <p className="text-[13px] font-semibold text-[#2f4135]">{title}</p>
+    <p className="mt-1 max-w-[260px] text-[12px] leading-5 text-[#8a968c]">{description}</p>
+  </div>;
+}
+function progressWidth(value: number, max: number) {
+  return `${max > 0 ? Math.max(0, Math.min(100, (value / max) * 100)) : 0}%`;
+}
 
 export default function DashboardPage() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(null);
-  const [failureAnalytics, setFailureAnalytics] = useState<FailureAnalytics | null>(null);
-  const [aiInsights, setAiInsights] = useState<AiCareerInsight | null>(null);
   const [loading, setLoading] = useState(true);
-  const [aiLoading, setAiLoading] = useState(true);
-  const [aiRefreshing, setAiRefreshing] = useState(false);
-  const [trackFilter, setTrackFilter] = useState<"All" | "Corporate" | "Govt & Bank">("All");
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    async function loadData() {
+    let mounted = true;
+    async function load() {
       try {
-        const [sumData, anaData, failData, aiData] = await Promise.all([
-          getDashboardSummary().catch(() => null),
-          getDashboardAnalytics().catch(() => null),
-          getFailureAnalytics().catch(() => null),
-          aiAdvisorService.getCareerInsights().catch(() => null),
+        const [s, a] = await Promise.all([
+          getDashboardSummary().catch(() => null), getDashboardAnalytics().catch(() => null),
         ]);
-        setSummary(sumData);
-        setAnalytics(anaData);
-        setFailureAnalytics(failData);
-        setAiInsights(aiData);
-      } finally {
-        setLoading(false);
-        setAiLoading(false);
-      }
+        if (!mounted) return;
+        setSummary(s); setAnalytics(a);
+      } finally { if (mounted) { setLoading(false); } }
     }
-    loadData();
+    void load();
+    return () => { mounted = false; };
   }, []);
 
-  const handleRefreshAiInsights = async () => {
-    setAiRefreshing(true);
+  async function refreshDashboard() {
+    setRefreshing(true);
     try {
-      const refreshed = await aiAdvisorService.refreshCareerInsights();
-      setAiInsights(refreshed);
-    } catch (err) {
-      console.error("Failed to refresh AI insights", err);
-    } finally {
-      setAiRefreshing(false);
-    }
-  };
-
-  const totalApplications = summary?.totalApplications ?? analytics?.totalApplications ?? 0;
-  const totalInterviews = summary?.totalInterviews ?? analytics?.totalInterviews ?? 0;
-  const totalOffers = summary?.totalOffers ?? analytics?.totalOffers ?? 0;
-  const responseRate = analytics?.responseRatePercentage ?? 0;
-  const conversionRate = analytics?.interviewConversionRatePercentage ?? 0;
-  const totalRetrospectives = failureAnalytics?.totalRetrospectives ?? 0;
-
-  // Filtered stage and root cause data based on trackFilter
-  const filteredStages = useMemo(() => {
-    if (!failureAnalytics?.stageBreakdown) return [];
-    if (trackFilter === "All") return failureAnalytics.stageBreakdown;
-    if (trackFilter === "Corporate") {
-      return failureAnalytics.stageBreakdown.filter((s) =>
-        ["Resume", "Screen", "Coding", "System Design", "Behavioral", "Offer"].some((k) =>
-          s.stage.includes(k)
-        )
-      );
-    }
-    return failureAnalytics.stageBreakdown.filter((s) =>
-      ["MCQ", "Preliminary", "Written", "Practical", "Viva", "Medical"].some((k) =>
-        s.stage.includes(k)
-      )
-    );
-  }, [failureAnalytics, trackFilter]);
-
-  const filteredRemediations = useMemo(() => {
-    if (!failureAnalytics?.remediationActionPlan) return [];
-    if (trackFilter === "All") return failureAnalytics.remediationActionPlan;
-    if (trackFilter === "Corporate") {
-      return failureAnalytics.remediationActionPlan.filter((r) =>
-        r.category.toLowerCase().includes("corporate") ||
-        r.category.toLowerCase().includes("algorithm") ||
-        r.category.toLowerCase().includes("general")
-      );
-    }
-    return failureAnalytics.remediationActionPlan.filter((r) =>
-      r.category.toLowerCase().includes("govt") ||
-      r.category.toLowerCase().includes("viva") ||
-      r.category.toLowerCase().includes("exam")
-    );
-  }, [failureAnalytics, trackFilter]);
-
-  // Chart data formatting from real analytics
-  const statusChartData = useMemo(() => {
-    if (!analytics?.statusBreakdown || analytics.statusBreakdown.length === 0) return [];
-    return analytics.statusBreakdown.map((item) => ({
-      name: item.status || "Other",
-      value: item.count,
-    }));
-  }, [analytics]);
-
-  const platformChartData = useMemo(() => {
-    if (!analytics?.platformBreakdown || analytics.platformBreakdown.length === 0) return [];
-    return analytics.platformBreakdown.map((item) => ({
-      platform: item.platform,
-      count: item.count,
-    }));
-  }, [analytics]);
-
-  const priorityChartData = useMemo(() => {
-    if (!analytics?.priorityBreakdown || analytics.priorityBreakdown.length === 0) return [];
-    return analytics.priorityBreakdown.map((item) => ({
-      priority: item.priority,
-      count: item.count,
-    }));
-  }, [analytics]);
-
-  const weeklyVelocityData = useMemo(() => {
-    if (!analytics?.weeklyTrends || analytics.weeklyTrends.length === 0) return [];
-    return analytics.weeklyTrends.map((t) => ({
-      week: t.weekLabel,
-      applications: t.applicationCount,
-    }));
-  }, [analytics]);
-
-  const difficultyPressureData = useMemo(() => {
-    if (!failureAnalytics || totalRetrospectives === 0) return [];
-    return [
-      { metric: "Exam Difficulty", value: failureAnalytics.avgDifficultyRating, max: 5, fill: "#6366f1" },
-      { metric: "Time Pressure", value: failureAnalytics.avgTimePressureRating, max: 5, fill: "#f43f5e" },
-      { metric: "Self Confidence", value: failureAnalytics.avgConfidenceRating / 2, max: 5, fill: "#10b981" },
-    ];
-  }, [failureAnalytics, totalRetrospectives]);
-
-  if (loading) {
-    return <DashboardSkeleton />;
+      const [s, a] = await Promise.all([
+        getDashboardSummary().catch(() => null), getDashboardAnalytics().catch(() => null),
+      ]);
+      setSummary(s); setAnalytics(a);
+    } finally { setRefreshing(false); }
   }
+  const total = num(summary?.totalApplications ?? analytics?.totalApplications);
+  const interviews = num(summary?.totalInterviews ?? analytics?.totalInterviews);
+  const offers = num(summary?.totalOffers ?? analytics?.totalOffers);
+  const responseRate = num(analytics?.responseRatePercentage);
+  const conversionRate = num(analytics?.interviewConversionRatePercentage);
+  const statusData = useMemo(() => (analytics?.statusBreakdown ?? [])
+    .map(s => ({ name: s.status || "Other", value: num(s.count) })).filter(s => s.value > 0), [analytics]);
+  const platformData = useMemo(() => (analytics?.platformBreakdown ?? [])
+    .map(s => ({ name: s.platform, value: num(s.count) })).sort((a,b) => b.value - a.value).slice(0, 6), [analytics]);
+  const priorityData = useMemo(() => (analytics?.priorityBreakdown ?? [])
+    .map(s => ({ name: s.priority, value: num(s.count) })).sort((a,b) => b.value - a.value), [analytics]);
+  const weeklyData = useMemo(() => (analytics?.weeklyTrends ?? [])
+    .map(s => ({ week: s.weekLabel, applications: num(s.applicationCount) })), [analytics]);
+  const statusTotal = statusData.reduce((sum, s) => sum + s.value, 0);
+  const mostCommonStatuses = [...statusData].sort((a,b) => b.value - a.value).slice(0, 5);
+  const activeStatuses = statusData.filter(s => /review|interview|screen|progress|assessment|shortlist|test|exam|pending/i.test(s.name));
+  const activeTotal = activeStatuses.reduce((sum, s) => sum + s.value, 0);
+  const rejectedTotal = statusData.filter(s => /reject|fail|declin/i.test(s.name)).reduce((sum,s) => sum + s.value,0);
+  const largestStage = Math.max(total, ...statusData.map(s => s.value), 1);
+  if (loading) return <DashboardSkeleton />;
 
-  return (
-    <div className="space-y-8 pb-12">
-      {/* Top Header & Track Switcher */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200 pb-5">
+  return <div className="jt-scroll relative min-w-0 bg-[#f9faf7] pb-14 font-['Inter',system-ui,sans-serif] text-[#243229]">
+    <style>{css}</style>
+    <div className="mx-auto max-w-[1600px] space-y-6 pt-1 sm:space-y-7 sm:pt-2">
+      {/* The app shell already renders the navigation sidebar and search topbar. */}
+      <header className="jt-enter flex flex-wrap items-end justify-between gap-5 pb-1">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2.5">
-            <BarChart3 className="w-7 h-7 text-indigo-600" />
-            Executive Career Operations & Failure Analytics
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Real-time pipeline metrics, multi-variable Google-Form post-mortems, and senior remediation intelligence.
-          </p>
+          <div className="mb-2 flex items-center gap-2 text-[11px] font-medium tracking-wide text-[#809083]"><span>Workspace</span><span>/</span><span className="text-[#2b6742]">Overview</span></div>
+          <h1 className="text-[27px] font-semibold leading-tight tracking-[-.045em] text-[#18251e] sm:text-[33px]">Your job search, at a glance.</h1>
+          <p className="mt-2 text-[13px] leading-5 text-[#768279] sm:text-[14px]">Stay on top of your applications, measure progress, and make your next move.</p>
         </div>
-
-        {/* Track Filter Tabs */}
-        <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200/80 text-xs font-semibold self-start sm:self-auto">
-          <button
-            onClick={() => setTrackFilter("All")}
-            className={`px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${
-              trackFilter === "All"
-                ? "bg-white text-slate-900 shadow-xs font-bold"
-                : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            All Tracks ({totalApplications})
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+          <button onClick={refreshDashboard} disabled={refreshing} className={`${action} border border-[#dce4dc] bg-white text-[#3f5646] hover:border-[#b7cbbb] hover:bg-[#f4f8f3] disabled:opacity-60`}>
+            <RefreshCw size={15} className={refreshing ? "animate-spin" : ""}/> Refresh
           </button>
-          <button
-            onClick={() => setTrackFilter("Corporate")}
-            className={`px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
-              trackFilter === "Corporate"
-                ? "bg-white text-indigo-600 shadow-xs font-bold"
-                : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            <Target className="w-3.5 h-3.5" />
-            <span>Corporate Tech</span>
-          </button>
-          <button
-            onClick={() => setTrackFilter("Govt & Bank")}
-            className={`px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
-              trackFilter === "Govt & Bank"
-                ? "bg-white text-purple-600 shadow-xs font-bold"
-                : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            <BookOpen className="w-3.5 h-3.5" />
-            <span>Govt & Bank</span>
-          </button>
+          <Link to="/applications" className={`${action} bg-[#255b3a] text-white shadow-[0_3px_9px_rgba(25,80,47,.13)] hover:bg-[#1a452d]`}>
+            <BriefcaseBusiness size={15}/> View applications <ArrowUpRight size={14}/>
+          </Link>
         </div>
-      </div>
+      </header>
 
-      {/* KPI Highlights: 6 Modern Metrics Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6">
-        {/* Metric 1: Total Applications */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs flex items-center gap-3.5">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-            <Briefcase className="w-5 h-5" />
-          </div>
-          <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Pipeline</p>
-            <p className="text-2xl font-black text-slate-900">{totalApplications}</p>
-          </div>
-        </div>
+      <section className="jt-enter jt-enter-delay-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3" aria-label="Application statistics">
+        <Metric icon={FileText} value={fmt(total)} label="Total applications" />
+        <Metric icon={Activity} value={fmt(activeTotal)} label="In progress" caption="Based on current statuses" />
+        <Metric
+          icon={CalendarDays}
+          value={fmt(interviews)}
+          label="Interviews & exams"
+          caption={
+            summary?.totalInterviewRoundsPassed && summary.totalInterviewRoundsPassed > 0
+              ? `${summary.totalInterviewRoundsPassed} rounds passed`
+              : undefined
+          }
+        />
+        <Metric icon={CheckCircle2} value={fmt(offers)} label="Offers" />
+        <Metric icon={AlertCircle} value={fmt(rejectedTotal)} label="Rejected / failed" tone="red" />
+      </section>
 
-        {/* Metric 2: Response Rate */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs flex items-center gap-3.5">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
-            <TrendingUp className="w-5 h-5" />
-          </div>
-          <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Response Rate</p>
-            <p className="text-2xl font-black text-indigo-600">{responseRate}%</p>
-          </div>
-        </div>
+      <div className="jt-enter jt-enter-delay-2 grid min-w-0 grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+        <section className={`${panel} min-w-0 p-5 sm:p-6`}>
+          <PanelHeading title="Application pipeline" subtitle="Current distribution across your application statuses" to="/applications" linkText="View applications"/>
+          {statusData.length ? <div className="mt-8 space-y-4">
+            {mostCommonStatuses.map((s, index) => <div key={s.name} className="grid grid-cols-[minmax(0,126px)_1fr_42px] items-center gap-3 sm:grid-cols-[minmax(0,170px)_1fr_54px]">
+              <span className="truncate text-[12px] font-medium text-[#43564a]" title={s.name}>{s.name}</span>
+              <div className="h-3 overflow-hidden rounded-full bg-[#edf1eb]"><div className="jt-fill h-full rounded-full" style={{ width: progressWidth(s.value, largestStage), backgroundColor: STATUS_PALETTE[index % STATUS_PALETTE.length], animationDelay: `${index * 90 + 120}ms` }}/></div>
+              <span className="text-right text-[13px] font-semibold tabular-nums text-[#2a382e]">{fmt(s.value)}</span>
+            </div>)}
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-2 border-t border-[#edf0ea] pt-4 text-[12px] text-[#819085]"><span>{fmt(statusTotal)} categorized applications</span><span>{statusData.length} distinct statuses</span></div>
+          </div> : <Empty title="No pipeline data yet" description="Your application statuses will appear here as you start tracking opportunities." icon={Layers3}/>}
+        </section>
 
-        {/* Metric 3: Interviews & Exams */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs flex items-center gap-3.5">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
-            <Zap className="w-5 h-5" />
-          </div>
-          <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Interviews/Exams</p>
-            <p className="text-2xl font-black text-slate-900">{totalInterviews}</p>
-          </div>
-        </div>
-
-        {/* Metric 4: Offers Won */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs flex items-center gap-3.5">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
-            <Award className="w-5 h-5" />
-          </div>
-          <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Offers Won</p>
-            <p className="text-2xl font-black text-emerald-600">{totalOffers}</p>
-          </div>
-        </div>
-
-        {/* Metric 5: Conversion Rate */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs flex items-center gap-3.5">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
-            <CheckCircle2 className="w-5 h-5" />
-          </div>
-          <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Offer Ratio</p>
-            <p className="text-2xl font-black text-purple-600">{conversionRate}%</p>
-          </div>
-        </div>
-
-        {/* Metric 6: Post-Mortems */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs flex items-center gap-3.5">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
-            <AlertTriangle className="w-5 h-5" />
-          </div>
-          <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Post-Mortems</p>
-            <p className="text-2xl font-black text-rose-600">{totalRetrospectives}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* AI Strategic Career Advisor Insights */}
-      <AiCareerAdvisorCard
-        insights={aiInsights}
-        loading={aiLoading}
-        refreshing={aiRefreshing}
-        onRefresh={handleRefreshAiInsights}
-      />
-
-      {/* Conversion Funnel Progress Diagram */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <Layers className="w-5 h-5 text-indigo-600" />
-            <h2 className="text-base font-bold text-slate-900">
-              Recruitment Conversion Funnel & Velocity
-            </h2>
-          </div>
-          <span className="text-xs font-semibold text-slate-500">
-            End-to-End Success & Drop-off Flow
-          </span>
-        </div>
-
-        {/* Visual Progress Bar Funnel */}
-        <div className="space-y-3 pt-2">
-          {/* Stage 1: Applications Sent */}
-          <div>
-            <div className="flex justify-between text-xs font-semibold text-slate-700 mb-1">
-              <span>1. Applications Submitted (Initial Base)</span>
-              <span className="font-bold text-slate-900">{totalApplications} ({totalApplications > 0 ? "100%" : "0%"})</span>
-            </div>
-            <div className="h-3 w-full rounded-full bg-slate-100 overflow-hidden">
-              <div
-                className="h-full bg-blue-500 rounded-full transition-all duration-500"
-                style={{ width: totalApplications > 0 ? "100%" : "0%" }}
-              />
-            </div>
-          </div>
-
-          {/* Stage 2: Interview Shortlist */}
-          <div>
-            <div className="flex justify-between text-xs font-semibold text-slate-700 mb-1">
-              <span>2. Recruiter & Exam Screened / Interview Shortlist</span>
-              <span className="font-bold text-indigo-600">
-                {totalInterviews} ({responseRate}%)
-              </span>
-            </div>
-            <div className="h-3 w-full rounded-full bg-slate-100 overflow-hidden">
-              <div
-                className="h-full bg-indigo-600 rounded-full transition-all duration-500"
-                style={{ width: `${Math.min(responseRate, 100)}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Stage 3: Job Offers */}
-          <div>
-            <div className="flex justify-between text-xs font-semibold text-slate-700 mb-1">
-              <span>3. Final Job Offers & Selection</span>
-              <span className="font-bold text-emerald-600">
-                {totalOffers} ({conversionRate}%)
-              </span>
-            </div>
-            <div className="h-3 w-full rounded-full bg-slate-100 overflow-hidden">
-              <div
-                className="h-full bg-emerald-500 rounded-full transition-all duration-500"
-                style={{ width: `${Math.min(conversionRate, 100)}%` }}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Analytical Visual Charts (4 Grid Charts) */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Chart 1: Application Velocity Area Chart */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-          <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-indigo-600" /> Weekly Application Velocity
-          </h2>
-          <div className="h-64 w-full pt-2">
-            {weeklyVelocityData.length > 0 ? (
+        <section className={`${panel} min-w-0 p-5 sm:p-6`}>
+          <PanelHeading title="Applications by status" subtitle="A snapshot of where things stand"/>
+          {statusData.length ? <div className="mt-4 flex flex-col items-center gap-4 sm:flex-row xl:flex-col 2xl:flex-row">
+            <div className="relative h-[212px] w-[212px] shrink-0" aria-label={`Status breakdown: ${statusTotal} categorized applications`}>
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={weeklyVelocityData}>
-                  <defs>
-                    <linearGradient id="colorApp" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8} />
-                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                  <XAxis dataKey="week" stroke="#64748b" fontSize={12} />
-                  <YAxis allowDecimals={false} stroke="#64748b" fontSize={12} />
-                  <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", color: "#fff", borderRadius: "12px" }} />
-                  <Area type="monotone" dataKey="applications" stroke="#6366f1" fillOpacity={1} fill="url(#colorApp)" name="Applications" />
-                </AreaChart>
+                <PieChart><Pie data={statusData} dataKey="value" innerRadius={69} outerRadius={92} paddingAngle={2} stroke="none" isAnimationActive animationDuration={850}>
+                  {statusData.map((s, i) => <Cell key={s.name} fill={STATUS_PALETTE[i % STATUS_PALETTE.length]} />)}
+                </Pie><Tooltip contentStyle={TOOLTIP_STYLE} itemStyle={{color:"#fff"}}/></PieChart>
               </ResponsiveContainer>
-            ) : (
-              <div className="h-full w-full flex flex-col items-center justify-center text-center p-6 border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
-                <BarChart3 className="w-8 h-8 text-slate-300 mb-2" />
-                <p className="text-sm font-semibold text-slate-700">No application velocity data yet</p>
-                <p className="text-xs text-slate-400 mt-1 max-w-xs">
-                  Submit applications to view weekly momentum and pace trends over time.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Chart 2: Status Breakdown Donut */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-          <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-            <PieIcon className="w-5 h-5 text-indigo-600" /> Pipeline Status Distribution
-          </h2>
-          <div className="h-64 w-full pt-2">
-            {statusChartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={statusChartData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={55}
-                    outerRadius={80}
-                    paddingAngle={4}
-                    dataKey="value"
-                  >
-                    {statusChartData.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={STATUS_COLORS[index % STATUS_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderRadius: "12px", color: "#fff" }} />
-                  <Legend iconType="circle" wrapperStyle={{ fontSize: "12px" }} />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-full w-full flex flex-col items-center justify-center text-center p-6 border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
-                <PieIcon className="w-8 h-8 text-slate-300 mb-2" />
-                <p className="text-sm font-semibold text-slate-700">No status distribution yet</p>
-                <p className="text-xs text-slate-400 mt-1 max-w-xs">
-                  Saved, Applied, Interviewing, and Offer stages will show your pipeline breakdown here.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Chart 3: Source Platforms Horizontal Bars */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-          <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-            <Globe className="w-5 h-5 text-indigo-600" /> Application Portals & Platforms
-          </h2>
-          <div className="h-64 w-full pt-2">
-            {platformChartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart layout="vertical" data={platformChartData}>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                  <XAxis type="number" allowDecimals={false} stroke="#64748b" fontSize={12} />
-                  <YAxis dataKey="platform" type="category" stroke="#64748b" fontSize={12} width={100} />
-                  <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", color: "#fff", borderRadius: "12px" }} />
-                  <Bar dataKey="count" fill="#10b981" radius={[0, 6, 6, 0]} name="Applications">
-                    {platformChartData.map((_, index) => (
-                      <Cell key={`cell-plat-${index}`} fill={PLATFORM_COLORS[index % PLATFORM_COLORS.length]} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-full w-full flex flex-col items-center justify-center text-center p-6 border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
-                <Globe className="w-8 h-8 text-slate-300 mb-2" />
-                <p className="text-sm font-semibold text-slate-700">No portal metrics yet</p>
-                <p className="text-xs text-slate-400 mt-1 max-w-xs">
-                  Discover where you yield the highest response rate across platforms like LinkedIn, Bdjobs, and Teletalk.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Chart 4: Role Priority Metrics */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-          <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-            <Filter className="w-5 h-5 text-indigo-600" /> Target Role Priority Breakdown
-          </h2>
-          <div className="h-64 w-full pt-2">
-            {priorityChartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={priorityChartData}>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                  <XAxis dataKey="priority" stroke="#64748b" fontSize={12} />
-                  <YAxis allowDecimals={false} stroke="#64748b" fontSize={12} />
-                  <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", color: "#fff", borderRadius: "12px" }} />
-                  <Bar dataKey="count" fill="#8b5cf6" radius={[6, 6, 0, 0]} name="Applications" />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-full w-full flex flex-col items-center justify-center text-center p-6 border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
-                <Filter className="w-8 h-8 text-slate-300 mb-2" />
-                <p className="text-sm font-semibold text-slate-700">No priority metrics yet</p>
-                <p className="text-xs text-slate-400 mt-1 max-w-xs">
-                  Analyze distribution across High, Medium, and Low target opportunities.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
+              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center"><strong className="text-[30px] leading-none font-semibold tracking-[-.04em] text-[#223127] tabular-nums">{fmt(statusTotal)}</strong><span className="mt-1 text-[11px] text-[#87948a]">Applications</span></div>
+            </div>
+            <div className="w-full min-w-0 flex-1 space-y-3">
+              {statusData.map((s, i) => <div key={s.name} className="flex min-w-0 items-center gap-2 text-[12px]"><span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{background:STATUS_PALETTE[i % STATUS_PALETTE.length]}}/><span className="min-w-0 flex-1 truncate text-[#657469]" title={s.name}>{s.name}</span><b className="font-semibold tabular-nums text-[#29392e]">{s.value}</b><span className="w-9 text-right tabular-nums text-[#94a096]">{Math.round(s.value / (statusTotal || 1)*100)}%</span></div>)}
+            </div>
+          </div> : <Empty title="Nothing to visualize" description="A status chart will be shown once you add applications." icon={BarChart3}/>}
+        </section>
       </div>
 
-      {/* SECTION: Deep Google-Form Post-Mortem Failure Analysis & Senior Remediation Engine */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-rose-600" />
-              <h2 className="text-lg font-bold text-slate-900">
-                Post-Mortem Diagnostic Analytics & Remediation Engine
-              </h2>
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Deep multi-variable statistical intelligence derived from structured post-mortem surveys on failed Corporate and Bangladesh Govt/Bank exams.
-            </p>
+      <div className="jt-enter jt-enter-delay-3 grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <section className={`${panel} min-w-0 p-5 sm:p-6`}>
+          <PanelHeading title="Response & conversion" subtitle="High-level recruiting outcomes"/>
+          <div className="mt-6 space-y-6">
+            {[{label:"Response rate",value:responseRate,icon:TrendingUp},{label:"Interview conversion",value:conversionRate,icon:Target}].map(item => <div key={item.label}>
+              <div className="mb-2 flex items-center justify-between gap-2"><span className="flex items-center gap-2 text-[12px] text-[#55665b]"><item.icon size={15} className="text-[#3d7852]"/>{item.label}</span><span className="text-[17px] font-semibold tabular-nums text-[#23372a]">{fmt(item.value)}%</span></div>
+              <div className="h-2.5 rounded-full bg-[#edf1eb]"><div className="jt-fill h-full rounded-full bg-[#3b8554]" style={{width:`${Math.max(0,Math.min(100,item.value))}%`}}/></div>
+            </div>)}
           </div>
-
-          <div className="flex items-center gap-2">
-            <span className="px-3.5 py-1 text-xs font-bold rounded-full bg-rose-50 text-rose-700 border border-rose-200">
-              {totalRetrospectives} Diagnostic Assessments Logged
-            </span>
+          <p className="mt-7 border-t border-[#edf0ea] pt-4 text-[11px] leading-5 text-[#8b978e]">Rates are supplied by your dashboard analytics API.</p>
+        </section>
+        <section className={`${panel} min-w-0 p-5 sm:p-6`}>
+          <PanelHeading title="Weekly momentum" subtitle="Applications submitted over time"/>
+          <div className="mt-4 h-[195px] min-w-0">
+            {weeklyData.length ? <ResponsiveContainer width="100%" height="100%"><AreaChart data={weeklyData} margin={{top:9,right:7,left:-26,bottom:0}}>
+              <defs><linearGradient id="jtWeeklyGreen" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#67a67c" stopOpacity={.28}/><stop offset="100%" stopColor="#67a67c" stopOpacity={0}/></linearGradient></defs>
+              <CartesianGrid vertical={false} stroke="#eef1eb" strokeDasharray="3 4"/><XAxis dataKey="week" tick={{fontSize:10,fill:"#98a49a"}} tickLine={false} axisLine={false}/><YAxis allowDecimals={false} tick={{fontSize:10,fill:"#98a49a"}} tickLine={false} axisLine={false}/>
+              <Tooltip contentStyle={TOOLTIP_STYLE} itemStyle={{color:"#fff"}}/><Area dataKey="applications" name="Applications" type="monotone" stroke={GREEN} strokeWidth={2.4} fill="url(#jtWeeklyGreen)" animationDuration={900}/>
+            </AreaChart></ResponsiveContainer> : <Empty title="No weekly history" description="Your weekly application trend will appear here." icon={Activity}/>}
           </div>
-        </div>
-
-        {failureAnalytics && totalRetrospectives > 0 ? (
-          <>
-            {/* Diagnostic Vital Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-4">
-                <div className="flex items-center gap-2 text-slate-500 text-xs font-semibold">
-                  <Gauge className="w-4 h-4 text-indigo-600" />
-                  <span>Avg Exam Difficulty</span>
-                </div>
-                <div className="text-xl font-bold text-slate-900 mt-1">
-                  {failureAnalytics.avgDifficultyRating} <span className="text-xs text-slate-400 font-normal">/ 5 ★</span>
-                </div>
-              </div>
-
-              <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-4">
-                <div className="flex items-center gap-2 text-slate-500 text-xs font-semibold">
-                  <Clock className="w-4 h-4 text-rose-600" />
-                  <span>Time Pressure Stress</span>
-                </div>
-                <div className="text-xl font-bold text-rose-600 mt-1">
-                  {failureAnalytics.avgTimePressureRating} <span className="text-xs text-slate-400 font-normal">/ 5</span>
-                </div>
-              </div>
-
-              <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-4">
-                <div className="flex items-center gap-2 text-slate-500 text-xs font-semibold">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  <span>Pre-Exam Confidence</span>
-                </div>
-                <div className="text-xl font-bold text-emerald-600 mt-1">
-                  {failureAnalytics.avgConfidenceRating} <span className="text-xs text-slate-400 font-normal">/ 10</span>
-                </div>
-              </div>
-
-              <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-4">
-                <div className="flex items-center gap-2 text-slate-500 text-xs font-semibold">
-                  <TrendingDown className="w-4 h-4 text-amber-500" />
-                  <span>Avg Cutoff Deficit</span>
-                </div>
-                <div className="text-xl font-bold text-amber-600 mt-1">
-                  ~{failureAnalytics.avgCutoffDeficit} <span className="text-xs text-slate-400 font-normal">pts gap</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Failure Distribution Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Elimination Stage Breakdown */}
-              <div className="rounded-xl border border-slate-100 bg-slate-50/60 p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                    <Compass className="w-4 h-4 text-indigo-600" />
-                    Elimination Stage Distribution ({trackFilter})
-                  </h3>
-                </div>
-                <div className="h-56 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      layout="vertical"
-                      data={filteredStages}
-                      margin={{ left: 20 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                      <XAxis type="number" stroke="#64748b" fontSize={11} />
-                      <YAxis
-                        dataKey="stage"
-                        type="category"
-                        stroke="#64748b"
-                        fontSize={11}
-                        width={130}
-                      />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: "#0f172a",
-                          borderColor: "#334155",
-                          color: "#fff",
-                          borderRadius: "12px",
-                        }}
-                      />
-                      <Bar dataKey="count" fill="#f43f5e" radius={[0, 4, 4, 0]} name="Failures">
-                        {filteredStages.map((_, idx) => (
-                          <Cell
-                            key={`cell-fail-${idx}`}
-                            fill={FAILURE_COLORS[idx % FAILURE_COLORS.length]}
-                          />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-
-              {/* Root Cause Breakdown */}
-              <div className="rounded-xl border border-slate-100 bg-slate-50/60 p-4 space-y-3">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                  <AlertTriangle className="w-4 h-4 text-amber-600" />
-                  Primary Root Cause Distribution
-                </h3>
-                <div className="h-56 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={failureAnalytics.rootCauseBreakdown}
-                        dataKey="count"
-                        nameKey="cause"
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={45}
-                        outerRadius={70}
-                        paddingAngle={3}
-                      >
-                        {failureAnalytics.rootCauseBreakdown.map((_, idx) => (
-                          <Cell
-                            key={`cell-cause-${idx}`}
-                            fill={FAILURE_COLORS[idx % FAILURE_COLORS.length]}
-                          />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: "#0f172a",
-                          borderColor: "#334155",
-                          color: "#fff",
-                          borderRadius: "12px",
-                        }}
-                      />
-                      <Legend iconType="circle" wrapperStyle={{ fontSize: "11px" }} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </div>
-
-            {/* Diagnostic Difficulty & Time Pressure Chart */}
-            <div className="rounded-xl border border-slate-100 bg-slate-50/60 p-4 space-y-3">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                <Gauge className="w-4 h-4 text-indigo-600" />
-                Exam Difficulty vs Time Pressure vs Confidence Index (Scaled to 5.0)
-              </h3>
-              <div className="h-48 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={difficultyPressureData}>
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                    <XAxis dataKey="metric" stroke="#64748b" fontSize={11} />
-                    <YAxis domain={[0, 5]} allowDecimals={true} stroke="#64748b" fontSize={11} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "#0f172a",
-                        borderColor: "#334155",
-                        color: "#fff",
-                        borderRadius: "12px",
-                      }}
-                    />
-                    <Bar dataKey="value" name="Rating Index" radius={[6, 6, 0, 0]}>
-                      {difficultyPressureData.map((entry, index) => (
-                        <Cell key={`cell-dp-${index}`} fill={entry.fill} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            {/* Topic Knowledge Gaps & External Blockers */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Technical / Subject Topic Gap Heatmap */}
-              <div className="space-y-2">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                  <Brain className="w-4 h-4 text-indigo-600" />
-                  Recurring Subject & Topic Gap Frequency
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {failureAnalytics.topTopicGaps && failureAnalytics.topTopicGaps.length > 0 ? (
-                    failureAnalytics.topTopicGaps.map((topicItem) => (
-                      <span
-                        key={topicItem.topic}
-                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200"
-                      >
-                        <span>{topicItem.topic}</span>
-                        <span className="px-1.5 py-0.2 text-[10px] rounded-full bg-rose-200 text-rose-800">
-                          {topicItem.count}
-                        </span>
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-xs text-slate-400 italic">No topic gaps logged yet</span>
-                  )}
-                </div>
-              </div>
-
-              {/* Environmental & External Blockers */}
-              <div className="space-y-2">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                  <ShieldAlert className="w-4 h-4 text-amber-600" />
-                  Environmental & External Blockers
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {failureAnalytics.topExternalBlockers && failureAnalytics.topExternalBlockers.length > 0 ? (
-                    failureAnalytics.topExternalBlockers.map((blockerItem) => (
-                      <span
-                        key={blockerItem.topic}
-                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200"
-                      >
-                        <span>{blockerItem.topic}</span>
-                        <span className="px-1.5 py-0.2 text-[10px] rounded-full bg-amber-200 text-amber-800">
-                          {blockerItem.count}
-                        </span>
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-xs text-slate-400 italic">No external blockers recorded</span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Preparation Time Correlation Matrix */}
-            {failureAnalytics.preparationCorrelation && failureAnalytics.preparationCorrelation.length > 0 && (
-              <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-4 space-y-2">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                  <Clock className="w-4 h-4 text-indigo-600" />
-                  Preparation Duration Correlation Matrix
-                </h3>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {failureAnalytics.preparationCorrelation.map((p) => (
-                    <div key={p.prepDuration} className="p-3 bg-white rounded-lg border border-slate-200 text-xs">
-                      <div className="font-bold text-slate-800">{p.prepDuration}</div>
-                      <div className="text-slate-500 text-[11px] mt-0.5">
-                        {p.count} failure(s) • Avg Conf: {p.avgConfidence}/10
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Senior Remediation Action Cards */}
-            <div className="space-y-3 pt-2">
-              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <Lightbulb className="w-4 h-4 text-amber-500" />
-                Senior Researcher & Engineering Remediation Roadmap ({trackFilter})
-              </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {filteredRemediations.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs space-y-2.5 hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full">
-                        {item.category}
-                      </span>
-                      <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                          item.priority === "High"
-                            ? "bg-rose-100 text-rose-700"
-                            : "bg-amber-100 text-amber-700"
-                        }`}
-                      >
-                        {item.priority} Priority
-                      </span>
-                    </div>
-
-                    <div>
-                      <h4 className="text-sm font-bold text-slate-900 leading-snug">
-                        {item.title}
-                      </h4>
-                      <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                        {item.description}
-                      </p>
-                    </div>
-
-                    <div className="rounded-lg bg-slate-50 p-3 border border-slate-100 text-xs text-slate-700 space-y-1">
-                      <div className="font-semibold text-slate-900 flex items-center gap-1.5">
-                        <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                        <span>Prescribed Practice Strategy:</span>
-                      </div>
-                      <p className="leading-relaxed text-slate-600 pl-5">
-                        {item.recommendedAction}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="rounded-xl border border-dashed border-slate-200 p-8 text-center bg-slate-50/50 space-y-2">
-            <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-400">
-              <Lightbulb className="w-5 h-5" />
-            </div>
-            <h3 className="text-sm font-semibold text-slate-800">
-              No Post-Mortem Assessments Logged Yet
-            </h3>
-            <p className="text-xs text-slate-500 max-w-md mx-auto">
-              When an application is rejected or failed (Corporate or Bangladesh Govt/Bank), click
-              the "Post-Mortem" button on the Applications page to record your diagnostic survey. The system
-              will compute deep statistical intelligence and expert practice strategies.
-            </p>
-          </div>
-        )}
+        </section>
+        <section className={`${panel} min-w-0 p-5 sm:p-6`}>
+          <PanelHeading title="Application sources" subtitle="Where your opportunities come from"/>
+          {platformData.length ? <div className="mt-6 space-y-4">{platformData.map((item,i) => <div key={item.name}>
+            <div className="mb-1.5 flex justify-between gap-2 text-[12px]"><span className="truncate text-[#5e7063]">{item.name}</span><span className="font-semibold tabular-nums text-[#314a38]">{item.value}</span></div>
+            <div className="h-2 rounded-full bg-[#edf1eb]"><div className="jt-fill h-full rounded-full" style={{width:progressWidth(item.value,platformData[0]?.value || 1),background:STATUS_PALETTE[i%STATUS_PALETTE.length]}}/></div>
+          </div>)}</div> : <Empty title="No sources yet" description="Application source statistics will appear when available." icon={Globe2}/>}
+        </section>
       </div>
+
+      <section className={`${panel} jt-enter p-5 sm:p-6`}>
+        <div className="flex flex-wrap items-center justify-between gap-3"><PanelHeading title="Priority overview" subtitle="How your application effort is distributed"/><Link to="/applications" className={`${action} border border-[#e1e9e0] bg-white text-[#346445] hover:bg-[#f5f8f3]`}><Filter size={14}/> Manage applications</Link></div>
+        {priorityData.length ? <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{priorityData.map((p,i) => <div key={p.name} className="rounded-xl border border-[#e8ede6] bg-[#fcfdfa] p-4">
+          <div className="flex items-center gap-2"><span className="h-2 w-2 rounded-full" style={{background:STATUS_PALETTE[i%STATUS_PALETTE.length]}}/><span className="truncate text-[12px] font-medium text-[#637267]">{p.name}</span></div>
+          <div className="mt-2 flex items-end justify-between"><span className="text-2xl font-semibold tracking-[-.04em] tabular-nums">{p.value}</span><span className="text-xs text-[#98a599]">applications</span></div>
+        </div>)}</div> : <Empty title="No priority information" description="Add priorities to your applications to see their breakdown." icon={Target}/>}
+      </section>
+
+      <section className={`${panel} jt-enter flex flex-col justify-between gap-4 p-5 sm:flex-row sm:items-center sm:p-6`}>
+        <div className="flex items-start gap-3">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#e8f1e8] text-[#337047]"><Sparkles size={21}/></span>
+          <div><h2 className="text-[16px] font-semibold tracking-tight text-[#1e2f23]">Go deeper with Career Intelligence</h2>
+          <p className="mt-1 max-w-xl text-[12px] leading-5 text-[#849188]">Explore AI recommendations, rejection diagnostics, root causes, and preparation plans in one dedicated workspace.</p></div>
+        </div>
+        <Link to="/career-intelligence" className={`${action} shrink-0 bg-[#255b3a] text-white hover:bg-[#1a452d]`}>Open intelligence <ArrowRight size={15}/></Link>
+      </section>
+
+      <footer className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[11px] text-[#9ba79c]"><span>Job Tracker · Your progress, clearly organized</span><span>Overview updates when dashboard data is refreshed</span></footer>
     </div>
-  );
+  </div>;
 }

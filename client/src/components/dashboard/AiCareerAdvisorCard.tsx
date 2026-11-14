@@ -55,12 +55,12 @@ export const AiCareerAdvisorCard: React.FC<AiCareerAdvisorCardProps> = ({
     : "Just now";
 
   return (
-    <div className="rounded-2xl border border-indigo-200/70 bg-gradient-to-b from-white via-white to-indigo-50/20 shadow-xs overflow-hidden">
+    <div className="rounded-2xl border border-[#dbe8d9]/70 bg-gradient-to-b from-white via-white to-indigo-50/20 shadow-xs overflow-hidden">
       {/* Top Header Bar */}
       <div className="border-b border-indigo-100/80 bg-gradient-to-r from-indigo-900 via-indigo-950 to-slate-900 px-6 py-4 text-white">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/20 text-indigo-300 ring-1 ring-indigo-400/30">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#eef5ec]0/20 text-indigo-300 ring-1 ring-indigo-400/30">
               <Sparkles className="h-5 w-5 animate-pulse" />
             </div>
             <div>
@@ -68,7 +68,7 @@ export const AiCareerAdvisorCard: React.FC<AiCareerAdvisorCardProps> = ({
                 <h2 className="text-base font-bold tracking-tight text-white">
                   Executive AI Career Strategist
                 </h2>
-                <span className="inline-flex items-center rounded-full bg-indigo-500/30 px-2 py-0.5 text-[10px] font-bold text-indigo-200 ring-1 ring-inset ring-indigo-400/40">
+                <span className="inline-flex items-center rounded-full bg-[#eef5ec]0/30 px-2 py-0.5 text-[10px] font-bold text-indigo-200 ring-1 ring-inset ring-indigo-400/40">
                   Gemini Flash Intelligence
                 </span>
               </div>
@@ -100,7 +100,7 @@ export const AiCareerAdvisorCard: React.FC<AiCareerAdvisorCardProps> = ({
             <button
               onClick={onRefresh}
               disabled={refreshing}
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition-all shadow-xs disabled:opacity-50 cursor-pointer active:scale-95"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-[#28593c] hover:bg-[#eef5ec]0 text-white transition-all shadow-xs disabled:opacity-50 cursor-pointer active:scale-95"
               title="Force re-generate a new AI assessment"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} />
@@ -115,7 +115,7 @@ export const AiCareerAdvisorCard: React.FC<AiCareerAdvisorCardProps> = ({
         {/* Executive Summary Callout */}
         <div className="rounded-xl border border-indigo-100 bg-gradient-to-r from-indigo-50/60 via-purple-50/40 to-blue-50/50 p-4.5 space-y-2">
           <div className="flex items-center gap-2 text-indigo-900 font-bold text-xs uppercase tracking-wider">
-            <TrendingUp className="w-4 h-4 text-indigo-600" />
+            <TrendingUp className="w-4 h-4 text-[#34684a]" />
             <span>Executive Pipeline Diagnostic & Velocity Assessment</span>
           </div>
           <p className="text-sm text-slate-800 leading-relaxed font-medium">
@@ -199,7 +199,7 @@ export const AiCareerAdvisorCard: React.FC<AiCareerAdvisorCardProps> = ({
                   className="rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs space-y-2 hover:border-indigo-300 transition-colors"
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#2b5d40] bg-[#eef5ec] px-2 py-0.5 rounded-md">
                       {action.category || "Strategy"}
                     </span>
                     <span

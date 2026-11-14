@@ -13,6 +13,7 @@ const CompaniesPage = lazy(() => import("./pages/CompaniesPage"));
 const RolesPage = lazy(() => import("./pages/RolesPage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
+const CareerIntelligencePage = lazy(() => import("./pages/CareerIntelligencePage"));
 
 function RouteLoadingFallback() {
   return (
@@ -46,6 +47,7 @@ export default function App() {
               <Route path="/companies" element={<CompaniesPage />} />
               <Route path="/roles" element={<RolesPage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/career-intelligence" element={<CareerIntelligencePage />} />
               <Route path="/settings" element={<SettingsPage />} />
             </Route>
           </Route>
