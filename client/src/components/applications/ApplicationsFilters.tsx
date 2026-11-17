@@ -29,17 +29,17 @@ export default function ApplicationsFilters({
   );
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+    <div className="rounded-xl border border-[#e1e8df] bg-white p-4">
       <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {/* Search Input with Icon */}
         <div className="relative">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3 pointer-events-none" />
+          <Search className="w-4 h-4 text-[#849387] absolute left-3 top-3 pointer-events-none" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange?.(e.target.value)}
             placeholder="Search company or role..."
-            className="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-slate-900 placeholder:text-slate-400"
+            className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-[#dbe4d8] rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-slate-900 placeholder:text-[#849387]"
           />
         </div>
 
@@ -84,11 +84,11 @@ export default function ApplicationsFilters({
       </div>
 
       {hasActiveFilters && (
-        <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+        <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-[#738477]">
           <span>Filtered results active</span>
           <button
             onClick={onReset}
-            className="flex items-center gap-1 text-indigo-600 hover:text-indigo-700 font-medium transition-colors cursor-pointer"
+            className="flex items-center gap-1 text-emerald-600 hover:text-emerald-700 font-medium transition-colors cursor-pointer"
           >
             <X className="w-3.5 h-3.5" /> Clear Filters
           </button>

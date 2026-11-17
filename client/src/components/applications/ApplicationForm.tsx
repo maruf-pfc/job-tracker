@@ -1,8 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Calendar } from "lucide-react";
 import Input from "@/components/ui/Input";
 import Label from "@/components/ui/Label";
 import Textarea from "@/components/ui/Textarea";
@@ -19,6 +20,7 @@ import {
   createApplication,
   updateApplication,
 } from "@/services/jobApplicationService";
+import { interviewRoundService, InterviewResult } from "@/services/interviewRoundService";
 import { triggerWebhooks } from "@/services/webhookService";
 import { createJobApplicationSchema } from "@/schemas/jobApplicationSchema";
 import type { CreateJobApplicationRequest } from "@/types/job-application";
@@ -43,6 +45,8 @@ const toDateInputString = (dateStr?: string | null) => {
 
 export default function ApplicationForm({ onSuccess, initialData }: Props) {
   const queryClient = useQueryClient();
+  const [passedRoundsInput, setPassedRoundsInput] = useState<number>(initialData?.passedRounds ?? 0);
+  const [stageNameInput, setStageNameInput] = useState<string>(initialData?.latestRoundName ?? initialData?.failedStage ?? "");
 
   const {
     register,
@@ -195,6 +199,40 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
       return createApplication(payload);
     },
     onSuccess: async (createdOrUpdatedApp) => {
+      const targetAppId = createdOrUpdatedApp?.id || initialData?.id;
+      if (targetAppId) {
+        try {
+          const existingRounds = await interviewRoundService.getByApplication(targetAppId);
+          const currentPassed = existingRounds.filter(r => r.result === InterviewResult.Passed).length;
+
+          if (passedRoundsInput > currentPassed) {
+            for (let i = currentPassed + 1; i <= passedRoundsInput; i++) {
+              const rName = i === passedRoundsInput && stageNameInput.trim() ? stageNameInput.trim() : `Round ${i}`;
+              await interviewRoundService.create(targetAppId, {
+                roundName: rName,
+                roundDate: new Date().toISOString(),
+                result: InterviewResult.Passed,
+                experience: `Passed interview round ${i}`,
+              });
+            }
+          }
+
+          const currentStatusId = getValues("applicationStatusId");
+          const selectedStatusObj = statuses?.find(s => s.id === currentStatusId);
+          const isRejected = selectedStatusObj?.name?.toLowerCase() === "rejected";
+          if (isRejected && stageNameInput.trim() && !existingRounds.some(r => r.result === InterviewResult.Failed)) {
+            await interviewRoundService.create(targetAppId, {
+              roundName: stageNameInput.trim(),
+              roundDate: new Date().toISOString(),
+              result: InterviewResult.Failed,
+              experience: `Dropped at ${stageNameInput.trim()}`,
+            });
+          }
+        } catch (err) {
+          console.warn("Failed to sync interview rounds:", err);
+        }
+      }
+
       toast.success(
         initialData
           ? "Application updated successfully"
@@ -346,6 +384,41 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
             {errors.applicationStatusId && (
               <p className="text-xs text-red-600">{errors.applicationStatusId.message}</p>
             )}
+          </div>
+
+          {/* Stage & Interview Rounds Progress */}
+          <div className="sm:col-span-2 rounded-xl border border-[#d9e5d6] bg-[#f7f9f5] p-3.5 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-[#275338] flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5" /> Stage & Interview Rounds Progress
+              </span>
+              <span className="text-[11px] text-[#697a6d]">
+                Tracks rounds passed even if status is later set to Rejected
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs">Rounds Passed</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  max={20}
+                  value={passedRoundsInput}
+                  onChange={(e) => setPassedRoundsInput(Math.max(0, parseInt(e.target.value) || 0))}
+                  placeholder="e.g. 3"
+                />
+                <p className="text-[11px] text-slate-500">Number of interview/exam rounds cleared</p>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Latest Stage / Dropped Round Name</Label>
+                <Input
+                  value={stageNameInput}
+                  onChange={(e) => setStageNameInput(e.target.value)}
+                  placeholder="e.g. System Design, Technical Round 3, Viva"
+                />
+                <p className="text-[11px] text-slate-500">Last stage reached or where elimination occurred</p>
+              </div>
+            </div>
           </div>
 
           {/* Priority */}

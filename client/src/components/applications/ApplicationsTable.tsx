@@ -19,6 +19,7 @@ import DeleteApplicationDialog from "@/components/applications/DeleteApplication
 import ApplicationModal from "@/components/applications/ApplicationModal";
 import ApplicationForm from "@/components/applications/ApplicationForm";
 import RejectionRetrospectiveModal from "@/components/applications/RejectionRetrospectiveModal";
+import { InterviewRoundsTimeline } from "@/components/applications/InterviewRoundsTimeline";
 import { deleteApplication } from "@/services/jobApplicationService";
 import { formatDate } from "@/lib/utils";
 import type { JobApplication } from "@/types/job-application";
@@ -42,15 +43,17 @@ export default function ApplicationsTable({ applications, isLoading }: Props) {
     useState<JobApplication | null>(null);
   const [retrospectiveApp, setRetrospectiveApp] =
     useState<JobApplication | null>(null);
+  const [roundsApp, setRoundsApp] = useState<JobApplication | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
   const queryClient = useQueryClient();
 
   const totalCount = applications?.length || 0;
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE) || 1;
+  const safePage = Math.min(currentPage, totalPages);
   const paginatedApplications = (applications || []).slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    (safePage - 1) * ITEMS_PER_PAGE,
+    safePage * ITEMS_PER_PAGE
   );
 
   const deleteMutation = useMutation({
@@ -94,12 +97,12 @@ export default function ApplicationsTable({ applications, isLoading }: Props) {
   if (!applications || applications.length === 0) {
     return (
       <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-xs">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 mb-3">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[#edf5e9] text-[#326347] mb-3">
           <Briefcase size={24} />
         </div>
-        <h3 className="text-base font-semibold text-slate-900">No applications tracked yet</h3>
+        <h3 className="text-base font-semibold text-slate-900">No matching applications</h3>
         <p className="mt-1 text-sm text-slate-500 max-w-sm mx-auto">
-          Start recording circular notices, job postings, exam schedules, and status changes in your pipeline.
+          Try adjusting your filters or add your first application to start tracking.
         </p>
       </div>
     );
@@ -107,10 +110,10 @@ export default function ApplicationsTable({ applications, isLoading }: Props) {
 
   return (
     <>
-      <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs">
-        <div className="overflow-x-auto w-full">
-          <table className="w-full text-left border-collapse">
-          <thead className="border-b border-slate-200 bg-slate-50/80 text-xs font-bold uppercase tracking-wider text-slate-500">
+      <div className="overflow-hidden rounded-xl border border-[#e3e9df] bg-white shadow-[0_1px_2px_rgba(25,50,28,.04)]">
+        <div className="overflow-x-auto w-full -webkit-overflow-scrolling-touch">
+          <table className="w-full min-w-[920px] text-left border-collapse">
+          <thead className="border-b border-[#e6ece3] bg-[#f7f9f5] text-[11px] font-semibold tracking-[.02em] text-[#6a7b6e]">
             <tr>
               <th className="px-4 py-3.5">Organization & Role</th>
               <th className="px-4 py-3.5">Category & Platform</th>
@@ -118,12 +121,12 @@ export default function ApplicationsTable({ applications, isLoading }: Props) {
               <th className="px-4 py-3.5">Priority</th>
               <th className="px-4 py-3.5">Location & Compensation</th>
               <th className="px-4 py-3.5">Applied Date</th>
-              <th className="px-4 py-3.5">Application Deadline</th>
+              <th className="px-4 py-3.5">Follow-up Date</th>
               <th className="px-4 py-3.5 text-right">Actions</th>
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-slate-100 bg-white text-sm">
+          <tbody className="divide-y divide-[#edf0eb] bg-white text-[13px]">
             {paginatedApplications.map((app) => {
               const priorityClass = PRIORITY_STYLE_MAP[app.priority] || PRIORITY_STYLE_MAP.Low;
               const isRejected = app.applicationStatus?.toLowerCase() === "rejected";
@@ -131,7 +134,7 @@ export default function ApplicationsTable({ applications, isLoading }: Props) {
               const deadlineFormatted = formatDate(app.followUpDate);
 
               return (
-                <tr key={app.id} className="hover:bg-slate-50/80 transition-colors">
+                <tr key={app.id} className="hover:bg-[#f6faf5] transition-colors duration-150">
                   {/* Organization & Role */}
                   <td className="px-4 py-4">
                     <div className="space-y-1">
@@ -143,7 +146,7 @@ export default function ApplicationsTable({ applications, isLoading }: Props) {
                             target="_blank"
                             rel="noreferrer"
                             title={isGovt ? "View Govt Circular / Notice" : "View Job Posting"}
-                            className="text-slate-400 hover:text-indigo-600 transition-colors inline-flex items-center"
+                            className="text-slate-400 hover:text-[#326347] transition-colors inline-flex items-center"
                           >
                             <ExternalLink className="w-3.5 h-3.5" />
                           </a>
@@ -169,7 +172,7 @@ export default function ApplicationsTable({ applications, isLoading }: Props) {
                             🏛️ Govt & Bank
                           </span>
                         ) : (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#edf5e9] text-indigo-700 border border-[#d9e8d4]">
                             🏢 Corporate Tech
                           </span>
                         )}
@@ -182,20 +185,60 @@ export default function ApplicationsTable({ applications, isLoading }: Props) {
                     </div>
                   </td>
 
-                  {/* Status Badge & Retrospective Link */}
+                  {/* Status Badge, Stage/Rounds & Retrospective Link */}
                   <td className="px-4 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                      <ApplicationStatusBadge status={app.applicationStatus} />
-                      {isRejected && (
-                        <button
-                          onClick={() => setRetrospectiveApp(app)}
-                          title="Log Failure Analysis & Action Plan"
-                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition-colors cursor-pointer"
-                        >
-                          <AlertCircle className="w-3 h-3" />
-                          <span>Post-Mortem</span>
-                        </button>
-                      )}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <ApplicationStatusBadge
+                          status={app.applicationStatus}
+                          passedRounds={app.passedRounds}
+                          totalRounds={app.totalRounds}
+                          failedStage={app.failedStage}
+                          latestRoundName={app.latestRoundName}
+                        />
+                        {isRejected && (
+                          <button
+                            onClick={() => setRetrospectiveApp(app)}
+                            title="Log Failure Analysis & Action Plan"
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition-colors cursor-pointer"
+                          >
+                            <AlertCircle className="w-3 h-3" />
+                            <span>Post-Mortem</span>
+                          </button>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setRoundsApp(app)}
+                        className={`inline-flex items-center gap-1.5 text-[11px] font-medium transition-colors cursor-pointer rounded-md px-2 py-0.5 ${
+                          (app.passedRounds ?? 0) > 0
+                            ? "bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200/80"
+                            : (app.totalRounds ?? 0) > 0
+                            ? "bg-[#edf5e9] text-[#2c5b3c] hover:bg-[#e2eedc] border border-[#d2e4cb]"
+                            : "text-slate-500 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200/60"
+                        }`}
+                        title="Manage interview rounds"
+                      >
+                        <Calendar className="w-3.5 h-3.5 shrink-0 text-[#3d704d]" />
+                        {(app.passedRounds ?? 0) > 0 || (app.totalRounds ?? 0) > 0 ? (
+                          <span className="truncate max-w-[220px]">
+                            {(app.passedRounds ?? 0) > 0 ? (
+                              <span className="font-semibold text-emerald-800">
+                                {app.passedRounds} round{app.passedRounds! > 1 ? "s" : ""} passed
+                              </span>
+                            ) : (
+                              <span>{app.totalRounds} round{app.totalRounds! > 1 ? "s" : ""}</span>
+                            )}
+                            {app.failedStage
+                              ? ` • Dropped at ${app.failedStage}`
+                              : app.latestRoundName
+                              ? ` • ${app.latestRoundName}`
+                              : ""}
+                          </span>
+                        ) : (
+                          <span>+ Add interview rounds</span>
+                        )}
+                      </button>
                     </div>
                   </td>
 
@@ -232,7 +275,7 @@ export default function ApplicationsTable({ applications, isLoading }: Props) {
                     </div>
                   </td>
 
-                  {/* Application Deadline */}
+                  {/* Follow-up Date */}
                   <td className="px-4 py-4 whitespace-nowrap text-xs font-medium">
                     {deadlineFormatted !== "N/A" ? (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200/80">
@@ -248,6 +291,7 @@ export default function ApplicationsTable({ applications, isLoading }: Props) {
                     <ApplicationActions
                       onEdit={() => setEditingApplication(app)}
                       onDelete={() => setSelectedId(app.id)}
+                      onManageRounds={() => setRoundsApp(app)}
                     />
                   </td>
                 </tr>
@@ -258,27 +302,27 @@ export default function ApplicationsTable({ applications, isLoading }: Props) {
       </div>
 
         {/* Pagination Footer */}
-        <div className="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+        <div className="px-6 py-3.5 bg-[#fafbf8] border-t border-[#e6ece3] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
           <div>
-            Showing <span className="font-bold text-slate-900">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> to{" "}
-            <span className="font-bold text-slate-900">{Math.min(currentPage * ITEMS_PER_PAGE, totalCount)}</span> of{" "}
+            Showing <span className="font-bold text-slate-900">{(safePage - 1) * ITEMS_PER_PAGE + 1}</span> to{" "}
+            <span className="font-bold text-slate-900">{Math.min(safePage * ITEMS_PER_PAGE, totalCount)}</span> of{" "}
             <span className="font-bold text-slate-900">{totalCount}</span> applications
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-              disabled={currentPage === 1}
+              disabled={safePage === 1}
               className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <ChevronLeft className="w-3.5 h-3.5" /> Previous
             </button>
             <span className="px-2 font-semibold text-slate-700">
-              Page {currentPage} of {totalPages}
+              Page {safePage} of {totalPages}
             </span>
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
+              disabled={safePage === totalPages}
               className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               Next <ChevronRight className="w-3.5 h-3.5" />
@@ -294,6 +338,7 @@ export default function ApplicationsTable({ applications, isLoading }: Props) {
         title="Edit Application"
       >
         <ApplicationForm
+          key={editingApplication?.id || "new"}
           initialData={editingApplication}
           onSuccess={() => setEditingApplication(null)}
         />
@@ -313,6 +358,17 @@ export default function ApplicationsTable({ applications, isLoading }: Props) {
         onClose={() => setRetrospectiveApp(null)}
         application={retrospectiveApp}
       />
+
+      {/* Interview Rounds Modal */}
+      <ApplicationModal
+        open={Boolean(roundsApp)}
+        onClose={() => setRoundsApp(null)}
+        title={`Interview Rounds — ${roundsApp?.company || ""} (${roundsApp?.role || ""})`}
+      >
+        {roundsApp && (
+          <InterviewRoundsTimeline jobApplicationId={roundsApp.id} />
+        )}
+      </ApplicationModal>
     </>
   );
 }

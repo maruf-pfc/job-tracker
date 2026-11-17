@@ -266,7 +266,7 @@ function RetrospectiveForm({ application, existingRetrospective, onClose }: Form
           onClick={() => setActiveTab("general")}
           className={`pb-2.5 px-3 border-b-2 transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
             activeTab === "general"
-              ? "border-indigo-600 text-indigo-600 font-bold"
+              ? "border-indigo-600 text-[#34684a] font-bold"
               : "border-transparent text-slate-500 hover:text-slate-700"
           }`}
         >
@@ -279,7 +279,7 @@ function RetrospectiveForm({ application, existingRetrospective, onClose }: Form
           onClick={() => setActiveTab("metrics")}
           className={`pb-2.5 px-3 border-b-2 transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
             activeTab === "metrics"
-              ? "border-indigo-600 text-indigo-600 font-bold"
+              ? "border-indigo-600 text-[#34684a] font-bold"
               : "border-transparent text-slate-500 hover:text-slate-700"
           }`}
         >
@@ -292,7 +292,7 @@ function RetrospectiveForm({ application, existingRetrospective, onClose }: Form
           onClick={() => setActiveTab("checklists")}
           className={`pb-2.5 px-3 border-b-2 transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
             activeTab === "checklists"
-              ? "border-indigo-600 text-indigo-600 font-bold"
+              ? "border-indigo-600 text-[#34684a] font-bold"
               : "border-transparent text-slate-500 hover:text-slate-700"
           }`}
         >
@@ -305,7 +305,7 @@ function RetrospectiveForm({ application, existingRetrospective, onClose }: Form
           onClick={() => setActiveTab("reflection")}
           className={`pb-2.5 px-3 border-b-2 transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
             activeTab === "reflection"
-              ? "border-indigo-600 text-indigo-600 font-bold"
+              ? "border-indigo-600 text-[#34684a] font-bold"
               : "border-transparent text-slate-500 hover:text-slate-700"
           }`}
         >
@@ -329,7 +329,7 @@ function RetrospectiveForm({ application, existingRetrospective, onClose }: Form
                   onClick={() => handleDomainChange("Corporate")}
                   className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
                     jobDomain === "Corporate"
-                      ? "border-indigo-600 bg-indigo-50/50 text-indigo-900 shadow-xs"
+                      ? "border-indigo-600 bg-[#eef5ec]/50 text-indigo-900 shadow-xs"
                       : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                   }`}
                 >
@@ -338,7 +338,7 @@ function RetrospectiveForm({ application, existingRetrospective, onClose }: Form
                     name="domain"
                     checked={jobDomain === "Corporate"}
                     onChange={() => handleDomainChange("Corporate")}
-                    className="mt-0.5 text-indigo-600"
+                    className="mt-0.5 text-[#34684a]"
                   />
                   <div>
                     <div className="text-xs font-bold">Corporate Tech Role</div>
@@ -352,7 +352,7 @@ function RetrospectiveForm({ application, existingRetrospective, onClose }: Form
                   onClick={() => handleDomainChange("Govt & Bank")}
                   className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
                     jobDomain === "Govt & Bank"
-                      ? "border-indigo-600 bg-indigo-50/50 text-indigo-900 shadow-xs"
+                      ? "border-indigo-600 bg-[#eef5ec]/50 text-indigo-900 shadow-xs"
                       : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                   }`}
                 >
@@ -361,7 +361,7 @@ function RetrospectiveForm({ application, existingRetrospective, onClose }: Form
                     name="domain"
                     checked={jobDomain === "Govt & Bank"}
                     onChange={() => handleDomainChange("Govt & Bank")}
-                    className="mt-0.5 text-indigo-600"
+                    className="mt-0.5 text-[#34684a]"
                   />
                   <div>
                     <div className="text-xs font-bold">Bangladesh Govt & Bank Exam</div>
@@ -412,7 +412,7 @@ function RetrospectiveForm({ application, existingRetrospective, onClose }: Form
                     key={time}
                     className={`flex items-center gap-2 p-2.5 rounded-lg border text-xs cursor-pointer transition-all ${
                       preparationTime === time
-                        ? "border-indigo-600 bg-indigo-50 text-indigo-900 font-bold"
+                        ? "border-indigo-600 bg-[#eef5ec] text-indigo-900 font-bold"
                         : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
                     }`}
                   >
@@ -421,7 +421,7 @@ function RetrospectiveForm({ application, existingRetrospective, onClose }: Form
                       name="prepTime"
                       checked={preparationTime === time}
                       onChange={() => setPreparationTime(time)}
-                      className="text-indigo-600"
+                      className="text-[#34684a]"
                     />
                     <span>{time}</span>
                   </label>
@@ -440,7 +440,7 @@ function RetrospectiveForm({ application, existingRetrospective, onClose }: Form
                     key={m}
                     className={`flex items-center gap-2 p-2.5 rounded-lg border text-xs cursor-pointer transition-all ${
                       mockCount === m
-                        ? "border-indigo-600 bg-indigo-50 text-indigo-900 font-bold"
+                        ? "border-indigo-600 bg-[#eef5ec] text-indigo-900 font-bold"
                         : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
                     }`}
                   >
@@ -449,7 +449,7 @@ function RetrospectiveForm({ application, existingRetrospective, onClose }: Form
                       name="mockCount"
                       checked={mockCount === m}
                       onChange={() => setMockCount(m)}
-                      className="text-indigo-600"
+                      className="text-[#34684a]"
                     />
                     <span>{m}</span>
                   </label>
@@ -468,7 +468,7 @@ function RetrospectiveForm({ application, existingRetrospective, onClose }: Form
                 <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
                   1. Exam / Interview Difficulty Rating:
                 </label>
-                <span className="text-xs font-bold text-indigo-600">
+                <span className="text-xs font-bold text-[#34684a]">
                   {difficultyRating === 1 && "Very Easy (1/5)"}
                   {difficultyRating === 2 && "Moderate (2/5)"}
                   {difficultyRating === 3 && "Standard Competitive (3/5)"}
@@ -484,7 +484,7 @@ function RetrospectiveForm({ application, existingRetrospective, onClose }: Form
                     onClick={() => setDifficultyRating(lvl)}
                     className={`flex-1 py-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                       difficultyRating === lvl
-                        ? "border-indigo-600 bg-indigo-600 text-white shadow-xs"
+                        ? "border-indigo-600 bg-[#28593c] text-white shadow-xs"
                         : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100"
                     }`}
                   >
@@ -532,7 +532,7 @@ function RetrospectiveForm({ application, existingRetrospective, onClose }: Form
                 <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
                   3. Self-Confidence Level before entering the exam / interview:
                 </label>
-                <span className="text-xs font-bold text-indigo-600">{confidenceRating} / 10</span>
+                <span className="text-xs font-bold text-[#34684a]">{confidenceRating} / 10</span>
               </div>
               <input
                 type="range"
@@ -561,7 +561,7 @@ function RetrospectiveForm({ application, existingRetrospective, onClose }: Form
                   placeholder="e.g. 64.5"
                   value={estimatedScore}
                   onChange={(e) => setEstimatedScore(e.target.value)}
-                  className="w-full text-xs border border-slate-200 rounded-xl p-2.5 font-mono focus:ring-2 focus:ring-indigo-500"
+                  className="w-full text-xs border border-slate-200 rounded-xl p-2.5 font-mono focus:ring-2 focus:ring-[#4f8961]"
                 />
               </div>
 
@@ -575,7 +575,7 @@ function RetrospectiveForm({ application, existingRetrospective, onClose }: Form
                   placeholder="e.g. 72.0"
                   value={expectedCutoffScore}
                   onChange={(e) => setExpectedCutoffScore(e.target.value)}
-                  className="w-full text-xs border border-slate-200 rounded-xl p-2.5 font-mono focus:ring-2 focus:ring-indigo-500"
+                  className="w-full text-xs border border-slate-200 rounded-xl p-2.5 font-mono focus:ring-2 focus:ring-[#4f8961]"
                 />
               </div>
 
@@ -605,7 +605,7 @@ function RetrospectiveForm({ application, existingRetrospective, onClose }: Form
                     key={f}
                     className={`flex items-center gap-2 p-2.5 rounded-lg border text-xs cursor-pointer transition-all ${
                       feedbackStatus === f
-                        ? "border-indigo-600 bg-indigo-50 text-indigo-900 font-bold"
+                        ? "border-indigo-600 bg-[#eef5ec] text-indigo-900 font-bold"
                         : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
                     }`}
                   >
@@ -614,7 +614,7 @@ function RetrospectiveForm({ application, existingRetrospective, onClose }: Form
                       name="feedbackStatus"
                       checked={feedbackStatus === f}
                       onChange={() => setFeedbackStatus(f)}
-                      className="text-indigo-600"
+                      className="text-[#34684a]"
                     />
                     <span>{f}</span>
                   </label>
@@ -630,7 +630,7 @@ function RetrospectiveForm({ application, existingRetrospective, onClose }: Form
             {/* Technical Topic Gaps Checklist */}
             <div className="space-y-2">
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                <Brain className="w-4 h-4 text-indigo-600" />
+                <Brain className="w-4 h-4 text-[#34684a]" />
                 <span>1. Specific Technical & Knowledge Topic Gaps (Check all that apply)</span>
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -764,7 +764,7 @@ function RetrospectiveForm({ application, existingRetrospective, onClose }: Form
               <select
                 value={primaryRootCause}
                 onChange={(e) => setPrimaryRootCause(e.target.value)}
-                className="w-full text-xs bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-800 font-semibold focus:ring-2 focus:ring-indigo-500"
+                className="w-full text-xs bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-800 font-semibold focus:ring-2 focus:ring-[#4f8961]"
               >
                 {ROOT_CAUSES.map((cause) => (
                   <option key={cause} value={cause}>
@@ -785,7 +785,7 @@ function RetrospectiveForm({ application, existingRetrospective, onClose }: Form
                 onChange={(e) => setWhatWentWell(e.target.value)}
                 rows={2}
                 placeholder="e.g. Cleared the coding and English comprehension sections with top marks..."
-                className="w-full text-xs border border-slate-200 rounded-xl p-3 text-slate-800 focus:ring-2 focus:ring-indigo-500"
+                className="w-full text-xs border border-slate-200 rounded-xl p-3 text-slate-800 focus:ring-2 focus:ring-[#4f8961]"
               />
             </div>
 
@@ -799,7 +799,7 @@ function RetrospectiveForm({ application, existingRetrospective, onClose }: Form
                 onChange={(e) => setWhatFailed(e.target.value)}
                 rows={2}
                 placeholder="e.g. Spent 8 minutes stuck on 3 analytical geometry problems and lost marks to negative penalty..."
-                className="w-full text-xs border border-slate-200 rounded-xl p-3 text-slate-800 focus:ring-2 focus:ring-indigo-500"
+                className="w-full text-xs border border-slate-200 rounded-xl p-3 text-slate-800 focus:ring-2 focus:ring-[#4f8961]"
               />
             </div>
 
@@ -813,7 +813,7 @@ function RetrospectiveForm({ application, existingRetrospective, onClose }: Form
                 onChange={(e) => setActionablePlan(e.target.value)}
                 rows={3}
                 placeholder="e.g. Practice 100-question timed mocks with a strict 45-second cap per question. Solve 2-pass strategy..."
-                className="w-full text-xs border border-slate-200 rounded-xl p-3 text-slate-800 focus:ring-2 focus:ring-indigo-500"
+                className="w-full text-xs border border-slate-200 rounded-xl p-3 text-slate-800 focus:ring-2 focus:ring-[#4f8961]"
               />
             </div>
           </div>
@@ -847,7 +847,7 @@ function RetrospectiveForm({ application, existingRetrospective, onClose }: Form
                 if (activeTab === "metrics") setActiveTab("checklists");
                 if (activeTab === "checklists") setActiveTab("reflection");
               }}
-              className="px-5 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
+              className="px-5 py-2.5 text-xs font-bold text-white bg-[#28593c] hover:bg-[#1c472e] rounded-xl shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
             >
               <span>Next Section</span>
               <span>→</span>
@@ -878,10 +878,10 @@ export default function RejectionRetrospectiveModal({ open, onClose, application
   if (!open || !application) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
-      <div className="relative w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-6 flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
+      <div className="relative w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-6 flex flex-col max-h-[92vh]">
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-white">
+        <div className="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4 border-b border-slate-200 bg-white">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-100 text-rose-600">
               <AlertTriangle className="w-5 h-5" />

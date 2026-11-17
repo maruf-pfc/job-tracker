@@ -114,6 +114,11 @@ public class JobApplicationService : IJobApplicationService
                 ResumeDriveLink = j.ResumeDriveLink,
                 FollowUpDate = j.FollowUpDate,
                 IsArchived = j.IsArchived,
+                TotalRounds = j.InterviewRounds.Count,
+                PassedRounds = j.InterviewRounds.Count(r => r.Result == Models.InterviewResult.Passed),
+                LatestRoundName = j.InterviewRounds.OrderByDescending(r => r.RoundDate).Select(r => r.RoundName).FirstOrDefault(),
+                LatestRoundResult = j.InterviewRounds.OrderByDescending(r => r.RoundDate).Select(r => r.Result.ToString()).FirstOrDefault(),
+                FailedStage = _context.RejectionRetrospectives.Where(r => r.JobApplicationId == j.Id).Select(r => r.FailedStage).FirstOrDefault(),
                 CreatedAt = j.CreatedAt,
                 UpdatedAt = j.UpdatedAt,
             })
@@ -155,6 +160,11 @@ public class JobApplicationService : IJobApplicationService
                 ResumeDriveLink = j.ResumeDriveLink,
                 FollowUpDate = j.FollowUpDate,
                 IsArchived = j.IsArchived,
+                TotalRounds = j.InterviewRounds.Count,
+                PassedRounds = j.InterviewRounds.Count(r => r.Result == Models.InterviewResult.Passed),
+                LatestRoundName = j.InterviewRounds.OrderByDescending(r => r.RoundDate).Select(r => r.RoundName).FirstOrDefault(),
+                LatestRoundResult = j.InterviewRounds.OrderByDescending(r => r.RoundDate).Select(r => r.Result.ToString()).FirstOrDefault(),
+                FailedStage = _context.RejectionRetrospectives.Where(r => r.JobApplicationId == j.Id).Select(r => r.FailedStage).FirstOrDefault(),
                 CreatedAt = j.CreatedAt,
                 UpdatedAt = j.UpdatedAt
             })

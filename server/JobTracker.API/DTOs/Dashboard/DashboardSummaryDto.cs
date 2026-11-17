@@ -7,4 +7,5 @@ public class DashboardSummaryDto
     public int TotalOffers { get; set; }
     public int TotalRejected { get; set; }
     public int TotalSaved { get; set; }
+    public int TotalInterviewRoundsPassed { get; set; }
 }

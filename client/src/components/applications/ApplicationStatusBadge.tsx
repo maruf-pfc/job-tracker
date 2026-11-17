@@ -1,5 +1,9 @@
 type Props = {
   status: string;
+  passedRounds?: number;
+  totalRounds?: number;
+  failedStage?: string;
+  latestRoundName?: string;
 };
 
 const STATUS_MAP: Record<string, { bg: string; text: string; dot: string; border: string }> = {
@@ -18,15 +22,30 @@ const STATUS_MAP: Record<string, { bg: string; text: string; dot: string; border
   Withdrawn: { bg: "bg-slate-100", text: "text-slate-600", dot: "bg-slate-400", border: "border-slate-300" },
 };
 
-export default function ApplicationStatusBadge({ status }: Props) {
-  const style = STATUS_MAP[status] ?? STATUS_MAP.Saved;
+export default function ApplicationStatusBadge({
+  status,
+  passedRounds,
+  failedStage,
+  latestRoundName,
+}: Props) {
+  const style = STATUS_MAP[status] ?? { bg: "bg-[#f0f5ed]", text: "text-[#315f41]", dot: "bg-[#5e9870]", border: "border-[#d9e7d4]" };
+  const isRejected = status?.toLowerCase() === "rejected";
+  const isInterview = status?.toLowerCase() === "interview";
+
+  let displayLabel = status;
+  if (isRejected && (passedRounds ?? 0) > 0) {
+    displayLabel = `Rejected (${passedRounds} passed)`;
+  } else if (isInterview && (passedRounds ?? 0) > 0) {
+    displayLabel = `Interview (${passedRounds} passed)`;
+  }
 
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold border ${style.bg} ${style.text} ${style.border}`}
+      title={failedStage ? `Dropped at ${failedStage}` : latestRoundName ? `Stage: ${latestRoundName}` : undefined}
     >
       <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />
-      {status}
+      {displayLabel}
     </span>
   );
 }

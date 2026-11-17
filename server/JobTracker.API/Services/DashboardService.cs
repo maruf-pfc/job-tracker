@@ -30,22 +30,35 @@ public class DashboardService : IDashboardService
     public async Task<DashboardSummaryDto> GetSummaryAsync(CancellationToken cancellationToken = default)
     {
         var userId = GetRequiredUserId();
-        var statusCounts = await _context.JobApplications
+        var apps = await _context.JobApplications
             .AsNoTracking()
             .Where(j => j.UserId == userId)
-            .GroupBy(j => j.ApplicationStatus.Name)
-            .Select(g => new { Status = g.Key, Count = g.Count() })
+            .Select(j => new
+            {
+                Status = j.ApplicationStatus.Name,
+                HasInterviewRounds = j.InterviewRounds.Any(),
+                PassedRounds = j.InterviewRounds.Count(r => r.Result == Models.InterviewResult.Passed)
+            })
             .ToListAsync(cancellationToken);
 
-        int GetCount(string name) => statusCounts.FirstOrDefault(s => string.Equals(s.Status, name, StringComparison.OrdinalIgnoreCase))?.Count ?? 0;
+        bool IsInterviewStatus(string s) =>
+            s.Equals("Interview", StringComparison.OrdinalIgnoreCase) ||
+            s.Equals("Interviewing", StringComparison.OrdinalIgnoreCase) ||
+            s.Contains("Exam", StringComparison.OrdinalIgnoreCase) ||
+            s.Contains("Viva", StringComparison.OrdinalIgnoreCase) ||
+            s.Contains("Preliminary", StringComparison.OrdinalIgnoreCase) ||
+            s.Contains("Skill Test", StringComparison.OrdinalIgnoreCase);
+
+        int GetStatusCount(string name) => apps.Count(a => string.Equals(a.Status, name, StringComparison.OrdinalIgnoreCase));
 
         return new DashboardSummaryDto
         {
-            TotalApplications = statusCounts.Sum(s => s.Count),
-            TotalInterviews = GetCount("Interview") + GetCount("Interviewing"),
-            TotalOffers = GetCount("Offer"),
-            TotalRejected = GetCount("Rejected"),
-            TotalSaved = GetCount("Saved")
+            TotalApplications = apps.Count,
+            TotalInterviews = apps.Count(a => a.HasInterviewRounds || IsInterviewStatus(a.Status)),
+            TotalOffers = GetStatusCount("Offer"),
+            TotalRejected = GetStatusCount("Rejected"),
+            TotalSaved = GetStatusCount("Saved"),
+            TotalInterviewRoundsPassed = apps.Sum(a => a.PassedRounds)
         };
     }
 
@@ -99,26 +112,34 @@ public class DashboardService : IDashboardService
                 Status = j.ApplicationStatus.Name,
                 Platform = j.SourcePlatform != null ? j.SourcePlatform.Name : "Direct / Other",
                 Priority = j.Priority != null ? j.Priority.Name : "Medium",
-                WorkType = j.WorkType != null ? j.WorkType.Name : "Hybrid"
+                WorkType = j.WorkType != null ? j.WorkType.Name : "Hybrid",
+                HasInterviewRounds = j.InterviewRounds.Any()
             })
             .ToListAsync(cancellationToken);
 
+        bool IsInterviewStatus(string s) =>
+            s.Equals("Interview", StringComparison.OrdinalIgnoreCase) ||
+            s.Equals("Interviewing", StringComparison.OrdinalIgnoreCase) ||
+            s.Contains("Exam", StringComparison.OrdinalIgnoreCase) ||
+            s.Contains("Viva", StringComparison.OrdinalIgnoreCase) ||
+            s.Contains("Preliminary", StringComparison.OrdinalIgnoreCase) ||
+            s.Contains("Skill Test", StringComparison.OrdinalIgnoreCase);
+
         var totalCount = applications.Count;
         var interviewCount = applications.Count(j => 
-            j.Status != null && (
-            j.Status.Equals("Interview", StringComparison.OrdinalIgnoreCase) || 
-            j.Status.Equals("Interviewing", StringComparison.OrdinalIgnoreCase)));
+            j.HasInterviewRounds ||
+            (j.Status != null && IsInterviewStatus(j.Status)));
         
         var offerCount = applications.Count(j => 
             j.Status != null &&
             j.Status.Equals("Offer", StringComparison.OrdinalIgnoreCase));
 
         var respondedCount = applications.Count(j => 
-            j.Status != null && (
-            j.Status.Equals("Interview", StringComparison.OrdinalIgnoreCase) ||
-            j.Status.Equals("Interviewing", StringComparison.OrdinalIgnoreCase) ||
+            j.HasInterviewRounds ||
+            (j.Status != null && (
+            IsInterviewStatus(j.Status) ||
             j.Status.Equals("Offer", StringComparison.OrdinalIgnoreCase) ||
-            j.Status.Equals("Rejected", StringComparison.OrdinalIgnoreCase)));
+            j.Status.Equals("Rejected", StringComparison.OrdinalIgnoreCase))));
 
         var responseRate = totalCount > 0 ? Math.Round((double)respondedCount / totalCount * 100, 1) : 0;
         var conversionRate = interviewCount > 0 ? Math.Round((double)offerCount / interviewCount * 100, 1) : 0;

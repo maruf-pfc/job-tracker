@@ -1,12 +1,1 @@
-export default function ApplicationsHeader() {
-  return (
-    <div>
-      <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-        Applications
-      </h1>
-      <p className="mt-1 text-sm text-slate-600">
-        Track your job pipeline, follow-ups, and interview progress.
-      </p>
-    </div>
-  );
-}
+export default function ApplicationsHeader() {return <div><h1 className="text-2xl font-semibold tracking-[-.04em] text-[#203629] sm:text-[28px]">Applications</h1><p className="mt-1 text-[13px] text-[#708173]">Keep every opportunity, update, and next step in one place.</p></div>;}

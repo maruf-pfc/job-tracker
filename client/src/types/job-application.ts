@@ -16,6 +16,11 @@ export type JobApplication = {
   sourcePlatform: string;
   applicationStatus: string;
   workType: string;
+  totalRounds?: number;
+  passedRounds?: number;
+  latestRoundName?: string;
+  latestRoundResult?: string;
+  failedStage?: string;
   createdAt?: string;
   updatedAt?: string;
 };

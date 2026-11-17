@@ -4,4 +4,5 @@ export type DashboardSummary = {
   totalOffers: number;
   totalRejected: number;
   totalSaved: number;
+  totalInterviewRoundsPassed?: number;
 };
