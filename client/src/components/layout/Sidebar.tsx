@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { navigation } from "@/config/navigation";
-import { BrainCircuit, BriefcaseBusiness, X } from "lucide-react";
+import { BriefcaseBusiness, X } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 interface SidebarProps { isOpen?: boolean; onClose?: () => void; }
@@ -15,12 +15,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [isOpen, onClose]);
 
-  // The route itself must also be registered in the application's router.
-  const items = navigation.some((item) => item.href === "/career-intelligence")
-    ? navigation
-    : [...navigation.slice(0, navigation.findIndex((item) => item.href === "/profile") < 0 ? navigation.length : navigation.findIndex((item) => item.href === "/profile")),
-       { href: "/career-intelligence", title: "Career Intelligence", icon: BrainCircuit },
-       ...navigation.slice(navigation.findIndex((item) => item.href === "/profile") < 0 ? navigation.length : navigation.findIndex((item) => item.href === "/profile"))];
+  const items = navigation;
 
   const content = (mobile: boolean) => (
     <div className="flex h-full min-h-0 flex-col bg-[#14231e] text-[#eaf2e9]">

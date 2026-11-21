@@ -48,12 +48,12 @@ export default function CareerIntelligencePage() {
     const keys = track === "Corporate"
       ? ["resume","screen","coding","system design","behavioral","offer"]
       : ["mcq","preliminary","written","practical","viva","medical"];
-    return keys.some(k => item.stage.toLowerCase().includes(k));
+    return keys.some(k => item.stage?.toLowerCase().includes(k));
   }), [failure, track]);
   const plans = useMemo(() => (failure?.remediationActionPlan ?? []).filter(item => {
     if (track === "All") return true;
     const keys = track === "Corporate" ? ["corporate","algorithm","general"] : ["govt","viva","exam"];
-    return keys.some(k => item.category.toLowerCase().includes(k));
+    return keys.some(k => item.category?.toLowerCase().includes(k));
   }), [failure, track]);
   return <div className="min-w-0 bg-[#f9faf7] pb-12 font-['Inter',system-ui,sans-serif] text-[#243229]">
     <div className="mx-auto max-w-[1500px] space-y-5 pt-1 sm:space-y-6 sm:pt-2">

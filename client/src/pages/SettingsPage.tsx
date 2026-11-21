@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { Download, Upload, Database, Bot, Send, Bell } from "lucide-react";
@@ -8,6 +9,7 @@ import { toast } from "sonner";
 import { triggerWebhooks } from "@/services/webhookService";
 
 export default function SettingsPage() {
+  const queryClient = useQueryClient();
   const [importing, setImporting] = useState(false);
   const [testingWebhooks, setTestingWebhooks] = useState(false);
 
@@ -95,6 +97,9 @@ export default function SettingsPage() {
       await api.post("/import/csv", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+      await queryClient.invalidateQueries({ queryKey: ["applications"] });
+      await queryClient.invalidateQueries({ queryKey: ["dashboard-summary"] });
+      await queryClient.invalidateQueries({ queryKey: ["dashboard-analytics"] });
       toast.success("CSV applications imported successfully!");
     } catch {
       toast.error("Failed to import CSV file");

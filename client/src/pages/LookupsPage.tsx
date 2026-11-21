@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { QUERY_KEYS } from "@/constants/queryKeys";
 import { getApplicationStatuses } from "@/services/applicationStatusService";
 import { getJobTypes } from "@/services/jobTypeService";
 import { getWorkTypes } from "@/services/workTypeService";
@@ -10,7 +11,11 @@ const tabs=[{id:"statuses",label:"Application statuses",icon:Layers},{id:"priori
 type Tab=typeof tabs[number]["id"];
 export default function LookupsPage(){
  const [activeTab,setActiveTab]=useState<Tab>("statuses"); const [search,setSearch]=useState("");
- const statuses=useQuery({queryKey:["statuses"],queryFn:getApplicationStatuses}); const priorities=useQuery({queryKey:["priorities"],queryFn:getPriorities}); const jobTypes=useQuery({queryKey:["jobTypes"],queryFn:getJobTypes}); const workTypes=useQuery({queryKey:["workTypes"],queryFn:getWorkTypes}); const platforms=useQuery({queryKey:["platforms"],queryFn:getSourcePlatforms});
+ const statuses=useQuery({queryKey:QUERY_KEYS.LOOKUPS.APPLICATION_STATUSES,queryFn:getApplicationStatuses});
+ const priorities=useQuery({queryKey:QUERY_KEYS.LOOKUPS.PRIORITIES,queryFn:getPriorities});
+ const jobTypes=useQuery({queryKey:QUERY_KEYS.LOOKUPS.JOB_TYPES,queryFn:getJobTypes});
+ const workTypes=useQuery({queryKey:QUERY_KEYS.LOOKUPS.WORK_TYPES,queryFn:getWorkTypes});
+ const platforms=useQuery({queryKey:QUERY_KEYS.LOOKUPS.SOURCE_PLATFORMS,queryFn:getSourcePlatforms});
  const datasets={statuses,priorities,jobTypes,workTypes,platforms}; const active=datasets[activeTab]; const items=useMemo(()=>(active.data??[]).filter(x=>x.name.toLowerCase().includes(search.trim().toLowerCase())),[active.data,search]);
  const current=tabs.find(t=>t.id===activeTab)!;
  return <div className="space-y-6 pb-12 text-[#1e3026]"><header><p className="mb-2 text-[11px] font-semibold uppercase tracking-[.16em] text-[#69816c]">Workspace configuration</p><h1 className="text-[28px] font-semibold tracking-[-.05em] sm:text-[32px]">Application categories</h1><p className="mt-1 text-[13px] text-[#728177]">Browse the statuses, job types, priorities and platforms available in your tracker.</p></header>

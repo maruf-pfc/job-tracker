@@ -14,13 +14,14 @@ const RolesPage = lazy(() => import("./pages/RolesPage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const CareerIntelligencePage = lazy(() => import("./pages/CareerIntelligencePage"));
+const LookupsPage = lazy(() => import("./pages/LookupsPage"));
 
 function RouteLoadingFallback() {
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-slate-50/50">
+    <div className="flex h-screen w-full items-center justify-center bg-[#f8faf7]">
       <div className="flex flex-col items-center gap-3">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
-        <span className="text-xs font-medium text-slate-500">Loading module...</span>
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#255b3a] border-t-transparent" />
+        <span className="text-xs font-medium text-[#65776a]">Loading module...</span>
       </div>
     </div>
   );
@@ -48,6 +49,8 @@ export default function App() {
               <Route path="/roles" element={<RolesPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/career-intelligence" element={<CareerIntelligencePage />} />
+              <Route path="/categories" element={<LookupsPage />} />
+              <Route path="/lookups" element={<LookupsPage />} />
               <Route path="/settings" element={<SettingsPage />} />
             </Route>
           </Route>

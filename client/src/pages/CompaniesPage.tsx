@@ -136,9 +136,10 @@ export default function CompaniesPage() {
   });
 
   const totalPages = Math.ceil(filteredCompanies.length / ITEMS_PER_PAGE) || 1;
+  const safePage = Math.min(currentPage, totalPages);
   const paginatedCompanies = filteredCompanies.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    (safePage - 1) * ITEMS_PER_PAGE,
+    safePage * ITEMS_PER_PAGE
   );
 
   if (isLoading) {

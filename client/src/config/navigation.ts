@@ -5,6 +5,8 @@ import {
   Settings,
   UserCheck,
   User,
+  BrainCircuit,
+  Layers,
 } from "lucide-react";
 
 export const navigation = [
@@ -27,6 +29,16 @@ export const navigation = [
     title: "Roles",
     href: "/roles",
     icon: UserCheck,
+  },
+  {
+    title: "Career Intelligence",
+    href: "/career-intelligence",
+    icon: BrainCircuit,
+  },
+  {
+    title: "Categories",
+    href: "/categories",
+    icon: Layers,
   },
   {
     title: "Profile",

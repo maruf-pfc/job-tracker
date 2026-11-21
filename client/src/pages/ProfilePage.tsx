@@ -732,7 +732,7 @@ export default function ProfilePage() {
                   <div className="font-semibold text-[#192c24] truncate">
                     {parsedCoding.codeforces ? (
                       <a
-                        href={`https://codeforces.com/profile/${parsedCoding.codeforces}`}
+                        href={parsedCoding.codeforces.startsWith("http") ? parsedCoding.codeforces : `https://codeforces.com/profile/${parsedCoding.codeforces}`}
                         target="_blank"
                         rel="noreferrer"
                         className="text-[#2b6446] hover:underline flex items-center gap-1"
@@ -753,7 +753,7 @@ export default function ProfilePage() {
                   <div className="font-semibold text-[#192c24] truncate">
                     {parsedCoding.leetcode ? (
                       <a
-                        href={`https://leetcode.com/${parsedCoding.leetcode}`}
+                        href={parsedCoding.leetcode.startsWith("http") ? parsedCoding.leetcode : `https://leetcode.com/${parsedCoding.leetcode.replace(/^\//, "")}`}
                         target="_blank"
                         rel="noreferrer"
                         className="text-[#2b6446] hover:underline flex items-center gap-1"
@@ -772,7 +772,18 @@ export default function ProfilePage() {
                     <Award className="w-4 h-4 text-amber-500" />
                   </div>
                   <div className="font-semibold text-[#192c24] truncate">
-                    {parsedCoding.codechef || "Not Provided"}
+                    {parsedCoding.codechef ? (
+                      <a
+                        href={parsedCoding.codechef.startsWith("http") ? parsedCoding.codechef : `https://www.codechef.com/users/${parsedCoding.codechef}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[#2b6446] hover:underline flex items-center gap-1"
+                      >
+                        {parsedCoding.codechef} <ExternalLink className="w-3 h-3" />
+                      </a>
+                    ) : (
+                      "Not Provided"
+                    )}
                   </div>
                 </div>
 
