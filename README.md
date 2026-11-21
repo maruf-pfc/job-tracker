@@ -10,49 +10,59 @@
 [![TailwindCSS v4](https://img.shields.io/badge/TailwindCSS-v4-38BDF8?logo=tailwindcss)](https://tailwindcss.com/)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-job--trackerr.vercel.app-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://job-trackerr.vercel.app)
 
-An enterprise-grade, open-source **Career Operations OS and Recruitment Intelligence Engine** built for modern tech professionals and government/bank candidates. Features comprehensive pipeline management, multi-variable post-mortem failure analytics, full account isolation, and an **AI Strategic Career Advisor** with intelligent SHA-256 state caching.
+An enterprise-grade, open-source **Career Operations OS and Recruitment Intelligence Engine** built for modern tech professionals and government/bank candidates. Features comprehensive pipeline management, multi-round interview tracking, failure post-mortems, full account isolation, and an **AI Strategic Career Advisor** with intelligent SHA-256 state caching.
 
 🌐 **Live Production App**: [https://job-trackerr.vercel.app](https://job-trackerr.vercel.app)
 
 ---
 
-## 🌟 Key Highlights & Advanced Features
+## 🌟 Key Highlights & Comprehensive Features
 
-### 1. 🤖 AI Strategic Career Advisor (Gemini Flash + Smart State Caching)
-- **Executive Diagnostics**: High-level synthesis of your pipeline momentum, interview conversion ratios, and bottlenecks.
-- **Govt vs. Corporate Strategy**: Dual-track recommendations tailored to Bangladesh Govt/Bank recruitment exams (BPSC, Combined Bank) and Corporate Software Engineering roles.
-- **Tactical Strengths & Critical Gaps**: Actionable SWOT-style insights identifying stage drop-offs and weak technical areas.
-- **Prioritized Action Plan**: Concrete weekly tasks tagged by priority and category.
-- **⚡ SHA-256 State-Hash Caching**: If no application or post-mortem data has changed, cached insights are returned instantly with **zero redundant AI API calls**. Automatically invalidates when new data is logged.
+### 1. 🤖 AI Strategic Career Advisor (Gemini Flash + SHA-256 State Caching)
+- **Executive Diagnostics**: High-level synthesis of your pipeline momentum, interview conversion velocity, and drop-off bottlenecks.
+- **Dual-Track Govt vs. Corporate Strategy**: Tailored guidance distinguishing Bangladesh Govt/Bank recruitment exams (BPSC, Combined Bank) and Corporate Software Engineering interviews.
+- **Tactical Strengths & Critical Gaps**: Actionable SWOT-style insights identifying technical weak spots and interview stage roadblocks.
+- **Prioritized Weekly Action Plan**: Concrete, categorized weekly deliverables prioritized by urgency and impact.
+- **⚡ SHA-256 State-Hash Caching**: If no application or retrospective data has changed, cached recommendations are served in milliseconds with **zero redundant AI calls**. Invalidation triggers automatically upon new activity.
 
 ### 2. 🚩 Company Favorites & Fake Job Red Flag Warnings
 - **One-Click ⭐ Favorites**: Star target employers directly from the table or directory to prioritize high-intent opportunities.
-- **🚩 Red Flag Alert System**: Flag suspected fake job postings, ghost listings, or unverified recruiters with custom warning notes.
-- **Form Caution Banners**: Selecting a red-flagged organization in the application form immediately triggers an unmissable caution alert explaining previous red flags.
-- **Dedicated Directory Filters**: Filter directory and pipelines instantly by Favorites, Red Flags, or Active companies.
+- **🚩 Red Flag Alert System**: Mark suspected fake job postings, ghost listings, or unverified recruiters with custom warning notes.
+- **Application Form Caution Banners**: Selecting a red-flagged organization in the application form immediately displays a prominent caution alert explaining previous red flags.
+- **Dedicated Directory Filters**: Instantly slice target organizations by **All Companies**, **⭐ Favorites**, **🚩 Red Flags**, or **Archived**.
 
-### 3. ⏱️ Interview Timeline & Multi-Round Stage Tracking
-- Granular tracking across every recruitment round (Preliminary, Written Exam, Coding Challenge, System Design, Behavioral, Viva).
-- Real-time passed rounds counters (`3 rounds passed • Dropped at System Design`).
-- Immediate status synchronization across the Applications table and Dashboard metrics.
+### 3. ⏱️ Granular Multi-Round Interview Timeline
+- **Full Stage Coverage**: Track progress across Preliminary MCQ, Written Exam, Coding Assessment, System Design, Behavioral, and Viva stages.
+- **Real-Time Stage Metrics**: Live counters for passed rounds and stage drop-offs (e.g. `3 rounds passed • Dropped at System Design`).
+- **Interview Modal Timeline**: Record round-by-round dates, results (`Passed`, `Failed`, `Pending`, `Cancelled`), and preparation notes.
+- **Unified Pipeline Sync**: Updates synchronize seamlessly between the Applications board, Dashboard KPI cards, and AI diagnostic models.
 
-### 4. 🔬 Google-Form Post-Mortem & Senior Remediation Engine
-- Comprehensive post-interview & exam diagnostic survey covering Corporate Tech stages (Coding, System Design, Behavioral) and Govt/Bank stages (Preliminary MCQ, Written, Viva, Practical).
-- Quantifies exam difficulty, time pressure, and self-confidence indices.
-- Subject topic gap frequency heatmap, environmental blocker tracking, and preparation duration correlation matrix.
-- Prescribed remediation roadmaps with targeted practice strategies.
+### 4. 🔬 Google-Form Failure Retrospective & Remediation Engine
+- **10-Step Comprehensive Survey**: Standardized diagnostic survey covering 15+ quantitative metrics across difficulty, preparation time, and confidence indices.
+- **Topic Gap Frequency Heatmap**: Pinpoint specific recurring topics (e.g., Dynamic Programming, Concurrency, SQL Optimization) that caused rejections.
+- **Environmental Blocker Tracking**: Track systemic hurdles like sleep deprivation, burnout, or time pressure.
+- **Prescribed Remediation Roadmaps**: Concrete self-study plans and practice recommendations to prepare for future rounds.
 
-### 5. 💻 Collapsible Navigation & Laptop/MacBook Optimized Layout
-- **Minimizable Sidebar Rail**: One-click toggle (and `⌘B` / `Ctrl+B` shortcut) between full sidebar (`244px`) and compact icon rail (`72px`), auto-persisted in `localStorage`.
+### 5. 💻 Collapsible Navigation & Laptop/MacBook Viewport Optimization
+- **Collapsible Sidebar Rail**: One-click toggle (and `⌘B` / `Ctrl+B` keyboard shortcut) switching between full sidebar (`244px`) and compact icon rail (`72px`), auto-persisted in `localStorage`.
 - **Proportional Table Sizing**: Proportional column constraints and text clamping that fit all 8 application columns cleanly on 13"/14" laptop screens with zero cutoff.
 - **Custom Thin Scrollbars**: Smooth macOS-compatible scroll indicators for tablet and split-screen viewports.
+- **Mobile & Tablet Cards**: Automatic conversion to clean responsive card layouts on viewports `< md`.
 
-### 6. 🔒 Multi-Tenant Data Isolation & Security
-- Complete tenant data isolation: user-created companies, custom job roles, circulars, applications, and post-mortems belong strictly to the authenticated `UserId`.
-- Shared global templates for standard roles and organizations.
-- Role-based JWT security with refresh token rotation and rate-limited endpoints.
+### 6. 🗂️ Centralized Lookup Taxonomy & Category Management
+- **Category Customization**: Manage recruitment Work Types (Remote, Onsite, Hybrid), Job Types (Corporate Tech, Govt, Bank), and Source Platforms (LinkedIn, Bdjobs, Teletalk, eRecruiter, Company Portal).
+- **Target Roles Directory**: Catalog and track customized software engineering roles and civil service cadremanship titles.
 
-### 7. 📊 Real-Time Pipeline Analytics & Interactive Funnel
+### 7. 🔔 Live Notifications & Real-Time Alert Webhooks
+- **Multi-Channel Integrations**: Instant webhook notifications to **Telegram** (via Bot API) and **Discord** (via Webhooks).
+- **Automated Dispatches**: Receive rich Markdown alerts on new job applications, recruitment status changes, and interview results.
+
+### 8. 🔒 Enterprise-Grade Multi-Tenant Isolation & Security
+- **Strict Data Isolation**: User-created companies, custom job roles, circulars, applications, and retrospectives are partitioned strictly by the authenticated `UserId`.
+- **Global Shared Templates**: Seeded standard corporate roles and government circular entities available across accounts.
+- **Hardened Authentication**: ASP.NET Core Identity with JWT bearer tokens, refresh token rotation, and rate-limiting.
+
+### 9. 📊 Real-Time Pipeline Analytics & Interactive Funnel
 - 6 Key Performance Indicator (KPI) metrics cards.
 - Conversion velocity funnel with drop-off analytics.
 - Recharts visualizations: Weekly Application Velocity, Pipeline Status Donut, Application Portals Breakdown, and Target Role Priorities.
@@ -68,8 +78,8 @@ An enterprise-grade, open-source **Career Operations OS and Recruitment Intellig
 ### 2. Analytics Dashboard & AI Career Strategist
 ![Dashboard](assets/Dashboard.png)
 
-### 3. Applications Table with Responsive Scrolling & Filter Suite
-![Applications Table](assets/Applications%20Table.png)
+### 3. Applications Workspace with Responsive Clamping & Filters
+![Applications Workspace](assets/Applications.webp)
 
 ### 4. Target Companies Management (Favorites & Red Flag Alerts)
 ![Companies Directory](assets/Companies.webp)
