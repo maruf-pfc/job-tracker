@@ -135,6 +135,9 @@ export default function Sidebar({
               <p className="mt-0.5 text-[11px] leading-4 text-[#8fa79a]">
                 Stay organized, follow up, and see progress.
               </p>
+              <span className="mt-2 block text-[10px] text-[#718578]">
+                JobTracker v1.0.0
+              </span>
               {onToggleCollapse && (
                 <button
                   type="button"

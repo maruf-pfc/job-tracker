@@ -177,14 +177,14 @@ bun run build
 
 ### Run Pre-Built Image from Docker Hub
 ```bash
-docker pull marufsarker/job-tracker:v0.1.0
+docker pull marufsarker/job-tracker:v1.0.0
 
 docker run -d \
   -p 8080:8080 \
   --name job-tracker \
   -e DATABASE_URL="Host=your_host;Database=jobtracker_db;Username=postgres;Password=your_password;" \
   -e JWT_KEY="your-secure-32-plus-characters-secret-key" \
-  marufsarker/job-tracker:v0.1.0
+  marufsarker/job-tracker:v1.0.0
 ```
 Web application will be accessible at `http://localhost:8080`.
 
