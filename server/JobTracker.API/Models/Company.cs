@@ -22,6 +22,10 @@ public class Company : BaseEntity
 
     public bool IsFavorite { get; set; }
     public bool IsArchived { get; set; }
+    public bool IsRedFlagged { get; set; }
+
+    [MaxLength(500)]
+    public string? RedFlagReason { get; set; }
 
     public Guid? UserId { get; set; }
     public User? User { get; set; }

@@ -7,6 +7,9 @@ public class CompanyDto
     public string? CareerPageUrl { get; set; }
     public string? WebsiteUrl { get; set; }
     public string? Location { get; set; }
+    public string? Notes { get; set; }
     public bool IsFavorite { get; set; }
     public bool IsArchived { get; set; }
+    public bool IsRedFlagged { get; set; }
+    public string? RedFlagReason { get; set; }
 }

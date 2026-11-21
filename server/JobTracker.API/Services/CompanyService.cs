@@ -42,8 +42,11 @@ public class CompanyService : ICompanyService
                 CareerPageUrl = c.CareerPageUrl,
                 WebsiteUrl = c.WebsiteUrl,
                 Location = c.Location,
+                Notes = c.Notes,
                 IsFavorite = c.IsFavorite,
                 IsArchived = c.IsArchived,
+                IsRedFlagged = c.IsRedFlagged,
+                RedFlagReason = c.RedFlagReason,
             })
             .ToListAsync(cancellationToken);
     }
@@ -61,8 +64,11 @@ public class CompanyService : ICompanyService
                 CareerPageUrl = c.CareerPageUrl,
                 WebsiteUrl = c.WebsiteUrl,
                 Location = c.Location,
+                Notes = c.Notes,
                 IsFavorite = c.IsFavorite,
                 IsArchived = c.IsArchived,
+                IsRedFlagged = c.IsRedFlagged,
+                RedFlagReason = c.RedFlagReason,
             })
             .FirstOrDefaultAsync(cancellationToken);
     }
@@ -77,6 +83,10 @@ public class CompanyService : ICompanyService
             WebsiteUrl = dto.WebsiteUrl?.Trim(),
             Location = dto.Location?.Trim(),
             Notes = dto.Notes?.Trim(),
+            IsFavorite = dto.IsFavorite,
+            IsArchived = dto.IsArchived,
+            IsRedFlagged = dto.IsRedFlagged,
+            RedFlagReason = dto.IsRedFlagged ? dto.RedFlagReason?.Trim() : null,
             UserId = userId
         };
 
@@ -90,8 +100,11 @@ public class CompanyService : ICompanyService
             CareerPageUrl = company.CareerPageUrl,
             WebsiteUrl = company.WebsiteUrl,
             Location = company.Location,
+            Notes = company.Notes,
             IsFavorite = company.IsFavorite,
             IsArchived = company.IsArchived,
+            IsRedFlagged = company.IsRedFlagged,
+            RedFlagReason = company.RedFlagReason,
         };
     }
 
@@ -109,6 +122,10 @@ public class CompanyService : ICompanyService
         company.WebsiteUrl = dto.WebsiteUrl?.Trim();
         company.Location = dto.Location?.Trim();
         company.Notes = dto.Notes?.Trim();
+        company.IsFavorite = dto.IsFavorite;
+        company.IsArchived = dto.IsArchived;
+        company.IsRedFlagged = dto.IsRedFlagged;
+        company.RedFlagReason = dto.IsRedFlagged ? dto.RedFlagReason?.Trim() : null;
         company.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync(cancellationToken);
@@ -120,8 +137,62 @@ public class CompanyService : ICompanyService
             CareerPageUrl = company.CareerPageUrl,
             WebsiteUrl = company.WebsiteUrl,
             Location = company.Location,
+            Notes = company.Notes,
             IsFavorite = company.IsFavorite,
             IsArchived = company.IsArchived,
+            IsRedFlagged = company.IsRedFlagged,
+            RedFlagReason = company.RedFlagReason,
+        };
+    }
+
+    public async Task<CompanyDto?> ToggleFavoriteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var userId = GetRequiredUserId();
+        var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId, cancellationToken);
+        if (company is null) return null;
+
+        company.IsFavorite = !company.IsFavorite;
+        company.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return new CompanyDto
+        {
+            Id = company.Id,
+            Name = company.Name,
+            CareerPageUrl = company.CareerPageUrl,
+            WebsiteUrl = company.WebsiteUrl,
+            Location = company.Location,
+            Notes = company.Notes,
+            IsFavorite = company.IsFavorite,
+            IsArchived = company.IsArchived,
+            IsRedFlagged = company.IsRedFlagged,
+            RedFlagReason = company.RedFlagReason,
+        };
+    }
+
+    public async Task<CompanyDto?> ToggleRedFlagAsync(Guid id, bool isRedFlagged, string? reason, CancellationToken cancellationToken = default)
+    {
+        var userId = GetRequiredUserId();
+        var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId, cancellationToken);
+        if (company is null) return null;
+
+        company.IsRedFlagged = isRedFlagged;
+        company.RedFlagReason = isRedFlagged ? reason?.Trim() : null;
+        company.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return new CompanyDto
+        {
+            Id = company.Id,
+            Name = company.Name,
+            CareerPageUrl = company.CareerPageUrl,
+            WebsiteUrl = company.WebsiteUrl,
+            Location = company.Location,
+            Notes = company.Notes,
+            IsFavorite = company.IsFavorite,
+            IsArchived = company.IsArchived,
+            IsRedFlagged = company.IsRedFlagged,
+            RedFlagReason = company.RedFlagReason,
         };
     }
 
@@ -147,6 +218,7 @@ public class CompanyService : ICompanyService
 
         _context.Companies.Remove(company);
         await _context.SaveChangesAsync(cancellationToken);
+
         return true;
     }
 }

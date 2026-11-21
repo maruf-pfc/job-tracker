@@ -98,7 +98,11 @@ public class JobApplicationService : IJobApplicationService
             .Select(j => new JobApplicationDto
             {
                 Id = j.Id,
+                CompanyId = j.CompanyId,
                 Company = j.Company.Name,
+                IsCompanyFavorite = j.Company.IsFavorite,
+                IsCompanyRedFlagged = j.Company.IsRedFlagged,
+                CompanyRedFlagReason = j.Company.RedFlagReason,
                 Role = j.Role,
                 JobUrl = j.JobUrl,
                 Location = j.Location,
@@ -144,7 +148,11 @@ public class JobApplicationService : IJobApplicationService
             .Select(j => new JobApplicationDto
             {
                 Id = j.Id,
+                CompanyId = j.CompanyId,
                 Company = j.Company.Name,
+                IsCompanyFavorite = j.Company.IsFavorite,
+                IsCompanyRedFlagged = j.Company.IsRedFlagged,
+                CompanyRedFlagReason = j.Company.RedFlagReason,
                 Role = j.Role,
                 JobUrl = j.JobUrl,
                 Location = j.Location,

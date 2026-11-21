@@ -3,7 +3,11 @@ namespace JobTracker.API.DTOs.JobApplication;
 public class JobApplicationDto
 {
     public Guid Id { get; set; }
+    public Guid CompanyId { get; set; }
     public string Company { get; set; } = string.Empty;
+    public bool IsCompanyFavorite { get; set; }
+    public bool IsCompanyRedFlagged { get; set; }
+    public string? CompanyRedFlagReason { get; set; }
     public string Role { get; set; } = string.Empty;
     public string? JobUrl { get; set; }
     public string? Location { get; set; }

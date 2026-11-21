@@ -4,6 +4,8 @@ import {
   createCompany,
   updateCompany,
   deleteCompany,
+  toggleFavoriteCompany,
+  toggleRedFlagCompany,
 } from "../companyService";
 import { api } from "../api";
 import type { CreateCompanyRequest } from "@/types/company";
@@ -13,6 +15,7 @@ vi.mock("../api", () => ({
     get: vi.fn(),
     post: vi.fn(),
     put: vi.fn(),
+    patch: vi.fn(),
     delete: vi.fn(),
   },
 }));
@@ -50,5 +53,26 @@ describe("companyService", () => {
 
     await deleteCompany("1");
     expect(api.delete).toHaveBeenCalledWith("/companies/1");
+  });
+
+  it("toggleFavoriteCompany should PATCH favorite endpoint", async () => {
+    const toggled = { id: "1", name: "Google", isFavorite: true, isArchived: false };
+    vi.mocked(api.patch).mockResolvedValueOnce({ data: { data: toggled } });
+
+    const result = await toggleFavoriteCompany("1");
+    expect(result.isFavorite).toBe(true);
+    expect(api.patch).toHaveBeenCalledWith("/companies/1/favorite");
+  });
+
+  it("toggleRedFlagCompany should PATCH red-flag endpoint with payload", async () => {
+    const flagged = { id: "1", name: "Fake Corp", isFavorite: false, isArchived: false, isRedFlagged: true, redFlagReason: "Ghost jobs" };
+    vi.mocked(api.patch).mockResolvedValueOnce({ data: { data: flagged } });
+
+    const result = await toggleRedFlagCompany("1", true, "Ghost jobs");
+    expect(result.isRedFlagged).toBe(true);
+    expect(api.patch).toHaveBeenCalledWith("/companies/1/red-flag", {
+      isRedFlagged: true,
+      reason: "Ghost jobs",
+    });
   });
 });

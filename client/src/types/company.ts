@@ -7,6 +7,8 @@ export type Company = {
   notes?: string;
   isFavorite: boolean;
   isArchived: boolean;
+  isRedFlagged?: boolean;
+  redFlagReason?: string;
 };
 
 export type CreateCompanyRequest = {
@@ -15,6 +17,10 @@ export type CreateCompanyRequest = {
   websiteUrl?: string;
   careerPageUrl?: string;
   notes?: string;
+  isFavorite?: boolean;
+  isArchived?: boolean;
+  isRedFlagged?: boolean;
+  redFlagReason?: string;
 };
 
 export type UpdateCompanyRequest = CreateCompanyRequest;

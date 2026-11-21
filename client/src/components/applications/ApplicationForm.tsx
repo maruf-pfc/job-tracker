@@ -3,7 +3,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Calendar } from "lucide-react";
+import { Calendar, AlertTriangle } from "lucide-react";
 import Input from "@/components/ui/Input";
 import Label from "@/components/ui/Label";
 import Textarea from "@/components/ui/Textarea";
@@ -115,6 +115,7 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
   });
 
   const selectedJobType = jobTypes?.find((j) => j.id === selectedJobTypeId);
+  const selectedCompany = companies?.find((c) => c.id === selectedCompanyId);
   const isGovtOrBank =
     selectedJobType?.name.toLowerCase().includes("govt") ||
     selectedJobType?.name.toLowerCase().includes("bank") ||
@@ -280,18 +281,39 @@ export default function ApplicationForm({ onSuccess, initialData }: Props) {
       >
         <div className="grid gap-4 md:grid-cols-2">
           {/* Company / Organization Dropdown */}
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 md:col-span-2">
             <Label>{isGovtOrBank ? "Ministry / Govt Entity / Bank" : "Company / Organization"}</Label>
             <Select {...register("companyId")}>
               <option value="">Select organization...</option>
               {companies?.map((company) => (
                 <option key={company.id} value={company.id}>
-                  {company.name} {company.location ? `(${company.location})` : ""}
+                  {company.isRedFlagged ? "🚩 [FLAGGED FAKE/SUSPICIOUS] " : company.isFavorite ? "⭐ " : ""}{company.name} {company.location ? `(${company.location})` : ""}
                 </option>
               ))}
             </Select>
             {errors.companyId && (
               <p className="text-xs text-red-600">{errors.companyId.message}</p>
+            )}
+            {/* Warning if red-flagged company is selected */}
+            {selectedCompany?.isRedFlagged && (
+              <div className="mt-2.5 rounded-xl border border-rose-300 bg-rose-50/95 p-3.5 text-rose-900 shadow-sm animate-[fadeIn_.2s_ease-out]">
+                <div className="flex items-start gap-2.5">
+                  <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+                  <div className="text-xs space-y-1">
+                    <p className="font-bold text-rose-950 text-[13px] flex items-center gap-1.5">
+                      <span>⚠️ Red Flag Warning: Suspected Fake or Problematic Company</span>
+                    </p>
+                    <p className="text-rose-800 leading-relaxed">
+                      You flagged <strong>{selectedCompany.name}</strong> as suspicious (e.g. fake job posts, ghost jobs, scam recruitment, or fraudulent requests). Proceed with caution before submitting sensitive documents.
+                    </p>
+                    {selectedCompany.redFlagReason && (
+                      <p className="mt-1 font-medium text-rose-900 bg-rose-100/90 border border-rose-200 px-2.5 py-1 rounded-md">
+                        Flag Note: &ldquo;{selectedCompany.redFlagReason}&rdquo;
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
             )}
           </div>
 

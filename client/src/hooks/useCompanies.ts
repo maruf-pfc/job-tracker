@@ -5,6 +5,8 @@ import {
   createCompany,
   updateCompany,
   deleteCompany,
+  toggleFavoriteCompany,
+  toggleRedFlagCompany,
 } from "@/services/companyService";
 import type { Company, CreateCompanyRequest } from "@/types/company";
 import { QUERY_KEYS } from "@/constants/queryKeys";
@@ -45,10 +47,59 @@ export function useCompanies() {
         return old.map((c) => (c.id === updatedCompany.id ? updatedCompany : c));
       });
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.COMPANIES });
+      await queryClient.invalidateQueries({ queryKey: ["applications"] });
       await queryClient.refetchQueries({ queryKey: QUERY_KEYS.COMPANIES });
     },
     onError: (err: { response?: { data?: { message?: string } } }) => {
       toast.error(err.response?.data?.message || "Failed to update company");
+    },
+  });
+
+  const toggleFavoriteMutation = useMutation({
+    mutationFn: (id: string) => toggleFavoriteCompany(id),
+    onSuccess: async (updatedCompany) => {
+      toast.success(
+        updatedCompany.isFavorite
+          ? `Marked ${updatedCompany.name} as favorite`
+          : `Removed ${updatedCompany.name} from favorites`
+      );
+      queryClient.setQueryData<Company[]>(QUERY_KEYS.COMPANIES, (old) => {
+        if (!old) return [updatedCompany];
+        return old.map((c) => (c.id === updatedCompany.id ? updatedCompany : c));
+      });
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.COMPANIES });
+      await queryClient.invalidateQueries({ queryKey: ["applications"] });
+    },
+    onError: (err: { response?: { data?: { message?: string } } }) => {
+      toast.error(err.response?.data?.message || "Failed to update favorite status");
+    },
+  });
+
+  const toggleRedFlagMutation = useMutation({
+    mutationFn: ({
+      id,
+      isRedFlagged,
+      reason,
+    }: {
+      id: string;
+      isRedFlagged: boolean;
+      reason?: string;
+    }) => toggleRedFlagCompany(id, isRedFlagged, reason),
+    onSuccess: async (updatedCompany) => {
+      toast.success(
+        updatedCompany.isRedFlagged
+          ? `🚩 Marked ${updatedCompany.name} as a Red Flag`
+          : `Removed red flag for ${updatedCompany.name}`
+      );
+      queryClient.setQueryData<Company[]>(QUERY_KEYS.COMPANIES, (old) => {
+        if (!old) return [updatedCompany];
+        return old.map((c) => (c.id === updatedCompany.id ? updatedCompany : c));
+      });
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.COMPANIES });
+      await queryClient.invalidateQueries({ queryKey: ["applications"] });
+    },
+    onError: (err: { response?: { data?: { message?: string } } }) => {
+      toast.error(err.response?.data?.message || "Failed to update red flag status");
     },
   });
 
@@ -76,8 +127,12 @@ export function useCompanies() {
     createCompany: createMutation.mutateAsync,
     updateCompany: updateMutation.mutateAsync,
     deleteCompany: deleteMutation.mutateAsync,
+    toggleFavorite: toggleFavoriteMutation.mutateAsync,
+    toggleRedFlag: toggleRedFlagMutation.mutateAsync,
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
+    isTogglingFavorite: toggleFavoriteMutation.isPending,
+    isTogglingRedFlag: toggleRedFlagMutation.isPending,
   };
 }

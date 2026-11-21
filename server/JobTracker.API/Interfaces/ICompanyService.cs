@@ -9,4 +9,6 @@ public interface ICompanyService
     Task<CompanyDto> CreateAsync(CreateCompanyDto dto, CancellationToken cancellationToken = default);
     Task<CompanyDto?> UpdateAsync(Guid id, CreateCompanyDto dto, CancellationToken cancellationToken = default);
     Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<CompanyDto?> ToggleFavoriteAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<CompanyDto?> ToggleRedFlagAsync(Guid id, bool isRedFlagged, string? reason, CancellationToken cancellationToken = default);
 }

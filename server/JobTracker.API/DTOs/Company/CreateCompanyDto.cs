@@ -19,4 +19,11 @@ public class CreateCompanyDto
 
     [MaxLength(5000)]
     public string? Notes { get; set; }
+
+    public bool IsFavorite { get; set; }
+    public bool IsArchived { get; set; }
+    public bool IsRedFlagged { get; set; }
+
+    [MaxLength(500)]
+    public string? RedFlagReason { get; set; }
 }

@@ -17,6 +17,23 @@ export async function updateCompany(id: string, data: CreateCompanyRequest): Pro
   return response.data.data;
 }
 
+export async function toggleFavoriteCompany(id: string): Promise<Company> {
+  const response = await api.patch<ApiResponse<Company>>(`/companies/${id}/favorite`);
+  return response.data.data;
+}
+
+export async function toggleRedFlagCompany(
+  id: string,
+  isRedFlagged: boolean,
+  reason?: string
+): Promise<Company> {
+  const response = await api.patch<ApiResponse<Company>>(`/companies/${id}/red-flag`, {
+    isRedFlagged,
+    reason,
+  });
+  return response.data.data;
+}
+
 export async function deleteCompany(id: string): Promise<void> {
   await api.delete(`/companies/${id}`);
 }

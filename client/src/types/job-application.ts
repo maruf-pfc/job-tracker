@@ -1,6 +1,10 @@
 export type JobApplication = {
   id: string;
+  companyId?: string;
   company: string;
+  isCompanyFavorite?: boolean;
+  isCompanyRedFlagged?: boolean;
+  companyRedFlagReason?: string;
   role: string;
   jobUrl?: string;
   location?: string;

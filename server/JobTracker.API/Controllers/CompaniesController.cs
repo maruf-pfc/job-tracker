@@ -87,6 +87,52 @@ public class CompaniesController : ControllerBase
         );
     }
 
+    [HttpPatch("{id:guid}/favorite")]
+    public async Task<IActionResult> ToggleFavorite(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _companyService.ToggleFavoriteAsync(id, cancellationToken);
+
+        if (result is null)
+        {
+            return NotFound(
+                ApiResponse<string>.FailureResponse(
+                    "Resource not found"
+                )
+            );
+        }
+
+        return Ok(
+            ApiResponse<object>.SuccessResponse(
+                result,
+                "Favorite status updated successfully"
+            )
+        );
+    }
+
+    public record RedFlagDto(bool IsRedFlagged, string? Reason);
+
+    [HttpPatch("{id:guid}/red-flag")]
+    public async Task<IActionResult> ToggleRedFlag(Guid id, [FromBody] RedFlagDto dto, CancellationToken cancellationToken)
+    {
+        var result = await _companyService.ToggleRedFlagAsync(id, dto.IsRedFlagged, dto.Reason, cancellationToken);
+
+        if (result is null)
+        {
+            return NotFound(
+                ApiResponse<string>.FailureResponse(
+                    "Resource not found"
+                )
+            );
+        }
+
+        return Ok(
+            ApiResponse<object>.SuccessResponse(
+                result,
+                "Red flag status updated successfully"
+            )
+        );
+    }
+
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
