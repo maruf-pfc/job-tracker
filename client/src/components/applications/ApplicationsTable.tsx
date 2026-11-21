@@ -112,20 +112,20 @@ export default function ApplicationsTable({ applications, isLoading }: Props) {
 
   return (
     <>
-      <div className="overflow-hidden rounded-xl border border-[#e3e9df] bg-white shadow-[0_1px_2px_rgba(25,50,28,.04)]">
+      <div className="w-full">
         {/* Desktop & Laptop Table View */}
         <div className="hidden md:block overflow-x-auto w-full scrollbar-thin scrollbar-thumb-[#c7d8cb] scrollbar-track-[#f2f6f1]">
-          <table className="w-full min-w-[840px] text-left border-collapse">
+          <table className="w-full text-left border-collapse table-auto xl:table-fixed">
             <thead className="border-b border-[#e6ece3] bg-[#f7f9f5] text-[11px] font-semibold tracking-[.02em] text-[#6a7b6e]">
               <tr>
-                <th className="px-3.5 py-3 sm:px-4 sm:py-3.5">Organization & Role</th>
-                <th className="px-3 py-3 sm:px-4 sm:py-3.5">Category & Platform</th>
-                <th className="px-3 py-3 sm:px-4 sm:py-3.5">Status / Stage</th>
-                <th className="px-3 py-3 sm:px-4 sm:py-3.5">Priority</th>
-                <th className="px-3 py-3 sm:px-4 sm:py-3.5">Location & Compensation</th>
-                <th className="px-3 py-3 sm:px-4 sm:py-3.5">Applied Date</th>
-                <th className="px-3 py-3 sm:px-4 sm:py-3.5">Follow-up Date</th>
-                <th className="px-3 py-3 sm:px-4 sm:py-3.5 text-right">Actions</th>
+                <th className="px-3.5 py-3 w-[22%] min-w-[160px]">Organization & Role</th>
+                <th className="px-3 py-3 w-[14%] min-w-[115px]">Category & Platform</th>
+                <th className="px-3 py-3 w-[18%] min-w-[145px]">Status / Stage</th>
+                <th className="px-2.5 py-3 w-[7%] min-w-[65px]">Priority</th>
+                <th className="px-3 py-3 w-[16%] min-w-[130px]">Location & Pay</th>
+                <th className="px-2.5 py-3 w-[9%] min-w-[85px]">Applied</th>
+                <th className="px-2.5 py-3 w-[9%] min-w-[85px]">Follow-up</th>
+                <th className="px-3 py-3 w-[5%] min-w-[65px] text-right">Actions</th>
               </tr>
             </thead>
 
@@ -144,10 +144,12 @@ export default function ApplicationsTable({ applications, isLoading }: Props) {
                     className="hover:bg-[#f6faf5] transition-colors duration-150"
                   >
                     {/* Organization & Role */}
-                    <td className="px-3.5 py-3.5 sm:px-4 sm:py-4">
-                      <div className="space-y-1">
+                    <td className="px-3.5 py-3">
+                      <div className="space-y-0.5">
                         <div className="font-semibold text-slate-900 flex items-center gap-1.5 flex-wrap">
-                          <span>{app.role}</span>
+                          <span className="truncate max-w-[190px] inline-block font-semibold" title={app.role}>
+                            {app.role}
+                          </span>
                           {app.jobUrl && (
                             <a
                               href={app.jobUrl}
@@ -158,7 +160,7 @@ export default function ApplicationsTable({ applications, isLoading }: Props) {
                                   ? "View Govt Circular / Notice"
                                   : "View Job Posting"
                               }
-                              className="text-slate-400 hover:text-[#326347] transition-colors inline-flex items-center"
+                              className="text-slate-400 hover:text-[#326347] transition-colors inline-flex items-center shrink-0"
                             >
                               <ExternalLink className="w-3.5 h-3.5" />
                             </a>
@@ -170,15 +172,15 @@ export default function ApplicationsTable({ applications, isLoading }: Props) {
                           ) : (
                             <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                           )}
-                          <span className="font-semibold text-slate-800">
+                          <span className="font-semibold text-slate-800 truncate max-w-[140px] inline-block" title={app.company}>
                             {app.company}
                           </span>
                           {app.isCompanyFavorite && (
                             <span
                               title="Favorite Company"
-                              className="text-amber-500 inline-flex items-center"
+                              className="text-amber-500 inline-flex items-center shrink-0"
                             >
-                              <Star size={13} className="fill-amber-400 text-amber-500" />
+                              <Star size={12} className="fill-amber-400 text-amber-500" />
                             </span>
                           )}
                           {app.isCompanyRedFlagged && (
@@ -188,10 +190,10 @@ export default function ApplicationsTable({ applications, isLoading }: Props) {
                                   ? `🚩 Red Flag Note: ${app.companyRedFlagReason}`
                                   : "🚩 Flagged: Suspected Fake Job Posts"
                               }
-                              className="inline-flex items-center gap-1 rounded bg-rose-100 text-rose-800 border border-rose-300 px-1.5 py-0.5 text-[10px] font-bold"
+                              className="inline-flex items-center gap-0.5 rounded bg-rose-100 text-rose-800 border border-rose-300 px-1 py-0.5 text-[9px] font-bold shrink-0"
                             >
-                              <Flag size={10} className="fill-rose-700 text-rose-700" />
-                              <span>Fake Alert</span>
+                              <Flag size={9} className="fill-rose-700 text-rose-700" />
+                              <span>Fake</span>
                             </span>
                           )}
                         </div>
@@ -199,21 +201,21 @@ export default function ApplicationsTable({ applications, isLoading }: Props) {
                     </td>
 
                     {/* Category & Platform */}
-                    <td className="px-3.5 py-3.5 sm:px-4 sm:py-4 whitespace-nowrap">
-                      <div className="space-y-1">
+                    <td className="px-3 py-3">
+                      <div className="space-y-0.5">
                         <div>
                           {isGovt ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100/80 text-emerald-800 border border-emerald-200">
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100/80 text-emerald-800 border border-emerald-200">
                               🏛️ Govt & Bank
                             </span>
                           ) : (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#edf5e9] text-indigo-700 border border-[#d9e8d4]">
-                              🏢 Corporate Tech
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#edf5e9] text-indigo-700 border border-[#d9e8d4]">
+                              🏢 Corporate
                             </span>
                           )}
                         </div>
                         {app.sourcePlatform && (
-                          <div className="text-[11px] text-slate-500 font-medium truncate max-w-[140px]">
+                          <div className="text-[11px] text-slate-500 font-medium truncate max-w-[115px]" title={`via ${app.sourcePlatform}`}>
                             via {app.sourcePlatform}
                           </div>
                         )}
@@ -221,9 +223,9 @@ export default function ApplicationsTable({ applications, isLoading }: Props) {
                     </td>
 
                     {/* Status Badge, Stage/Rounds & Retrospective Link */}
-                    <td className="px-3.5 py-3.5 sm:px-4 sm:py-4 whitespace-nowrap">
-                      <div className="space-y-1.5">
-                        <div className="flex items-center gap-2">
+                    <td className="px-3 py-3">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1.5 flex-wrap">
                           <ApplicationStatusBadge
                             status={app.applicationStatus}
                             passedRounds={app.passedRounds}
@@ -235,17 +237,17 @@ export default function ApplicationsTable({ applications, isLoading }: Props) {
                             <button
                               onClick={() => setRetrospectiveApp(app)}
                               title="Log Failure Analysis & Action Plan"
-                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition-colors cursor-pointer"
+                              className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition-colors cursor-pointer"
                             >
-                              <AlertCircle className="w-3 h-3" />
-                              <span>Post-Mortem</span>
+                              <AlertCircle className="w-2.5 h-2.5" />
+                              <span>Analysis</span>
                             </button>
                           )}
                         </div>
                         <button
                           type="button"
                           onClick={() => setRoundsApp(app)}
-                          className={`inline-flex items-center gap-1.5 text-[11px] font-medium transition-colors cursor-pointer rounded-md px-2 py-0.5 ${
+                          className={`inline-flex items-center gap-1 text-[10px] font-medium transition-colors cursor-pointer rounded px-1.5 py-0.5 ${
                             (app.passedRounds ?? 0) > 0
                               ? "bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200/80"
                               : (app.totalRounds ?? 0) > 0
@@ -254,82 +256,71 @@ export default function ApplicationsTable({ applications, isLoading }: Props) {
                           }`}
                           title="Manage interview rounds"
                         >
-                          <Calendar className="w-3.5 h-3.5 shrink-0 text-[#3d704d]" />
-                          {(app.passedRounds ?? 0) > 0 ||
-                          (app.totalRounds ?? 0) > 0 ? (
-                            <span className="truncate max-w-[220px]">
-                              {(app.passedRounds ?? 0) > 0 ? (
-                                <span className="font-semibold text-emerald-800">
-                                  {app.passedRounds} round
-                                  {app.passedRounds! > 1 ? "s" : ""} passed
-                                </span>
-                              ) : (
-                                <span>
-                                  {app.totalRounds} round
-                                  {app.totalRounds! > 1 ? "s" : ""}
-                                </span>
-                              )}
-                              {app.failedStage
-                                ? ` • Dropped at ${app.failedStage}`
-                                : app.latestRoundName
-                                ? ` • ${app.latestRoundName}`
-                                : ""}
-                            </span>
-                          ) : (
-                            <span>+ Add interview rounds</span>
-                          )}
+                          <Calendar className="w-3 h-3 shrink-0 text-[#3d704d]" />
+                          <span className="truncate max-w-[130px]">
+                            {(app.passedRounds ?? 0) > 0
+                              ? `${app.passedRounds} passed`
+                              : (app.totalRounds ?? 0) > 0
+                              ? `${app.totalRounds} rounds`
+                              : "+ Add rounds"}
+                          </span>
                         </button>
                       </div>
                     </td>
 
                     {/* Priority Pill */}
-                    <td className="px-3.5 py-3.5 sm:px-4 sm:py-4 whitespace-nowrap">
+                    <td className="px-2.5 py-3">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${priorityClass}`}
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${priorityClass}`}
                       >
                         {app.priority}
                       </span>
                     </td>
 
-                    {/* Location & Compensation */}
-                    <td className="px-3.5 py-3.5 sm:px-4 sm:py-4 whitespace-nowrap">
-                      <div className="space-y-1 text-xs text-slate-600">
+                    {/* Location & Compensation (Clamped to avoid pushing other columns out) */}
+                    <td className="px-3 py-3">
+                      <div className="space-y-0.5 text-xs text-slate-600">
                         {app.location && (
-                          <div className="flex items-center gap-1">
-                            <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                            <span>{app.location}</span>
+                          <div className="flex items-center gap-1 text-[11px] text-slate-600">
+                            <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                            <span className="truncate max-w-[140px] inline-block" title={app.location}>
+                              {app.location}
+                            </span>
                           </div>
                         )}
                         {app.salaryRange && (
                           <div className="flex items-center gap-1 text-slate-700 font-mono text-[11px]">
-                            <DollarSign className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                            <span>{app.salaryRange}</span>
+                            <DollarSign className="w-3 h-3 text-slate-400 shrink-0" />
+                            <span className="truncate max-w-[110px]">{app.salaryRange}</span>
                           </div>
+                        )}
+                        {!app.location && !app.salaryRange && (
+                          <span className="text-slate-400 text-xs">—</span>
                         )}
                       </div>
                     </td>
 
                     {/* Applied Date */}
-                    <td className="px-3.5 py-3.5 sm:px-4 sm:py-4 whitespace-nowrap text-xs text-slate-600 font-medium">
-                      <div className="flex items-center gap-1.5">
-                        <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <td className="px-2.5 py-3 text-xs text-slate-600 font-medium">
+                      <div className="flex items-center gap-1 whitespace-nowrap">
+                        <Calendar className="w-3 h-3 text-slate-400 shrink-0" />
                         <span>{formatDate(app.appliedAt)}</span>
                       </div>
                     </td>
 
                     {/* Follow-up Date */}
-                    <td className="px-3.5 py-3.5 sm:px-4 sm:py-4 whitespace-nowrap text-xs font-medium">
+                    <td className="px-2.5 py-3 text-xs font-medium">
                       {deadlineFormatted !== "N/A" ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200/80">
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-800 border border-amber-200/80 whitespace-nowrap">
                           ⏰ {deadlineFormatted}
                         </span>
                       ) : (
-                        <span className="text-slate-400">N/A</span>
+                        <span className="text-slate-400 text-xs">N/A</span>
                       )}
                     </td>
 
                     {/* Actions */}
-                    <td className="px-3.5 py-3.5 sm:px-4 sm:py-4 whitespace-nowrap text-right">
+                    <td className="px-3 py-3 whitespace-nowrap text-right">
                       <ApplicationActions
                         onEdit={() => setEditingApplication(app)}
                         onDelete={() => setSelectedId(app.id)}

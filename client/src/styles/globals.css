@@ -11,3 +11,28 @@ body {
   background-color: #f8fafc;
   color: #0f172a;
 }
+
+/* Custom smooth horizontal table scrollbar for laptop/MacBook devices */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #bad3be #f4f7f2;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: #f4f7f2;
+  border-radius: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #bad3be;
+  border-radius: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #7ca884;
+}
