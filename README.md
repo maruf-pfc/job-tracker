@@ -25,18 +25,34 @@ An enterprise-grade, open-source **Career Operations OS and Recruitment Intellig
 - **Prioritized Action Plan**: Concrete weekly tasks tagged by priority and category.
 - **⚡ SHA-256 State-Hash Caching**: If no application or post-mortem data has changed, cached insights are returned instantly with **zero redundant AI API calls**. Automatically invalidates when new data is logged.
 
-### 2. 🔬 Google-Form Post-Mortem & Senior Remediation Engine
+### 2. 🚩 Company Favorites & Fake Job Red Flag Warnings
+- **One-Click ⭐ Favorites**: Star target employers directly from the table or directory to prioritize high-intent opportunities.
+- **🚩 Red Flag Alert System**: Flag suspected fake job postings, ghost listings, or unverified recruiters with custom warning notes.
+- **Form Caution Banners**: Selecting a red-flagged organization in the application form immediately triggers an unmissable caution alert explaining previous red flags.
+- **Dedicated Directory Filters**: Filter directory and pipelines instantly by Favorites, Red Flags, or Active companies.
+
+### 3. ⏱️ Interview Timeline & Multi-Round Stage Tracking
+- Granular tracking across every recruitment round (Preliminary, Written Exam, Coding Challenge, System Design, Behavioral, Viva).
+- Real-time passed rounds counters (`3 rounds passed • Dropped at System Design`).
+- Immediate status synchronization across the Applications table and Dashboard metrics.
+
+### 4. 🔬 Google-Form Post-Mortem & Senior Remediation Engine
 - Comprehensive post-interview & exam diagnostic survey covering Corporate Tech stages (Coding, System Design, Behavioral) and Govt/Bank stages (Preliminary MCQ, Written, Viva, Practical).
 - Quantifies exam difficulty, time pressure, and self-confidence indices.
 - Subject topic gap frequency heatmap, environmental blocker tracking, and preparation duration correlation matrix.
 - Prescribed remediation roadmaps with targeted practice strategies.
 
-### 3. 🔒 Multi-Tenant Data Isolation & Security
+### 5. 💻 Collapsible Navigation & Laptop/MacBook Optimized Layout
+- **Minimizable Sidebar Rail**: One-click toggle (and `⌘B` / `Ctrl+B` shortcut) between full sidebar (`244px`) and compact icon rail (`72px`), auto-persisted in `localStorage`.
+- **Proportional Table Sizing**: Proportional column constraints and text clamping that fit all 8 application columns cleanly on 13"/14" laptop screens with zero cutoff.
+- **Custom Thin Scrollbars**: Smooth macOS-compatible scroll indicators for tablet and split-screen viewports.
+
+### 6. 🔒 Multi-Tenant Data Isolation & Security
 - Complete tenant data isolation: user-created companies, custom job roles, circulars, applications, and post-mortems belong strictly to the authenticated `UserId`.
 - Shared global templates for standard roles and organizations.
 - Role-based JWT security with refresh token rotation and rate-limited endpoints.
 
-### 4. 📊 Real-Time Pipeline Analytics & Interactive Funnel
+### 7. 📊 Real-Time Pipeline Analytics & Interactive Funnel
 - 6 Key Performance Indicator (KPI) metrics cards.
 - Conversion velocity funnel with drop-off analytics.
 - Recharts visualizations: Weekly Application Velocity, Pipeline Status Donut, Application Portals Breakdown, and Target Role Priorities.
@@ -46,28 +62,34 @@ An enterprise-grade, open-source **Career Operations OS and Recruitment Intellig
 
 ## 📸 UI Showcase & Architecture
 
-### 1. Analytics Dashboard & AI Career Strategist
+### 1. Secure Authentication & Onboarding
+![Authentication](assets/Login.webp)
+
+### 2. Analytics Dashboard & AI Career Strategist
 ![Dashboard](assets/Dashboard.png)
 
-### 2. Applications Table with Responsive Scrolling & Filter Suite
+### 3. Applications Table with Responsive Scrolling & Filter Suite
 ![Applications Table](assets/Applications%20Table.png)
 
-### 3. Target Companies Management (User Isolated + Global)
-![Company](assets/Company.png)
+### 4. Target Companies Management (Favorites & Red Flag Alerts)
+![Companies Directory](assets/Companies.webp)
 
-### 4. Target Job Roles & Career Titles
-![Roles](assets/Roles.png)
+### 5. Target Job Roles & Career Titles
+![Job Roles](assets/Roles.webp)
 
-### 5. User Profile & Academic Credentials
-![Profile](assets/Profile.png)
+### 6. Lookup Categories Engine (Work Types, Job Types, Platforms)
+![Categories](assets/Categories.webp)
 
-### 6. Integrations, Webhooks & Diagnostics Settings
-![Settings](assets/Settings.png)
+### 7. User Profile & Competitive Programming Credentials
+![Profile](assets/Profile.webp)
 
-### 7. Telegram Bot Automation & Live Alerts
+### 8. Integrations, Webhooks & Diagnostics Settings
+![Settings](assets/Settings.webp)
+
+### 9. Telegram Bot Automation & Live Alerts
 ![Telegram Webhook Integration](assets/Telegram%20Webhook%20Integration.png)
 
-### 8. Discord Webhook Channel Notifications
+### 10. Discord Webhook Channel Notifications
 ![Discord Webhook Integration](assets/Discord%20Webhook%20Integration.png)
 
 ---
@@ -83,10 +105,10 @@ An enterprise-grade, open-source **Career Operations OS and Recruitment Intellig
 
 ### Backend (Server)
 - **Core Framework**: ASP.NET Core 10.0 Web API
-- **AI Engine**: Google Gemini API (`gemini-3.6-flash`) with SHA-256 data signature caching
+- **AI Engine**: Google Gemini API (`gemini-2.5-flash`) with SHA-256 data signature caching
 - **Database & ORM**: PostgreSQL (Local / Neon Cloud) via Entity Framework Core 10
 - **Security & Auth**: ASP.NET Core Identity, JWT Bearer Tokens, Rate Limiting, Security Headers
-- **Testing**: xUnit, Moq, EF Core InMemory Provider (49 unit tests)
+- **Testing**: xUnit, Moq, EF Core InMemory Provider (50 unit tests)
 
 ---
 
@@ -133,12 +155,12 @@ bun run dev
 
 ## 🧪 Running Unit Tests
 
-### Backend Unit Tests (49 / 49 Passing)
+### Backend Unit Tests (50 / 50 Passing)
 ```bash
-dotnet test JobTracker.slnx
+dotnet test server/JobTracker.API.Tests
 ```
 
-### Frontend Unit Tests (24 / 24 Passing across 8 test suites)
+### Frontend Unit Tests (31 / 31 Passing across 9 test suites)
 ```bash
 cd client
 bun run test
